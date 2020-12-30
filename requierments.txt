@@ -1,0 +1,10 @@
+asgiref
+autopep8
+Django
+django-debug-toolbar
+pep8
+pycodestyle
+python-decouple
+pytz
+sqlparse
+toml
