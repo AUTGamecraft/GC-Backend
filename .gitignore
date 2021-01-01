@@ -2,3 +2,4 @@ venv
 static_in_env
 .env
 **/__pycache__/*
+static_root
