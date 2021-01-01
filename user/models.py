@@ -31,6 +31,10 @@ class CustomAccountManager(BaseUserManager):
         if other_fieds.get('is_staff') is not True:
             raise ValueError(_('Superuser must be assigned to is_staff=True.'))
 
+
+        if other_fieds.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must be assigned to is_superuser=True.'))
+
         return self.create_user(email , user_name , first_name , password,  **other_fieds)
 
 
