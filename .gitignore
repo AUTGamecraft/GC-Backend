@@ -3,3 +3,4 @@ static_in_env
 .env
 htmlcov
 db.sqlite3
+.coverage
