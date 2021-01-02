@@ -8,26 +8,26 @@ class PhoneValidator(RegexValidator):
 
 
 class Talk(models.Model):
+    title = models.CharField(max_length=100 , blank=False) 
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField()
 
-
-class Competition(models.Model):
-    date = models.DateTimeField(blank=False)
-    content = models.TextField(blank=False)
-    capacity = models.IntegerField(blank=False)
-    participant_count = models.IntegerField()
-
+    def __str__(self):
+        return self.title
+    
 
 class Workshop(models.Model):
+    title = models.CharField(max_length=100 , blank=False) 
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField()
 
-
+    def __str__(self):
+        return self.title
+  
 
 
 
@@ -36,7 +36,6 @@ class GDUser(models.Model):
     phone_number = models.CharField(
         validators=[PhoneValidator()], max_length=32, blank=False)
     talks = models.ManyToManyField(Talk)
-    competitions = models.ManyToManyField(Competition)
     workshops = models.ManyToManyField(Workshop)
 
     # def __str__(self):

@@ -8,39 +8,9 @@ class TalkSerializer(serializers.ModelSerializer):
         model = Talk
 
         fields =[
-            'data',
+            'title',
             'content',
-            'register_desc'
+            'capacity',
+            'participant_count'
         ]
 
-
-class TalkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Talk
-
-        fields =[
-            'data',
-            'content',
-            'register_desc'
-        ]
-
-
-class TalkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Talk
-
-        fields =[
-            'data',
-            'content',
-            'register_desc'
-        ]
-
-class TalkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Talk
-
-        fields =[
-            'data',
-            'content',
-            'register_desc'
-        ]
