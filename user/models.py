@@ -41,7 +41,7 @@ class CustomAccountManager(BaseUserManager):
 
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class SiteUser(AbstractBaseUser, PermissionsMixin):
 
     # default fields of user model
     email = models.EmailField(_("email address"), unique=True)

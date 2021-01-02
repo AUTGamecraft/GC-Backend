@@ -1,6 +1,6 @@
 asgiref==3.3.1
 autopep8==1.5.4
-Django==3.1.4
+Django
 django-debug-toolbar==3.2
 pep8==1.7.1
 pycodestyle==2.6.0

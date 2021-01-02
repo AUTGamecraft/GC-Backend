@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
-from user.models import CustomUser
+from user.models import SiteUser
 
 class PhoneValidator(RegexValidator):
     regex = r'^(\+98|0)?9\d{9}$'
@@ -32,7 +32,7 @@ class Workshop(models.Model):
 
 
 class GDUser(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(SiteUser, on_delete=models.CASCADE)
     phone_number = models.CharField(
         validators=[PhoneValidator()], max_length=32, blank=False)
     talks = models.ManyToManyField(Talk)

@@ -25,8 +25,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
-    'user'
+    'core.apps.CoreConfig',
+    'user.apps.UserConfig'
 ]
 
 MIDDLEWARE = [
@@ -106,7 +106,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR , 'media_root')
 
 # my custom user model
 
-AUTH_USER_MODEL = 'user.CustomUser'
+AUTH_USER_MODEL = 'user.SiteUser'
 
 
 
