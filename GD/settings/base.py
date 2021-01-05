@@ -15,7 +15,6 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -27,7 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
     'user.apps.UserConfig',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -43,9 +43,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'GD.urls'
 
 
-
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISION_CLASSES' : [
+    'DEFAULT_PERMISION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -58,7 +57,7 @@ REST_FRAMEWORK = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR , 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -72,10 +71,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'GD.wsgi.application'
-
-
-
-
 
 
 # Internationalization
@@ -97,21 +92,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR , 'static_in_env')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 VENV_PATH = os.path.dirname(BASE_DIR)
-STATIC_ROOT = os.path.join(BASE_DIR , 'static_root')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR , 'media_root')
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
 
 
 # my custom user model
 
 AUTH_USER_MODEL = 'user.SiteUser'
-
-
-
-
 
 
 SIMPLE_JWT = {
