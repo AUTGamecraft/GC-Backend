@@ -2,20 +2,22 @@ from django.template import Context
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
-
-def send_email(name , email , review):
+def send_email(user):
     context = {
-        'name':name,
-        'email':email,
-        'review':review
+        'first_name':user['first_name'],
+        'uid':urlsafe_base64_encode(force_bytes(user['pk']))
     }
 
-    email_subject = 'email subject'
+    email_subject = 'Activation'
     email_body = render_to_string('email_message.txt' , context)
     email = EmailMessage(
         email_subject,
         email_body,
-        settings.DEFAULT_FROM_EMAIL , [email,],
+        settings.DEFAULT_FROM_EMAIL,
+        [user['email'],],
     )
-    return email.send(fail_silently=False)
+    email.send(fail_silently=False)
+    return {'status':True}
