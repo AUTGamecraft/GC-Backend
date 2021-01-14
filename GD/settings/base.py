@@ -141,3 +141,18 @@ EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT=int(config('EMAIL_PORT'))
 DEFAULT_FROM_EMAIL=config('DEFAULT_FROM_EMAIL')
 EMAIL_USE_TLS= True
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
