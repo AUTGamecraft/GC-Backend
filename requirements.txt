@@ -1,0 +1,11 @@
+django
+djangorestframework
+celery
+coverage
+django-debug-toolbar
+djangorestframework-simplejwt
+pep8
+pip-chill
+python-decouple
+redis
+psycopg2<=2.8.6

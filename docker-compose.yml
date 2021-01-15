@@ -1,11 +1,50 @@
-version: '3.8'
+version: '3.7'
 
-services: 
-  backend:
+services:
+  app:
     build: 
       context: .
-      dockerfile: Dockerfile
+      target: DJANGO_APP
+    volumes:
+      - static_data:/vol/web
+      - .:/app
     ports: 
-      - 8001:8000
+      - '8000:8000'
+    command : python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    
+    depends_on: 
+      - redis
+      - db
+
+
+  celery:
+    build: .
+    command : celery -A GD worker -l INFO
     volumes: 
-      - .:/app   
+      - .:/app
+    environment: 
+      - C_FORCE_ROOT=true
+
+    depends_on: 
+      - app
+      - redis
+
+  redis:
+    image: "redis:alpine"
+
+  db:
+    image: "postgres"
+    environment: 
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes: 
+      - pgdata:/var/lib/posgresql/data
+      
+
+volumes: 
+  pgdata:
+  static_data:

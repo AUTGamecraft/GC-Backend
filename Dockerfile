@@ -1,8 +1,32 @@
-FROM python:3.8
-ENV PYTHONNONBUFFERED 1
-WORKDIR /app
-COPY requierments.txt /app/requierments.txt
-RUN pip install -r requierments.txt
-COPY . /app
 
-CMD ["python" , "manage.py" , "runserver" , "0.0.0.0:8000"]
+FROM python:3.8-alpine AS DJANGO_APP
+
+ENV PATH="/scripts:${PATH}"
+
+COPY ./requirements.txt /requirements.txt
+RUN \
+ apk add --no-cache postgresql-libs && \
+ apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+ python3 -m pip install -r requirements.txt --no-cache-dir && \
+ apk --purge del .build-deps
+
+RUN mkdir /app
+COPY . /app
+WORKDIR /app
+COPY ./scripts /scripts
+
+RUN chmod +x /scripts/*
+
+RUN mkdir -p /vol/web/media
+RUN mkdir -p /vol/web/static
+
+RUN adduser -D ali
+RUN chown -R ali:ali /app/db.sqlite3
+RUN chmod -R 755 /app/db.sqlite3
+USER ali
+
+CMD ["entrypoint.sh"]
+
+
+
+
