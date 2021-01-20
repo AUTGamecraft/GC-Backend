@@ -1,8 +1,8 @@
 #!/bin/sh
 
-set -e
+# set -e
 
 
-python manage.py collectstatic --noinput
+# python manage.py collectstatic --noinput
 
-uwsgi --socket :8000 --master --enable-threads --module app.wsgi
+# uwsgi --socket :8000 --master --enable-threads --module app.wsgi

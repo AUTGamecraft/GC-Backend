@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 from core.models import (
-    Talk,
-    Workshop
+    EventService
 )
 
 class PhoneValidator(RegexValidator):
@@ -80,8 +79,8 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     
     # event informations
     phone_number = models.CharField(_("phone number"),validators=[PhoneValidator()], max_length=32 , blank=False,null=False)
-    talks = models.ManyToManyField(Talk)
-    workshops = models.ManyToManyField(Workshop)
+    services = models.ForeignKey(EventService, on_delete=models.PROTECT , blank=True , null=True)
+
     objects = CustomAccountManager()
 
     USERNAME_FIELD = 'email'

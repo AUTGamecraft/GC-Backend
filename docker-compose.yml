@@ -26,8 +26,7 @@ services:
     command : celery -A GD worker -l INFO
     volumes: 
       - .:/app
-    environment: 
-      - C_FORCE_ROOT=true
+    env_file: .env
 
     depends_on: 
       - app
