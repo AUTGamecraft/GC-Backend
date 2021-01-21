@@ -79,7 +79,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     
     # event informations
     phone_number = models.CharField(_("phone number"),validators=[PhoneValidator()], max_length=32 , blank=False,null=False)
-    services = models.ForeignKey(EventService, on_delete=models.PROTECT , blank=True , null=True)
+    service = models.ForeignKey(EventService, on_delete=models.PROTECT , blank=True , null=True)
 
     objects = CustomAccountManager()
 

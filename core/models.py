@@ -66,6 +66,6 @@ class EventService(models.Model):
         blank=False
     )
     talk = models.ForeignKey(Talk , blank=True , on_delete=models.CASCADE)
-    Workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE)
+    workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE)
 
 
