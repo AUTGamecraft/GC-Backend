@@ -1,5 +1,7 @@
 venv
 static_in_env
 .env
-**/__pycache__/*
-static_root
+htmlcov
+db.sqlite3
+.coverage
+*/__pycache__/*

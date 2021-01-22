@@ -1,34 +1,71 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 
 
-   
-class PhoneValidator(RegexValidator):
-    regex = r'^(\+98|0)?9\d{9}$'
-    message="Phone number must be entered in the format: '+9999'. Up to 30 digits allowed."
+PAYMENT_STATES = [
+    ('CM' , 'COMPLETED'),
+    ('PN' , 'PENDING'),
+    ('RJ' , 'REJECTED')
+]
+
+SERVICE_TYPE = [
+    ('WS' , 'WORKSHOP'),
+    ('TK'  , 'TALK')
+]
+
+
+class Presenter(models.Model):
+    first_name = models.CharField(max_length=30,blank=False)
+    last_name = models.CharField(max_length=30 , blank=False)
+    email = models.EmailField(blank=True , null=True)
+    descriptions = models.TextField()
+    linked_in = models.URLField(blank=True)
+
+
+    class Meta:
+        unique_together = ('first_name' , 'last_name')
+
+    def __str__(self):
+        return f'{self.last_name} {self.first_name}'
 
 class Talk(models.Model):
+    title = models.CharField(max_length=100 , blank=False)
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
-    register_desc = models.TextField(blank=False)
+    capacity = models.IntegerField(blank=False)
+    participant_count = models.IntegerField()
+    presenters = models.ForeignKey(Presenter, on_delete=models.PROTECT , null=True)
+    presentation_link = models.URLField(blank=True)
 
-class Competition(models.Model):
-    date = models.DateTimeField(blank=False)
-    content = models.TextField(blank=False)
-    register_desc = models.TextField(blank=False)
+    def __str__(self):
+        return self.title
+
 
 class Workshop(models.Model):
+    title = models.CharField(max_length=100 , blank=False) 
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
-    register_desc = models.TextField(blank=False)
+    capacity = models.IntegerField(blank=False)
+    participant_count = models.IntegerField()
+    presenters = models.ForeignKey(Presenter , on_delete=models.PROTECT , null=True)
+    presentation_link = models.URLField(blank=True)
 
-
-class GDUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = models.CharField(validators=[PhoneValidator()], max_length=32, blank=False)
-    talks = models.ManyToManyField(Talk)
-    competitions = models.ManyToManyField(Competition)
-    workshops = models.ManyToManyField(Workshop)
     def __str__(self):
-        return self.user.username
+        return self.title
+
+
+class EventService(models.Model):
+    payment_state = models.CharField(
+        max_length=2,
+        choices=PAYMENT_STATES,
+        default='PN'
+    )
+    service = models.CharField(
+        max_length=2,
+        choices=SERVICE_TYPE,
+        blank=False
+    )
+    talk = models.ForeignKey(Talk , blank=True , on_delete=models.CASCADE)
+    workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE)
+
+

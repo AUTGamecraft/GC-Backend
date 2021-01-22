@@ -1,0 +1,6 @@
+Hello dear {{first_name|safe}}
+
+Here is your activation credential:
+{% url 'activation' uid=uid %}
+
+Thank you!!!
