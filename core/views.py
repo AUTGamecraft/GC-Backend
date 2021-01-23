@@ -117,3 +117,48 @@ class UserServicesViewSet(viewsets.GenericViewSet):
             return Response(data.data)
         except EventService.DoesNotExist:
             return Http404
+
+
+class CompetitionsViewSet(viewsets.ModelViewSet):
+    queryset = Competition.objects.all()
+    serializer_class = CompetitionPageSerializer
+    # set permission for built_in routes
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [AllowAny],
+        'retrive': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }
+
+    
+    @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
+    def enroll(self, request, pk):
+        competition = get_object_or_404(Competition, pk=pk)
+        user = request.user
+        service_type = 'TK'
+        ev_service = EventService.objects.create(
+            competition=competition,
+            service=service_type
+        )
+        user.service_set.add(ev_service)
+        user.save()
+        data = {'message': 'competition successfully added'}
+        return Response(data=data)
+    
+    @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
+    def services(self, request, pk):
+        try:
+            services = EventService.objects.filter(competition__pk=pk)
+            serialzer = EventServiceSerializer(services, many=True)
+            return Response(data=seralizer.data)
+        except EventService.DoesNotExist:
+            return Http404
+
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]
