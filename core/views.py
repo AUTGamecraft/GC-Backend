@@ -4,7 +4,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import *
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+    AllowAny
+)
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
@@ -15,6 +19,14 @@ from collections import defaultdict
 class TalkViewSet(viewsets.ModelViewSet):
     queryset = Talk.objects.all()
     serializer_class = TalksPageSerializer
+    # set permission for built_in routes
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [AllowAny],
+        'retrive': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def enroll(self, request, pk):
@@ -30,20 +42,35 @@ class TalkViewSet(viewsets.ModelViewSet):
         data = {'message': 'talk successfully added'}
         return Response(data=data)
 
-    @action(methods=['GET'] , detail=True , permission_classes=[IsAdminUser])
-    def services(self , request , pk):
+    @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
+    def services(self, request, pk):
         try:
             services = EventService.objects.filter(talk__pk=pk)
-            serialzer = EventServiceSerializer(services , many=True)
+            serialzer = EventServiceSerializer(services, many=True)
             return Response(data=seralizer.data)
         except EventService.DoesNotExist:
             return Http404
 
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]
 
 
 class WorkshopViewSet(viewsets.ModelViewSet):
     queryset = Workshop.objects.all()
     serializer_class = WorkshopPageSerializer
+    # set permission for built_in routes
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [AllowAny],
+        'retrive': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def enroll(self, request, pk):
@@ -59,31 +86,34 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         data = {'message': 'workshop successfully added'}
         return Response(data=data)
 
-    @action(methods=['GET'] , detail=True , permission_classes=[IsAdminUser])
-    def services(self , request , pk):
+    @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
+    def services(self, request, pk):
         try:
             services = EventService.objects.filter(workshop__pk=pk)
-            serialzer = EventServiceSerializer(services , many=True)
+            serialzer = EventServiceSerializer(services, many=True)
             return Response(data=seralizer.data)
         except EventService.DoesNotExist:
             return Http404
 
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]
 
 
 class UserServicesViewSet(viewsets.GenericViewSet):
-    permission_classes=[IsAuthenticated,IsAdminUser]
-    queryset=EventService.objects.all()
-    serializer_class=EventServiceSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = EventService.objects.all()
+    serializer_class = EventServiceSerializer
 
-    @action(methods=['GET'] , detail=False,permission_classes=[IsAuthenticated])
-    def services(self , request):
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def services(self, request):
         try:
             services = EventService.objects.filter(user=user)
-            data = EventServiceSerializer(services,many=True)
+            data = EventServiceSerializer(services, many=True)
             return Response(data.data)
         except EventService.DoesNotExist:
             return Http404
-
-
-    
-
