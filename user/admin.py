@@ -42,6 +42,11 @@ class UserAdminConfig(UserAdmin):
         ('permissions' , {'fields' : ('is_staff','is_active')}),
         ('personal',{'fields':('phone_number','about')}),
     )
+    add_fieldsets = (
+        (None , {'fields' : ('email','user_name','first_name')}),
+        ('permissions' , {'fields' : ('is_staff','is_active')}),
+        ('personal',{'fields':('phone_number','about')}),
+    )
 
 
 admin.site.register(SiteUser , UserAdminConfig)
