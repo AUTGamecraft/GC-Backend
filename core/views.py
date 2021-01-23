@@ -16,6 +16,19 @@ class TalkViewSet(viewsets.ModelViewSet):
     queryset = Talk.objects.all()
     serializer_class = TalksPageSerializer
 
+    @action(methods=['POST'], detail=False,url_path='all')
+    def all_talks(self, request):
+        """
+         get all talks without autheticate
+        """
+        x=self.serializer_class(self.queryset,many=True)
+        # x.data.pop('services')
+        data_set=x.data
+        for item in data_set:
+            item.pop('services')
+        return Response(data=data_set)
+
+
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def enroll(self, request, pk):
         talk = get_object_or_404(Talk, pk=pk)
