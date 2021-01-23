@@ -9,7 +9,14 @@ PAYMENT_STATES = [
 
 SERVICE_TYPE = [
     ('WS' , 'WORKSHOP'),
-    ('TK'  , 'TALK')
+    ('TK'  , 'TALK'),
+    ('CP' , 'COMPETITION')
+]
+
+LEVEL = [
+    ('BG' , 'BEGINNER'),
+    ('IM' , 'INTERMEDIATE'),
+    ('EX' , 'EXPERT')
 ]
 
 
@@ -35,9 +42,7 @@ class Talk(models.Model):
     participant_count = models.IntegerField()
     presenter = models.ForeignKey(Presenter, on_delete=models.PROTECT , null=True)
     presentation_link = models.URLField(blank=True)
-
-    def get_presenter(self):
-        return self.presenter
+    level = models.CharField(choices=LEVEL , default='BG')
 
     def get_total_services(self):
         return self.services.count()
@@ -46,9 +51,8 @@ class Talk(models.Model):
         return self.services.all()
 
     def get_remain_capacity(self):
-        registered_user=self.services.filter(payment_state='CM').count()
+        registered_user=self.services.filter(payment__state='CM').count()
         return self.capacity -int(registered_user)
-
 
     def __str__(self):
         return self.title
@@ -62,10 +66,31 @@ class Workshop(models.Model):
     participant_count = models.IntegerField()
     presenter = models.ForeignKey(Presenter , on_delete=models.PROTECT , null=True)
     presentation_link = models.URLField(blank=True)
+    level = models.CharField(choices=LEVEL , default='BG')
 
+    def get_total_services(self):
+        return self.services.count()
+
+    def get_services(self):
+        return self.services.all()
+
+    def get_remain_capacity(self):
+        registered_user=self.services.filter(payment__state='CM').count()
+        return self.capacity -int(registered_user)
 
     def __str__(self):
         return self.title
+
+class Competition(models.Model):
+    title = models.CharField(max_length=30 , blank=False , unique=True)
+    start_date = models.DateTimeField(auto_now=True,blank=False)
+    end_date = models.DateTimeField(auto_now=True,blank=False)
+    description = models.TextField()
+
+    # overrided for constraints
+    def clean(self):
+        if self.start_date >= self.end_date:
+            raise ValidationError('Start date is after end date')
 
 
 class EventService(models.Model):
@@ -79,17 +104,10 @@ class EventService(models.Model):
         choices=SERVICE_TYPE,
         blank=False
     )
-    talk = models.ForeignKey(Talk , blank=True , on_delete=models.CASCADE,null=True,related_name='services')
-    workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE,null=True)
-
-    user = models.ForeignKey(AUTH_MODEL_USER, on_delete=models.PROTECT, blank=True, null=True,related_name='services')
+    talk = models.ForeignKey(Talk , blank=True , on_delete=models.CASCADE,related_name='services')
+    workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE,related_name='services')
+    competion = models.ForeignKey(Competition , blank=True , on_delete=models.CASCADE,related_name='services')
+    user = models.ForeignKey(AUTH_MODEL_USER, on_delete=models.CASCADE, blank=True,related_name='services')
 
     def __str__(self):
         return self.user.user_name +'__'+self.service+'__'+self.payment_state
-
-
-
-
-
-
-
