@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf.settings import AUTH_MODEL_USER
+from django.conf import settings
 
 PAYMENT_STATES = [
     ('CM', 'COMPLETED'),
@@ -43,7 +43,7 @@ class Talk(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(choices=LEVEL, default='BG')
+    level = models.CharField(max_length=2,choices=LEVEL, default='BG')
 
     def get_total_services(self):
         return self.services.count()
@@ -68,7 +68,7 @@ class Workshop(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(choices=LEVEL, default='BG')
+    level = models.CharField(max_length=2,choices=LEVEL, default='BG')
 
     def get_total_services(self):
         return self.services.count()
@@ -108,13 +108,13 @@ class EventService(models.Model):
         blank=False
     )
     talk = models.ForeignKey(
-        Talk, blank=True, on_delete=models.CASCADE, related_name='services')
+        Talk, on_delete=models.CASCADE, null=True , related_name='services')
     workshop = models.ForeignKey(
-        Workshop, blank=True, on_delete=models.CASCADE, related_name='services')
+        Workshop, on_delete=models.CASCADE, null=True , related_name='services')
     competion = models.ForeignKey(
-        Competition, blank=True, on_delete=models.CASCADE, related_name='services')
+        Competition, on_delete=models.CASCADE, null=True , related_name='services')
     user = models.ForeignKey(
-        AUTH_MODEL_USER, on_delete=models.CASCADE, blank=True, related_name='services')
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=False , null=True , related_name='services')
 
     def __str__(self):
         return self.user.user_name + '__'+self.service+'__'+self.payment_state
