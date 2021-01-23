@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 
-from core.models import (
-    EventService
-)
+
 
 class PhoneValidator(RegexValidator):
     regex = r'^(\+98|0)?9\d{9}$'
@@ -79,7 +77,6 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     
     # event informations
     phone_number = models.CharField(_("phone number"),validators=[PhoneValidator()], max_length=32 , blank=False,null=False)
-    service = models.ForeignKey(EventService, on_delete=models.PROTECT , blank=True , null=True)
 
     objects = CustomAccountManager()
 
