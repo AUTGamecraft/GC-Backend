@@ -131,7 +131,6 @@ class CompetitionsViewSet(viewsets.ModelViewSet):
         'update': [IsAdminUser],
     }
 
-    
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def enroll(self, request, pk):
         competition = get_object_or_404(Competition, pk=pk)
@@ -145,7 +144,7 @@ class CompetitionsViewSet(viewsets.ModelViewSet):
         user.save()
         data = {'message': 'competition successfully added'}
         return Response(data=data)
-    
+
     @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
     def services(self, request, pk):
         try:
