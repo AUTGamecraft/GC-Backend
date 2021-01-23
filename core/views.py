@@ -30,6 +30,16 @@ class TalkViewSet(viewsets.ModelViewSet):
         data = {'message': 'talk successfully added'}
         return Response(data=data)
 
+    @action(methods=['GET'] , detail=True , permission_classes=[IsAdminUser])
+    def services(self , request , pk):
+        try:
+            services = EventService.objects.filter(talk__pk=pk)
+            serialzer = EventServiceSerializer(services , many=True)
+            return Response(data=seralizer.data)
+        except EventService.DoesNotExist:
+            return Http404
+
+
 
 class WorkshopViewSet(viewsets.ModelViewSet):
     queryset = Workshop.objects.all()
@@ -49,6 +59,17 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         data = {'message': 'workshop successfully added'}
         return Response(data=data)
 
+    @action(methods=['GET'] , detail=True , permission_classes=[IsAdminUser])
+    def services(self , request , pk):
+        try:
+            services = EventService.objects.filter(workshop__pk=pk)
+            serialzer = EventServiceSerializer(services , many=True)
+            return Response(data=seralizer.data)
+        except EventService.DoesNotExist:
+            return Http404
+
+
+
 class UserServicesViewSet(viewsets.GenericViewSet):
     permission_classes=[IsAuthenticated,IsAdminUser]
     queryset=EventService.objects.all()
@@ -64,5 +85,5 @@ class UserServicesViewSet(viewsets.GenericViewSet):
             return Http404
 
 
-
+    
 
