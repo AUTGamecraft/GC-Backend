@@ -13,25 +13,39 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = '__all__'
-
-class TalksPageSerializer(serializers.ModelSerializer):
-    presenters =serializers.ReadOnlyField(source='presenter_set')
-    class Meta:
-        model = Talk
-        fields = ['capacity','date','content','title','participant_count']
-
-class WorkshopPageSerializer(serializers.ModelSerializer):
-    presenters =serializers.ReadOnlyField(source='presenter_set')
-    class Meta:
-        model = Workshop
-        fields = ['capacity','date','content','title','participant_count']
-
 class EventServiceSerialzer(serializers.ModelSerializer):
-    talk = serializers.ReadOnlyField(source='talk.pk')
-    workshop = serializers.ReadOnlyField(source = 'workshop.pk')
+
     class Meta:
         model = EventService
-        fields = ['payment_state' , 'service']
+        fields = '__all__'
+
+class TalksPageSerializer(serializers.ModelSerializer):
+
+    def get_remain_capacity(self,obj):
+        return obj.get_remain_capacity()
+
+    remain_capacity=serializers.SerializerMethodField()
+
+    presenter=PresenterSerializer()
+    services= EventServiceSerialzer(many=True)
+
+    class Meta:
+        model = Talk
+        fields = ['capacity','date','content','title','remain_capacity',
+                  'participant_count','presenter','services','pk']
+        extra_kwargs = {'pk': {'read_only': True}}
+
+class WorkshopPageSerializer(serializers.ModelSerializer):
+    presenter = PresenterSerializer()
+    services = EventServiceSerialzer(many=True)
+
+    class Meta:
+        model = Workshop
+        fields = ['capacity', 'date', 'content', 'title',
+                  'participant_count', 'presenter', 'services', 'pk']
+        extra_kwargs = {'pk': {'read_only': True}}
+
+
 
 
 
