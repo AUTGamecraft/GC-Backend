@@ -24,11 +24,8 @@ class TalksPageSerializer(serializers.ModelSerializer):
 
     def get_remain_capacity(self,obj):
         return obj.get_remain_capacity()
-
     remain_capacity=serializers.SerializerMethodField()
-
     presenter=PresenterSerializer()
-    services= EventServiceSerialzer(many=True)
 
     class Meta:
         model = Talk
