@@ -20,6 +20,7 @@ class TalkViewSet(viewsets.ModelViewSet):
     def all_talks(self, request):
         """
          get all talks without autheticate
+         (in ezafs method baraye list hastesh)
         """
         x=self.serializer_class(self.queryset,many=True)
         # x.data.pop('services')
@@ -61,3 +62,22 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         user.save()
         data = {'message': 'workshop successfully added'}
         return Response(data=data)
+
+class UserServicesViewSet(viewsets.GenericViewSet):
+    permission_classes=[IsAuthenticated,IsAdminUser]
+    queryset=EventService.objects.all()
+    serializer_class=EventServiceSerializer
+
+    @action(methods=['GET'] , detail=False,permission_classes=[IsAuthenticated])
+    def services(self , request):
+        try:
+            services = EventService.objects.filter(user=user)
+            data = EventServiceSerializer(services,many=True)
+            return Response(data.data)
+        except EventService.DoesNotExist:
+            return Http404
+
+    
+
+
+

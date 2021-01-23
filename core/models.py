@@ -1,7 +1,5 @@
 from django.db import models
-from django.core.validators import RegexValidator
-
-from user.models import SiteUser
+from django.conf.settings import AUTH_MODEL_USER
 
 PAYMENT_STATES = [
     ('CM' , 'COMPLETED'),
@@ -84,7 +82,7 @@ class EventService(models.Model):
     talk = models.ForeignKey(Talk , blank=True , on_delete=models.CASCADE,null=True,related_name='services')
     workshop = models.ForeignKey(Workshop , blank=True , on_delete=models.CASCADE,null=True)
 
-    user = models.ForeignKey(SiteUser, on_delete=models.PROTECT, blank=True, null=True,related_name='services')
+    user = models.ForeignKey(AUTH_MODEL_USER, on_delete=models.PROTECT, blank=True, null=True,related_name='services')
 
     def __str__(self):
         return self.user.user_name +'__'+self.service+'__'+self.payment_state

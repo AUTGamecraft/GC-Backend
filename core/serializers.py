@@ -13,8 +13,9 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = '__all__'
-class EventServiceSerialzer(serializers.ModelSerializer):
-
+class EventServiceSerializer(serializers.ModelSerializer):
+    talk_title = serializers.ReadOnlyField(source='talk.title')
+    workshop_title = serializers.ReadOnlyField(source='workshop.title')
     class Meta:
         model = EventService
         fields = '__all__'
@@ -37,8 +38,6 @@ class TalksPageSerializer(serializers.ModelSerializer):
 
 class WorkshopPageSerializer(serializers.ModelSerializer):
     presenter = PresenterSerializer()
-    services = EventServiceSerialzer(many=True)
-
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title',
@@ -47,19 +46,3 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
-
-
-
-
-# # class GDUserSerializer(serializers.ModelSerializer):
-# #     class Meta:
-# #         model= GDUser
-# #         fields=['user_name','phone_number','talks','workshops']
-
-# #     user_name = serializers.SerializerMethodField('get_user_name')
-
-# #     def get_user_name(self, obj):
-# #         return obj.user.user_name
