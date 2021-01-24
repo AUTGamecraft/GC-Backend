@@ -32,8 +32,8 @@ class TalksPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Talk
         fields = ['capacity','date','content','title','remain_capacity',
-                  'participant_count','presenter','services','pk']
-        extra_kwargs = {'pk': {'read_only': True}}
+                  'participant_count','presenter','pk']
+        extra_kwargs = {'pk': {'read_only': True},}
 
 class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self,obj):
@@ -44,7 +44,7 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title',
-                  'participant_count', 'presenter', 'services', 'pk']
+                  'participant_count', 'presenter', 'pk']
         extra_kwargs = {'pk': {'read_only': True}}
 
 
