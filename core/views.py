@@ -47,7 +47,7 @@ class TalkViewSet(viewsets.ModelViewSet):
         try:
             services = EventService.objects.filter(talk__pk=pk)
             serialzer = EventServiceSerializer(services, many=True)
-            return Response(data=seralizer.data)
+            return Response(data=serialzer.data)
         except EventService.DoesNotExist:
             return Http404
 
