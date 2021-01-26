@@ -4,4 +4,5 @@ static_in_env
 htmlcov
 db.sqlite3
 .coverage
-*/__pycache__/*
+**/__pycache__/*
+*.pyc
