@@ -38,7 +38,8 @@ class UserViewSet(viewsets.GenericViewSet):
             try:
                 user = serializer.save()
             except IntegrityError as e:
-                return Response('conflict', status=status.HTTP_409_CONFLICT)
+                data={'message':'conflict'}
+                return Response(data=data, status=status.HTTP_409_CONFLICT)
             if user:
                 data = {
                     'message':'user created'
