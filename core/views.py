@@ -172,3 +172,15 @@ class CompetitionsViewSet(viewsets.ModelViewSet):
         except KeyError:
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]
+
+class PresenterViweSet(viewsets.ModelViewSet):
+    queryset = Presenter.objects.all()
+    serializer_class = PresenterSerializer
+    # set permission for built_in routes
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [IsAdminUser],
+        'retrive': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }
