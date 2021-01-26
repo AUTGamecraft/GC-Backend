@@ -47,6 +47,7 @@ class Talk(models.Model):
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG',max_length=2)
+    cost=models.IntegerField(blank=False)
 
     def get_total_services(self):
         return self.services.count()
@@ -72,6 +73,7 @@ class Workshop(models.Model):
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG',max_length=2)
+    cost=models.IntegerField(blank=False)
 
     def get_total_services(self):
         return self.services.count()
@@ -105,7 +107,7 @@ class EventService(models.Model):
         choices=PAYMENT_STATES,
         default='PN'
     )
-    service = models.CharField(
+    service_type = models.CharField(
         max_length=2,
         choices=SERVICE_TYPE,
         blank=False
@@ -120,4 +122,4 @@ class EventService(models.Model):
         AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services',null=True)
 
     def __str__(self):
-        return self.user.user_name + '__'+self.service+'__'+self.payment_state
+        return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)
