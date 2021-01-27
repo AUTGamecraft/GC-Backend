@@ -126,14 +126,13 @@ class ServicesModelViewSet(ResponseModelViewSet):
 
             ev_service = EventService.objects.create(**args)
             ev_service.save()
-            data = {'message': }
             return self.set_response(
                 message=f'{model_name} successfully added',
                 data=EventServiceSerializer(ev_service).data,
             )
         except self.model.DoesNotExist:
             return self.set_response(
-                message=f"requested {model_name} doesn't exist"
+                message=f"requested {model_name} doesn't exist",
                 error=True,
                 status=404,
                 status_code=status.HTTP_404_NOT_FOUND

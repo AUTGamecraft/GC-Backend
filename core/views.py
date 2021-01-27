@@ -37,8 +37,8 @@ class WorkshopViewSet(ServicesModelViewSet):
 class CompetitionsViewSet(ServicesModelViewSet):
     queryset = Competition.objects.all()
     serializer_class = CompetitionPageSerializer
-    model = Competition
     service_type = 'CP'
+    model = Competition
    
 
 class UserServicesViewSet(ResponseGenericViewSet):
