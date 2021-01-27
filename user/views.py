@@ -29,7 +29,7 @@ class UserViewSet(viewsets.GenericViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = CustomUserSerializer
 
-    @action(methods=['POST'] , detail=False)
+    @action(methods=['POST'] , detail=False,)
     def sign_up(self, request ):
 
         serializer = CustomUserSerializer(data = request.data)
@@ -38,11 +38,13 @@ class UserViewSet(viewsets.GenericViewSet):
             try:
                 user = serializer.save()
             except IntegrityError as e:
-                data={'message':'conflict'}
+                data={'message':None,
+                      'error':'conflict'}
                 return Response(data=data, status=status.HTTP_409_CONFLICT)
             if user:
                 data = {
-                    'message':'user created'
+                    'message':'success! user created . \ncheck email to activate',
+                    'error':None
                 }
                 user_data={
                     'user_name':user.user_name,
@@ -50,10 +52,28 @@ class UserViewSet(viewsets.GenericViewSet):
                     'email':user.email,
                     'pk':user.pk
                 }
-                send_email_task.delay(user_data)
+                # send_email_task.delay(user_data)
                 return Response(data=data , status=status.HTTP_201_CREATED)
-        return  Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST) 
+        return  Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
 
+    @action(methods=['GET'], detail=False,permission_classes=[IsAuthenticated])
+    def profile(self, request):
+        try:
+            user=request.user
+            serializer=CustomUserSerializer(user)
+            response_dict={
+                'message':None,
+                'data':serializer.data,
+                'error':None
+            }
+            return Response(data=response_dict,status=status.HTTP_200_OK)
+        except Exception as e:
+            response_dict = {
+                'message': None,
+                'data': None,
+                'error': 'auth faild'
+            }
+            return Response(data=response_dict,status=status.HTTP_400_BAD_REQUEST)
     
     @action(methods=['POST'] , detail=False)
     def log_out(self,request):
