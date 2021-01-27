@@ -39,24 +39,25 @@ class UserViewSet(ResponseGenericViewSet):
                 user = serializer.save()
             except IntegrityError as e:
                 return self.set_response(
-                    message=str(e),
+                    message="account with this email already exists",
                     status=409,
-                    status_code=status.HTTP_409_CONFLICT
+                    status_code=status.HTTP_409_CONFLICT,
+                    error=str((e))
                 )
             if user:
                 # send_email_task.delay(user_data)
                 return self.set_response(
-                    message= 'user created',
+                    message= 'user created successfully',
                     status=201,
                     status_code=status.HTTP_201_CREATED,
-                    error=False,
+                    error=None,
                     data=serializer.data
                 )
         return self.set_response(
-            message=str(serializer.errors),
+            message="Please correct the errors",
             status=400,
             status_code=status.HTTP_400_BAD_REQUEST,
-            error=True
+            error=serializer.errors
         ) 
         
 
@@ -73,13 +74,15 @@ class UserViewSet(ResponseGenericViewSet):
                 status_code=status.HTTP_205_RESET_CONTENT,
                 data={
                     'refresh_token':str(refresh_token)
-                }
+                },
+                error=None
             )
         except Exception as e:
             return self.set_response(
-                message=str(e),
+                message='log out faild',
                 status=400,
-                status_code=status.HTTP_400_BAD_REQUEST
+                status_code=status.HTTP_400_BAD_REQUEST,
+                error=str(e)
             )
 
 

@@ -22,18 +22,18 @@ class ResponseInfo(object):
     def __init__(self, user=None, **args):
         self.response = {
             "status": args.get('status', 200),
-            "error": args.get('error', False),
+            "error": args.get('error', None),
             "data": args.get('data', []),
-            "message": args.get('message', 'success')
+            "message": args.get('message', None)
         }
 
 
 class ResponseGenericViewSet(viewsets.GenericViewSet):
     def __init__(self, **kwargs):
         self.response_format = ResponseInfo().response
-        super(ResponseModelViewSet, self).__init__(**kwargs)
+        super(viewsets.GenericViewSet, self).__init__(**kwargs)
 
-    def set_response(message="", error=False, data=[], status=200, status_code=status.HTTP_200_OK):
+    def set_response(self,message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
         self.response_format['message'] = message
         self.response_format['error'] = error
         self.response_format['data'] = data
@@ -87,7 +87,7 @@ class ResponseModelViewSet(viewsets.ModelViewSet):
         self.response_format["status"] = 200
         return Response(self.response_format)
 
-    def set_response(message="", error=False, data=[], status=200, status_code=status.HTTP_200_OK):
+    def set_response(self,message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
         self.response_format['message'] = message
         self.response_format['error'] = error
         self.response_format['data'] = data
