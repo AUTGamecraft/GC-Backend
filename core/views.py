@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework import status
+
+import user
 from .models import *
 from .serializers import *
 from rest_framework.permissions import (
@@ -33,12 +35,15 @@ class TalkViewSet(viewsets.ModelViewSet):
         talk = get_object_or_404(Talk, pk=pk)
         user = request.user
         service_type = 'TK'
+        exists_query=EventService.objects.filter(user=user,talk=talk)
+        if exists_query.exists():
+            data = {'message': 'this user already enrolled '}
+            return Response(data=data,status=status.HTTP_208_ALREADY_REPORTED)
         ev_service = EventService.objects.create(
             talk=talk,
-            service=service_type
+            service_type=service_type,
+            user=user
         )
-        user.service_set.add(ev_service)
-        user.save()
         data = {'message': 'talk successfully added'}
         return Response(data=data)
 
@@ -47,9 +52,11 @@ class TalkViewSet(viewsets.ModelViewSet):
         try:
             services = EventService.objects.filter(talk__pk=pk)
             serialzer = EventServiceSerializer(services, many=True)
-            return Response(data=seralizer.data)
+            return Response(data=serialzer.data)
         except EventService.DoesNotExist:
             return Http404
+
+
 
     def get_permissions(self):
         try:
@@ -77,12 +84,15 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         workshop = get_object_or_404(Workshop, pk=pk)
         user = request.user
         service_type = 'WS'
+        exists_query = EventService.objects.filter(user=user, workshop=workshop)
+        if exists_query.exists():
+            data = {'message': 'this user already enrolled '}
+            return Response(data=data, status=status.HTTP_208_ALREADY_REPORTED)
         ev_service = EventService.objects.create(
             workshop=workshop,
-            service=service_type
+            service_type=service_type,
+            user=user
         )
-        user.service_set.add(ev_service)
-        user.save()
         data = {'message': 'workshop successfully added'}
         return Response(data=data)
 
@@ -91,7 +101,7 @@ class WorkshopViewSet(viewsets.ModelViewSet):
         try:
             services = EventService.objects.filter(workshop__pk=pk)
             serialzer = EventServiceSerializer(services, many=True)
-            return Response(data=seralizer.data)
+            return Response(data=serialzer.data)
         except EventService.DoesNotExist:
             return Http404
 
@@ -112,6 +122,7 @@ class UserServicesViewSet(viewsets.GenericViewSet):
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def services(self, request):
         try:
+            user=request.user
             services = EventService.objects.filter(user=user)
             data = EventServiceSerializer(services, many=True)
             return Response(data.data)
@@ -150,7 +161,7 @@ class CompetitionsViewSet(viewsets.ModelViewSet):
         try:
             services = EventService.objects.filter(competition__pk=pk)
             serialzer = EventServiceSerializer(services, many=True)
-            return Response(data=seralizer.data)
+            return Response(data=serialzer.data)
         except EventService.DoesNotExist:
             return Http404
 
@@ -161,3 +172,15 @@ class CompetitionsViewSet(viewsets.ModelViewSet):
         except KeyError:
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]
+
+class PresenterViweSet(viewsets.ModelViewSet):
+    queryset = Presenter.objects.all()
+    serializer_class = PresenterSerializer
+    # set permission for built_in routes
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [IsAdminUser],
+        'retrive': [IsAdminUser],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }

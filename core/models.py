@@ -1,5 +1,8 @@
 from django.db import models
-from django.conf import settings
+from rest_framework.exceptions import ValidationError
+
+from GD.settings.base import AUTH_USER_MODEL
+
 
 PAYMENT_STATES = [
     ('CM', 'COMPLETED'),
@@ -43,7 +46,8 @@ class Talk(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(max_length=2,choices=LEVEL, default='BG')
+    level = models.CharField(choices=LEVEL, default='BG',max_length=2)
+    cost=models.IntegerField(blank=False)
 
     def get_total_services(self):
         return self.services.count()
@@ -52,7 +56,7 @@ class Talk(models.Model):
         return self.services.all()
 
     def get_remain_capacity(self):
-        registered_user = self.services.filter(payment__state='CM').count()
+        registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
 
     def __str__(self):
@@ -68,7 +72,8 @@ class Workshop(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(max_length=2,choices=LEVEL, default='BG')
+    level = models.CharField(choices=LEVEL, default='BG',max_length=2)
+    cost=models.IntegerField(blank=False)
 
     def get_total_services(self):
         return self.services.count()
@@ -77,7 +82,7 @@ class Workshop(models.Model):
         return self.services.all()
 
     def get_remain_capacity(self):
-        registered_user = self.services.filter(payment__state='CM').count()
+        registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
 
     def __str__(self):
@@ -102,19 +107,19 @@ class EventService(models.Model):
         choices=PAYMENT_STATES,
         default='PN'
     )
-    service = models.CharField(
+    service_type = models.CharField(
         max_length=2,
         choices=SERVICE_TYPE,
         blank=False
     )
     talk = models.ForeignKey(
-        Talk, on_delete=models.CASCADE, null=True , related_name='services')
+        Talk, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
     workshop = models.ForeignKey(
-        Workshop, on_delete=models.CASCADE, null=True , related_name='services')
+        Workshop, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
     competion = models.ForeignKey(
-        Competition, on_delete=models.CASCADE, null=True , related_name='services')
+        Competition, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=False , null=True , related_name='services')
+        AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services',null=True)
 
     def __str__(self):
-        return self.user.user_name + '__'+self.service+'__'+self.payment_state
+        return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)

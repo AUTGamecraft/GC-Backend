@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.permissions import (
@@ -30,9 +31,15 @@ class UserViewSet(viewsets.GenericViewSet):
 
     @action(methods=['POST'] , detail=False)
     def sign_up(self, request ):
+
         serializer = CustomUserSerializer(data = request.data)
+
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except IntegrityError as e:
+                data={'message':'conflict'}
+                return Response(data=data, status=status.HTTP_409_CONFLICT)
             if user:
                 data = {
                     'message':'user created'
