@@ -87,17 +87,24 @@ class VerfiyUserView(generics.GenericAPIView):
     permission_classes=[AllowAny]
     def post(self , request , uid):
         userid = force_text(urlsafe_base64_decode(uid))
-        
-        user = get_user_model().objects.get(pk=userid)
-        if user:
+        try:            
+            user = get_user_model().objects.get(pk=userid)
             user.is_active = True
             user.save()
-            message = {
-                'state': 'activated'
+            data = {
+                'message':'user activated',
+                'error':False,
+                'status':202,
+                'status_code': status.HTTP_202_ACCEPTED,
+                'data':CustomUserSerializer(user).data
             }
-            return Response(data=message , status=status.HTTP_202_ACCEPTED)
-        else:
-            message = {
-                'state' : 'not a valid user'
+            return Response(data=data , status=status.HTTP_202_ACCEPTED)
+        except get_user_model().DoesNotExist:
+            data = {
+                'message':'user not found',
+                'error':True,
+                'status':400,
+                'status_code': status.HTTP_400_BAD_REQUEST,
+                'data':[]
             }
-            return Response(data=message , status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=data , status=status.HTTP_400_BAD_REQUEST)
