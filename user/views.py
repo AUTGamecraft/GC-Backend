@@ -19,11 +19,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from tasks.tasks import send_email_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from core.viewsets import ResponseGenericViewSet
 
 
 
-
-class UserViewSet(viewsets.GenericViewSet):
+class UserViewSet(ResponseGenericViewSet):
 
     permission_classes = [AllowAny]
     queryset = get_user_model().objects.all()
@@ -38,21 +38,27 @@ class UserViewSet(viewsets.GenericViewSet):
             try:
                 user = serializer.save()
             except IntegrityError as e:
-                data={'message':'conflict'}
-                return Response(data=data, status=status.HTTP_409_CONFLICT)
+                return self.set_response(
+                    message=str(e),
+                    status=409,
+                    status_code=status.HTTP_409_CONFLICT
+                )
             if user:
-                data = {
-                    'message':'user created'
-                }
-                user_data={
-                    'user_name':user.user_name,
-                    'first_name':user.first_name,
-                    'email':user.email,
-                    'pk':user.pk
-                }
-                send_email_task.delay(user_data)
-                return Response(data=data , status=status.HTTP_201_CREATED)
-        return  Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST) 
+                # send_email_task.delay(user_data)
+                return self.set_response(
+                    message= 'user created',
+                    status=201,
+                    status_code=status.HTTP_201_CREATED,
+                    error=False,
+                    data=serializer.data
+                )
+        return self.set_response(
+            message=str(serializer.errors),
+            status=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            error=True
+        ) 
+        
 
     
     @action(methods=['POST'] , detail=False)
@@ -61,9 +67,20 @@ class UserViewSet(viewsets.GenericViewSet):
             refresh_token = request.data["refresh_token"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
+            return self.set_response(
+                message='user loged out successfully',
+                status=205,
+                status_code=status.HTTP_205_RESET_CONTENT,
+                data={
+                    'refresh_token':str(refresh_token)
+                }
+            )
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return self.set_response(
+                message=str(e),
+                status=400,
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class VerfiyUserView(generics.GenericAPIView):

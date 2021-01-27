@@ -33,6 +33,13 @@ class ResponseGenericViewSet(viewsets.GenericViewSet):
         self.response_format = ResponseInfo().response
         super(ResponseModelViewSet, self).__init__(**kwargs)
 
+    def set_response(message="", error=False, data=[], status=200, status_code=status.HTTP_200_OK):
+        self.response_format['message'] = message
+        self.response_format['error'] = error
+        self.response_format['data'] = data
+        self.response_format['status'] = status
+        return Response(self.response_format, status=status_code)
+
 
 class ResponseModelViewSet(viewsets.ModelViewSet):
 
