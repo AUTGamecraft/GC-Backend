@@ -4,12 +4,13 @@ from .views import (
     TalkViewSet,
     WorkshopViewSet,
     UserServicesViewSet,
+    PresenterViweSet
 )
 
 router = routers.SimpleRouter()
-router.register(r'talks' , TalkViewSet)
+router.register(r'talk' , TalkViewSet)
 router.register(r'workshop' , WorkshopViewSet)
-router.register('service',UserServicesViewSet)
-
+router.register(r'service',UserServicesViewSet)
+router.register(r'presenter',PresenterViweSet)
 
 urlpatterns = router.urls

@@ -19,17 +19,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from tasks.tasks import send_email_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from core.viewsets import ResponseGenericViewSet
 
 
 
-
-class UserViewSet(viewsets.GenericViewSet):
+class UserViewSet(ResponseGenericViewSet):
 
     permission_classes = [AllowAny]
     queryset = get_user_model().objects.all()
     serializer_class = CustomUserSerializer
 
-    @action(methods=['POST'] , detail=False,)
+    @action(methods=['POST'] , detail=False)
     def sign_up(self, request ):
 
         serializer = CustomUserSerializer(data = request.data)
@@ -38,42 +38,29 @@ class UserViewSet(viewsets.GenericViewSet):
             try:
                 user = serializer.save()
             except IntegrityError as e:
-                data={'message':None,
-                      'error':'conflict'}
-                return Response(data=data, status=status.HTTP_409_CONFLICT)
+                return self.set_response(
+                    message="account with this email already exists",
+                    status=409,
+                    status_code=status.HTTP_409_CONFLICT,
+                    error=str((e))
+                )
             if user:
-                data = {
-                    'message':'success! user created . \ncheck email to activate',
-                    'error':None
-                }
-                user_data={
-                    'user_name':user.user_name,
-                    'first_name':user.first_name,
-                    'email':user.email,
-                    'pk':user.pk
-                }
                 # send_email_task.delay(user_data)
-                return Response(data=data , status=status.HTTP_201_CREATED)
-        return  Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+                return self.set_response(
+                    message= 'user created successfully',
+                    status=201,
+                    status_code=status.HTTP_201_CREATED,
+                    error=None,
+                    data=serializer.data
+                )
+        return self.set_response(
+            message="Please correct the errors",
+            status=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            error=serializer.errors
+        ) 
+        
 
-    @action(methods=['GET'], detail=False,permission_classes=[IsAuthenticated])
-    def profile(self, request):
-        try:
-            user=request.user
-            serializer=CustomUserSerializer(user)
-            response_dict={
-                'message':None,
-                'data':serializer.data,
-                'error':None
-            }
-            return Response(data=response_dict,status=status.HTTP_200_OK)
-        except Exception as e:
-            response_dict = {
-                'message': None,
-                'data': None,
-                'error': 'auth faild'
-            }
-            return Response(data=response_dict,status=status.HTTP_400_BAD_REQUEST)
     
     @action(methods=['POST'] , detail=False)
     def log_out(self,request):
@@ -81,26 +68,46 @@ class UserViewSet(viewsets.GenericViewSet):
             refresh_token = request.data["refresh_token"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
+            return self.set_response(
+                message='user loged out successfully',
+                status=205,
+                status_code=status.HTTP_205_RESET_CONTENT,
+                data={
+                    'refresh_token':str(refresh_token)
+                },
+                error=None
+            )
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return self.set_response(
+                message='log out faild',
+                status=400,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                error=str(e)
+            )
 
 
 class VerfiyUserView(generics.GenericAPIView):
     permission_classes=[AllowAny]
     def post(self , request , uid):
         userid = force_text(urlsafe_base64_decode(uid))
-        
-        user = get_user_model().objects.get(pk=userid)
-        if user:
+        try:            
+            user = get_user_model().objects.get(pk=userid)
             user.is_active = True
             user.save()
-            message = {
-                'state': 'activated'
+            data = {
+                'message':'user activated',
+                'error':False,
+                'status':202,
+                'status_code': status.HTTP_202_ACCEPTED,
+                'data':CustomUserSerializer(user).data
             }
-            return Response(data=message , status=status.HTTP_202_ACCEPTED)
-        else:
-            message = {
-                'state' : 'not a valid user'
+            return Response(data=data , status=status.HTTP_202_ACCEPTED)
+        except get_user_model().DoesNotExist:
+            data = {
+                'message':'user not found',
+                'error':True,
+                'status':400,
+                'status_code': status.HTTP_400_BAD_REQUEST,
+                'data':[]
             }
-            return Response(data=message , status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=data , status=status.HTTP_400_BAD_REQUEST)

@@ -46,8 +46,12 @@ class Talk(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(choices=LEVEL, default='BG',max_length=2)
-    cost=models.IntegerField(blank=False)
+    level = models.CharField(choices=LEVEL, default='BG', max_length=2)
+    cost = models.FloatField(blank=False, default=0)
+
+    def clean(self):
+        if self.cost < 0:
+            raise ValidationError("cost cann't be a negative number.")
 
     def get_total_services(self):
         return self.services.count()
@@ -72,8 +76,12 @@ class Workshop(models.Model):
     presenter = models.ForeignKey(
         Presenter, on_delete=models.PROTECT, null=True)
     presentation_link = models.URLField(blank=True)
-    level = models.CharField(choices=LEVEL, default='BG',max_length=2)
-    cost=models.IntegerField(blank=False)
+    level = models.CharField(choices=LEVEL, default='BG', max_length=2)
+    cost = models.FloatField(blank=False, default=0)
+
+    def clean(self):
+        if self.cost < 0:
+            raise ValidationError("cost cann't be a negative number.")
 
     def get_total_services(self):
         return self.services.count()
@@ -98,7 +106,7 @@ class Competition(models.Model):
     # overrided for constraints
     def clean(self):
         if self.start_date >= self.end_date:
-            raise ValidationError('Start date is after end date')
+            raise ValidationError('Start date is after end date.')
 
 
 class EventService(models.Model):
@@ -113,13 +121,13 @@ class EventService(models.Model):
         blank=False
     )
     talk = models.ForeignKey(
-        Talk, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
+        Talk, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     workshop = models.ForeignKey(
-        Workshop, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
+        Workshop, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     competion = models.ForeignKey(
-        Competition, blank=True, on_delete=models.CASCADE, related_name='services',null=True)
+        Competition, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     user = models.ForeignKey(
-        AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services',null=True)
+        AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services', null=True)
 
     def __str__(self):
         return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)

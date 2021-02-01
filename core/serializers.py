@@ -77,7 +77,10 @@ class TalksPageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         presenter_id=self.initial_data['presenter_id']
-        p=Presenter.objects.get(id=presenter_id)
+        try:
+            p=Presenter.objects.get(id=presenter_id)
+        except  Presenter.DoesNotExist:
+            raise  serializers.ValidationError("no any presenter with this id")
         talk=Talk(**validated_data)
         talk.presenter=p
         talk.save()
