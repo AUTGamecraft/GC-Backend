@@ -20,9 +20,9 @@ RUN chmod +x /scripts/*
 RUN mkdir -p /vol/web/media
 RUN mkdir -p /vol/web/static
 
+
+
 RUN adduser -D ali
-RUN chown -R ali:ali /app/db.sqlite3
-RUN chmod -R 755 /app/db.sqlite3
 USER ali
 
 CMD ["entrypoint.sh"]

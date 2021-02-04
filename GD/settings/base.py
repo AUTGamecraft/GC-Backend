@@ -166,6 +166,5 @@ LOGGING = {
 }
 
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER','redis://redis:6379/0')
-CELERY_BROKER_BACKEND = os.environ.get('CELERY_BROKER','redis://redis:6379/0')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER','amqp://guest:guest@rabbitmq:5672/')
 
