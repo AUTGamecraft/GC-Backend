@@ -45,7 +45,13 @@ class UserViewSet(ResponseGenericViewSet):
                     error=str((e))
                 )
             if user:
-                # send_email_task.delay(user_data)
+                user_data={
+                    'user_name':user.user_name,
+                    'first_name':user.first_name,
+                    'email':user.email,
+                    'pk':user.pk
+                }
+                send_email_task.delay(user_data)
                 return self.set_response(
                     message= 'user created successfully',
                     status=201,

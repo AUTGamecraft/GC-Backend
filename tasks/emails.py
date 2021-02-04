@@ -20,4 +20,5 @@ def send_email(user):
         [user['email'],],
     )
     email.send(fail_silently=False)
+    print(user)
     return {'status':True}
