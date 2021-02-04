@@ -18,31 +18,31 @@ services:
 
   db:
     image: "postgres"
-    environment: 
+    environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes: 
-      - pgdata:/var/lib/posgresql/data
-    ports: 
+    volumes:
+      - /opt/data/post/:/var/lib/postgresql/data/
+    ports:
       - '5432:5432'
-      
+
 
 
   app:
-    build: 
+    build:
       context: .
       target: DJANGO_APP
     volumes:
-      - static_data:/vol/web
+      - /opt/data/static_data:/vol/web
       - .:/app
-    ports: 
+    ports:
       - '8000:8000'
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
       - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672/
-    
-    depends_on: 
+
+    depends_on:
       - rabbitmq
       - db
 
@@ -50,14 +50,9 @@ services:
   celery:
     build: .
     command : celery -A GD worker -l INFO
-    volumes: 
+    volumes:
       - .:/app
     env_file: .env
 
-    depends_on: 
+    depends_on:
       - rabbitmq
-
-
-volumes: 
-  pgdata:
-  static_data:
