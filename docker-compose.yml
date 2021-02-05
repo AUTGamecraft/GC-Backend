@@ -33,15 +33,14 @@ services:
       context: .
       target: DJANGO_APP
     volumes:
-      - /opt/data/static_data:/vol/web
+      - /opt/data/staticfiles:/app/staticfiles
       - .:/app
     ports:
       - '8000:8000'
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn GD.wsgi:application --bind 0.0.0.0:8000
     environment:
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
       - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672/
-
     depends_on:
       - rabbitmq
       - db
@@ -56,3 +55,4 @@ services:
 
     depends_on:
       - rabbitmq
+
