@@ -3,7 +3,7 @@ from copy import deepcopy
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 from django.http.response import Http404
 from rest_framework.exceptions import ParseError, NotFound,\
-    ValidationError,AuthenticationFailed,MethodNotAllowed
+    ValidationError,AuthenticationFailed,MethodNotAllowed,NotAuthenticated
 
 
 def custom_exception_handler(exc, context):
@@ -15,7 +15,7 @@ def custom_exception_handler(exc, context):
     # Now add the HTTP status code to the response.
     if response is not None:
         data=response.data
-        if isinstance(exc,AuthenticationFailed):
+        if isinstance(exc,AuthenticationFailed) or isinstance(exc,NotAuthenticated):
             error = data.pop('detail')
             response.data = {
                 'error':error,
