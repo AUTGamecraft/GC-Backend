@@ -3,8 +3,8 @@ from core.models import (
     Workshop,
     Presenter,
     EventService,
-    Competition
-    )
+    Competition, LEVEL
+)
 from rest_framework import serializers
 
 from user.serializers import CustomUserSerializer
@@ -62,18 +62,23 @@ class TalksPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self,obj):
         return obj.get_remain_capacity()
 
+    def get_level(self,obj):
+        return obj.get_level_display()
+    level=serializers.SerializerMethodField()
+    level_type=serializers.CharField( max_length=2,write_only=True)
+
     remain_capacity=serializers.SerializerMethodField()
     presenter=PresenterSerializer(read_only=True)
     presenter_id=serializers.IntegerField(write_only=True)
 
-
     class Meta:
         model = Talk
         fields = ['capacity','date','content','title','remain_capacity',
-                  'participant_count','presenter','pk','presenter_id','cost']
+                  'participant_count','level_type','presenter','pk','presenter_id','cost','level']
         extra_kwargs = {'pk': {'read_only': True},
                         'presenter_id':{'write_only':True},
-                        'remain_capacity':{'read_only':True}}
+                        'remain_capacity':{'read_only':True},
+                        'level_type':{'write_only':True}}
 
     def create(self, validated_data):
         presenter_id=self.initial_data['presenter_id']
@@ -81,7 +86,11 @@ class TalksPageSerializer(serializers.ModelSerializer):
             p=Presenter.objects.get(id=presenter_id)
         except  Presenter.DoesNotExist:
             raise  serializers.ValidationError("no any presenter with this id")
-        talk=Talk(**validated_data)
+        level=validated_data.pop('level_type')
+        choices=['EX','BG' ,'IM']
+        if level not in choices:
+            raise  serializers.ValidationError('level type most be in '+str(choices))
+        talk=Talk(**validated_data,level=level)
         talk.presenter=p
         talk.save()
         return talk
@@ -90,6 +99,11 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
 
+    def get_level(self,obj):
+        return obj.get_level_display()
+    level=serializers.SerializerMethodField(read_only=True)
+    level_type=serializers.CharField( max_length=2,write_only=True)
+
     remain_capacity = serializers.SerializerMethodField()
     presenter = PresenterSerializer(read_only=True)
     presenter_id = serializers.IntegerField(write_only=True)
@@ -97,15 +111,25 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'presenter', 'pk', 'presenter_id','cost']
+                  'participant_count','level_type','level', 'presenter', 'pk', 'presenter_id','cost']
         extra_kwargs = {'pk': {'read_only': True},
                         'presenter_id': {'write_only': True},
-                        'remain_capacity': {'read_only': True}}
+                        'remain_capacity': {'read_only': True},
+                        'level_type':{'write_only':True}}
 
-        def create(self, validated_data):
+    def create(self, validated_data):
             presenter_id = self.initial_data['presenter_id']
-            p = Presenter.objects.get(id=presenter_id)
-            work_shop = Workshop(**validated_data)
+            try:
+                p = Presenter.objects.get(id=presenter_id)
+            except  Presenter.DoesNotExist:
+                raise serializers.ValidationError("no any presenter with this id")
+
+            level = validated_data.pop('level_type')
+            choices = ['EX', 'BG', 'IM']
+            if level not in choices:
+                raise serializers.ValidationError('level type most be in ' + str(choices))
+
+            work_shop = Workshop(**validated_data,level=level)
             work_shop.presenter = p
             work_shop.save()
             return work_shop
