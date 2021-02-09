@@ -34,6 +34,11 @@ TEAM_MEMBER_ROLE = [
     ('NO' , 'NOTEAM')
 ]
 
+TEAM_REQUEST_STATE = [
+    ('AC' , 'ACCEPTED'),
+    ('RE',  "REJECTED")
+]
+
 
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
@@ -128,7 +133,7 @@ class EventService(models.Model):
         AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services', null=True)
 
     def __str__(self):
-        return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)
+        return str(self.user.user_name) + '__'+str(self.service_type)
 
     
 
@@ -136,6 +141,15 @@ class EventService(models.Model):
 class CompetitionMember(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL , blank=False , on_delete=models.CASCADE)
     team = models.ForeignKey(AUTH_USER_MODEL , null=True , on_delete=models.PROTECT , related_name='members')
+    has_team = models.BooleanField(default=False)
+    request_state = state = models.CharField(
+        max_length=2,
+        choices=TEAM_REQUEST_STATE,
+        default='RE'
+    )
+    def __str__(self):
+        return self.user.user_name
+    
 
 
 class Team(models.Model):
@@ -149,3 +163,9 @@ class Team(models.Model):
     game = models.FileField(upload_to='games' , null=True)
     like = models.PositiveIntegerField(default=0 , null=False)
     dislike = models.PositiveIntegerField(default=0 , null=False)
+
+
+
+    def __str__(self):
+        return self.name
+    

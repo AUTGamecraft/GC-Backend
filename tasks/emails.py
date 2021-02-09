@@ -22,3 +22,8 @@ def send_email(user):
     email.send(fail_silently=False)
     print(user)
     return {'status':True}
+
+
+
+def send_team_request(data):
+    pass

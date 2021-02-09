@@ -3,6 +3,8 @@ from core.models import (
     Workshop,
     Presenter,
     EventService,
+    Team,
+    CompetitionMember
     )
 from rest_framework import serializers
 
@@ -71,7 +73,6 @@ class TalksPageSerializer(serializers.ModelSerializer):
         fields = ['capacity','date','content','title','remain_capacity',
                   'participant_count','presenter','pk','presenter_id','cost']
         extra_kwargs = {'pk': {'read_only': True},
-                        'presenter_id':{'write_only':True},
                         'remain_capacity':{'read_only':True}}
 
     def create(self, validated_data):
@@ -79,7 +80,7 @@ class TalksPageSerializer(serializers.ModelSerializer):
         try:
             p=Presenter.objects.get(id=presenter_id)
         except  Presenter.DoesNotExist:
-            raise  serializers.ValidationError("no any presenter with this id")
+            raise  serializers.ValidationError("no presenter with this id")
         talk=Talk(**validated_data)
         talk.presenter=p
         talk.save()
@@ -98,14 +99,33 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
                   'participant_count', 'presenter', 'pk', 'presenter_id','cost']
         extra_kwargs = {'pk': {'read_only': True},
-                        'presenter_id': {'write_only': True},
                         'remain_capacity': {'read_only': True}}
 
-        def create(self, validated_data):
-            presenter_id = self.initial_data['presenter_id']
-            p = Presenter.objects.get(id=presenter_id)
-            work_shop = Workshop(**validated_data)
-            work_shop.presenter = p
-            work_shop.save()
-            return work_shop
+    def create(self, validated_data):
+        presenter_id = self.initial_data['presenter_id']
+        try:
+            p=Presenter.objects.get(id=presenter_id)
+        except  Presenter.DoesNotExist:
+            raise  serializers.ValidationError("no presenter with this id")
+        work_shop = Workshop(**validated_data)
+        work_shop.presenter = p
+        work_shop.save()
+        return work_shop
 
+class CompetitionMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompetitionMember
+        fields = '__all__'
+
+
+class TeamSerialzer(serializers.ModelSerializer):
+    def get_state():
+        return obj.get_state_display()
+    state = serializers.SerializerMethodField()
+    members = CompetitionMemberSerializer(source='members') 
+    emails = serializers.ListField(write_only=True,child = serializers.EmailField())
+    class Meta:
+        model = Team
+        fields = [
+            'members', 'state' , 'video' , 'game' , 'like', 'dislike'
+        ]
