@@ -102,7 +102,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
     permission_classes_by_action = {
         'create': [IsAdminUser],
         'list': [AllowAny],
-        'retrive': [IsAdminUser],
+        'retrive': [AllowAny],
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }

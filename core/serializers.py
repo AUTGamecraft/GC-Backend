@@ -119,7 +119,10 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitionMember
         fields = [
-            'team'
+            'team',
+            'user',
+            'has_team',
+            'is_head'
         ]
 
 

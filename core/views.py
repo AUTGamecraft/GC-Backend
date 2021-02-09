@@ -53,19 +53,20 @@ class UserServicesViewSet(ResponseGenericViewSet):
 class CompetitionMemberViewSet(ResponseGenericViewSet,
                   mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
-                  mixins.ListModelMixin):
+                  mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin):
     queryset = CompetitionMember.objects.all()
     serializer_class = CompetitionMemberSerializer
     permission_classes_by_action = {
         'list': [IsAuthenticated],
-        'retrive': [IsAdminUser],
+        'retrive': [IsAuthenticated],
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
 
 
     def retrieve(self, request, *args, **kwargs):
-        response_data = super(ResponseModelViewSet, self).retrieve(
+        response_data = super(CompetitionMemberViewSet, self).retrieve(
             request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
@@ -74,7 +75,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         return Response(self.response_format)
         
     def list(self, request, *args, **kwargs):
-        response_data = super(TeamViewSet, self).list(
+        response_data = super(CompetitionMemberViewSet, self).list(
             request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
@@ -83,7 +84,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         return Response(self.response_format)
 
     def update(self, request, *args, **kwargs):
-        response_data = super(TeamViewSet, self).update(
+        response_data = super(CompetitionMemberViewSet, self).update(
             request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
@@ -91,12 +92,41 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         return Response(self.response_format)
 
     def destroy(self, request, *args, **kwargs):
-        response_data = super(TeamViewSet, self).destroy(
+        response_data = super(CompetitionMemberViewSet, self).destroy(
             request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         return Response(self.response_format)
 
+    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
+    def register(self,request):
+        user = request.user
+        member = CompetitionMember(user=user , has_team=False,is_head=False,request_state='RE')
+        member.save()
+        serializer = self.serializer_class(member)
+        # put payment module 
+        return self.set_response(data=serializer.data ,message="user added to competition")
+    
+    @action(methods=['GET'] , detail=False , permission_classes=[IsAuthenticated])
+    def is_registered(self,request):
+        try:
+            email = request.data['email']
+            result = CompetitionMember.objects.filter(user__email=email,has_team=False).exists()
+            if result:
+                return self.set_response(data={
+                    'available':True
+                })
+            else:
+                return self.set_response(data={
+                    'available':False
+                },message="requested user is not registered or already has a team")
+        except KeyError as e:
+            return self.set_response(error='bad request' , status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception as e1:
+            return self.set_response(error=str(e1) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    
 
     def get_permissions(self):
         try:
@@ -111,18 +141,19 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
 class TeamViewSet(ResponseGenericViewSet,
                   mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
-                  mixins.ListModelMixin):
+                  mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin):
     queryset = Team.objects.all()
     serializer_class = TeamSerialzer
     permission_classes_by_action = {
         'list': [IsAuthenticated],
-        'retrive': [IsAdminUser],
+        'retrive': [IsAuthenticated],
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
     
     def retrieve(self, request, *args, **kwargs):
-        response_data = super(ResponseModelViewSet, self).retrieve(
+        response_data = super(TeamViewSet, self).retrieve(
             request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
@@ -158,7 +189,10 @@ class TeamViewSet(ResponseGenericViewSet,
     def create_team(self,request):
         try:
             head = CompetitionMember.objects.get(user=request.user)
+            if head.has_team:
+                raise ValidationError(f"you already have a team !!!")
             head.is_head = True
+            head.has_team = True
             ser = self.serializer_class(data=request.data)
             if not ser.is_valid():
                 raise ValidationError("data is not valid")
@@ -171,15 +205,16 @@ class TeamViewSet(ResponseGenericViewSet,
                     mem.has_team = True
                     mem.team = team
                     mem.save()
+            head.team = team
+            head.save()
             team.save()
-            print(f"-----------{team.members}--------------")
             send_team_requests_task.delay({})
             return Response(data=ser.data)
         except CompetitionMember.DoesNotExist as e:
             return self.set_response(error=str(e))
         except ValidationError as e1:
             return self.set_response(error=str(e1))
-        except Exception e2:
+        except Exception as e2:
             return self.set_response(error=str(e2))
 
     def get_permissions(self):
@@ -199,8 +234,8 @@ class PresenterViweSet(ResponseModelViewSet):
     # set permission for built_in routes
     permission_classes_by_action = {
         'create': [IsAdminUser],
-        'list': [IsAdminUser],
-        'retrive': [IsAdminUser],
+        'list': [AllowAny],
+        'retrive': [AllowAny],
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
