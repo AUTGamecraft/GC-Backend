@@ -28,6 +28,12 @@ LEVEL = [
     ('EX', 'EXPERT')
 ]
 
+TEAM_MEMBER_ROLE = [
+    ('HE' , 'HEAD'),
+    ('ME' , 'MEMBER'),
+    ('NO' , 'NOTEAM')
+]
+
 
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
@@ -124,6 +130,14 @@ class EventService(models.Model):
     def __str__(self):
         return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)
 
+    
+
+
+class CompetitionMember(models.Model):
+    user = models.ForeignKey(AUTH_USER_MODEL , blank=False , on_delete=models.CASCADE)
+    team = models.ForeignKey(AUTH_USER_MODEL , null=True , on_delete=models.PROTECT , related_name='members')
+
+
 class Team(models.Model):
     name = models.CharField(max_length=30 , blank=False , null=False)
     state = models.CharField(
@@ -131,7 +145,7 @@ class Team(models.Model):
         choices=TEAM_STATE,
         default='RE'
     )
-    head = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE ,blank=False , null=False )
-    members = models.ForeignKey(AUTH_USER_MODEL,on_delete = models.PROTECT)
-
-
+    video = models.FileField(upload_to='videos' , null=True)
+    game = models.FileField(upload_to='games' , null=True)
+    like = models.PositiveIntegerField(default=0 , null=False)
+    dislike = models.PositiveIntegerField(default=0 , null=False)

@@ -74,8 +74,6 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     about = models.TextField(_('about'), max_length=500, blank=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    has_team = models.BooleanField(default=False)
-    is_in_competition = models.BooleanField(default=False)
     
     # event informations
     phone_number = models.CharField(_("phone number"),validators=[PhoneValidator()], max_length=32 , blank=False,null=False)

@@ -3,7 +3,6 @@ from core.models import (
     Workshop,
     Presenter,
     EventService,
-    Competition
     )
 from rest_framework import serializers
 
