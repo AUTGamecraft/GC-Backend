@@ -13,3 +13,7 @@ def send_email_task(user_data):
     except Exception as e:
         print(str(e))
         return None
+
+@shared_task
+def send_team_requests_task(data):
+    pass

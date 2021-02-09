@@ -9,4 +9,5 @@ static_root
 **/__pycache__/*
 *.pyc
 **/migrations/*
-staticfiles/*
+vol/*
+vol/

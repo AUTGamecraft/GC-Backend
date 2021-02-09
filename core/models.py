@@ -138,18 +138,6 @@ class EventService(models.Model):
     
 
 
-class CompetitionMember(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL , blank=False , on_delete=models.CASCADE)
-    team = models.ForeignKey(AUTH_USER_MODEL , null=True , on_delete=models.PROTECT , related_name='members')
-    has_team = models.BooleanField(default=False)
-    request_state = state = models.CharField(
-        max_length=2,
-        choices=TEAM_REQUEST_STATE,
-        default='RE'
-    )
-    def __str__(self):
-        return self.user.user_name
-    
 
 
 class Team(models.Model):
@@ -159,8 +147,8 @@ class Team(models.Model):
         choices=TEAM_STATE,
         default='RE'
     )
-    video = models.FileField(upload_to='videos' , null=True)
-    game = models.FileField(upload_to='games' , null=True)
+    video = models.FileField(upload_to='videos' ,blank=True)
+    game = models.FileField(upload_to='games' ,blank=True)
     like = models.PositiveIntegerField(default=0 , null=False)
     dislike = models.PositiveIntegerField(default=0 , null=False)
 
@@ -168,4 +156,18 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class CompetitionMember(models.Model):
+    user = models.OneToOneField(AUTH_USER_MODEL , blank=False,unique=True , on_delete=models.CASCADE)
+    team = models.ForeignKey(Team , null=True ,blank=True, on_delete=models.PROTECT , related_name='members')
+    has_team = models.BooleanField(default=False)
+    is_head = models.BooleanField(default=False)
+    request_state = models.CharField(
+        max_length=2,
+        choices=TEAM_REQUEST_STATE,
+        default='RE'
+    )
+    def __str__(self):
+        return self.user.user_name
     
