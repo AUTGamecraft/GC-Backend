@@ -25,21 +25,12 @@ class TalkViewSet(ServicesModelViewSet):
     serializer_class = TalksPageSerializer
     model=Talk
     service_type = 'TK'
-    
 
 class WorkshopViewSet(ServicesModelViewSet):
     queryset = Workshop.objects.all()
     serializer_class = WorkshopPageSerializer
     model = Workshop
     service_type = 'WS'
-
-
-class CompetitionsViewSet(ServicesModelViewSet):
-    queryset = Competition.objects.all()
-    serializer_class = CompetitionPageSerializer
-    service_type = 'CP'
-    model = Competition
-   
 
 class UserServicesViewSet(ResponseGenericViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]

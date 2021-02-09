@@ -10,6 +10,12 @@ PAYMENT_STATES = [
     ('RJ', 'REJECTED')
 ]
 
+TEAM_STATE = [
+    ('AC' , 'ACTIVATED'),
+    ('RE' , 'REQUESTED'),
+    ('RJ' , 'REJECTED'),
+]
+
 SERVICE_TYPE = [
     ('WS', 'WORKSHOP'),
     ('TK', 'TALK'),
@@ -97,18 +103,6 @@ class Workshop(models.Model):
         return self.title
 
 
-class Competition(models.Model):
-    title = models.CharField(max_length=30, blank=False, unique=True)
-    start_date = models.DateTimeField(auto_now=True, blank=False)
-    end_date = models.DateTimeField(auto_now=True, blank=False)
-    description = models.TextField()
-
-    # overrided for constraints
-    def clean(self):
-        if self.start_date >= self.end_date:
-            raise ValidationError('Start date is after end date.')
-
-
 class EventService(models.Model):
     payment_state = models.CharField(
         max_length=2,
@@ -124,10 +118,20 @@ class EventService(models.Model):
         Talk, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     workshop = models.ForeignKey(
         Workshop, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
-    competion = models.ForeignKey(
-        Competition, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services', null=True)
 
     def __str__(self):
         return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.payment_state)
+
+class Team(models.Model):
+    name = models.CharField(max_length=30 , blank=False , null=False)
+    state = models.CharField(
+        max_length=2,
+        choices=TEAM_STATE,
+        default='RE'
+    )
+    head = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE ,blank=False , null=False )
+    members = models.ForeignKey(AUTH_USER_MODEL,on_delete = models.PROTECT)
+
+

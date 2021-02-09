@@ -110,8 +110,3 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
             work_shop.save()
             return work_shop
 
-
-class CompetitionPageSerializer(serializers.ModelSerializer):
-    class Meta:
-        Model = Competition
-        extra_kwargs= {'pk': {'read_only': True}}
