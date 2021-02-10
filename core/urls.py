@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path , include
 from rest_framework import routers
 from .views import (
     TalkViewSet,
@@ -6,7 +6,8 @@ from .views import (
     UserServicesViewSet,
     PresenterViweSet,
     CompetitionMemberViewSet,
-    TeamViewSet
+    TeamViewSet,
+    VerifyTeamRequestView
 )
 
 router = routers.SimpleRouter()
@@ -17,4 +18,7 @@ router.register(r'presenter',PresenterViweSet)
 router.register(r'team',TeamViewSet)
 router.register(r'member',CompetitionMemberViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('' , include(router.urls)),
+    path('team/join/<tid>/<mid>' , VerifyTeamRequestView.as_view(),name='request-team-activation')
+]

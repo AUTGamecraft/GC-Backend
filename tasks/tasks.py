@@ -1,6 +1,9 @@
 from __future__ import absolute_import , unicode_literals
 from celery import shared_task
-from .emails import send_email
+from .emails import (
+    send_email,
+    send_team_request
+    )
 from celery.utils.log import get_task_logger
 
 
@@ -15,5 +18,6 @@ def send_email_task(user_data):
         return None
 
 @shared_task
-def send_team_requests_task(data):
-    pass
+def send_team_requests_task(team_data):
+    send_team_request(team_data)
+    

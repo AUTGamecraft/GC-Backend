@@ -1,0 +1,7 @@
+Hello dear {{first_name|safe}}
+
+you have request from {{head_name|safe}} to join group {{team_name|safe}}.
+if you want to join this group click on the link: 
+{% url 'request-team-activation' tid=tid mid=mid %}
+
+Thank you!!!

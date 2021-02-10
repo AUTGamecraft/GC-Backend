@@ -34,12 +34,6 @@ TEAM_MEMBER_ROLE = [
     ('NO' , 'NOTEAM')
 ]
 
-TEAM_REQUEST_STATE = [
-    ('AC' , 'ACCEPTED'),
-    ('RE',  "REJECTED")
-]
-
-
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
     last_name = models.CharField(max_length=30, blank=False)
@@ -147,10 +141,10 @@ class Team(models.Model):
         choices=TEAM_STATE,
         default='RE'
     )
-    video = models.FileField(upload_to='videos' ,blank=True)
-    game = models.FileField(upload_to='games' ,blank=True)
-    like = models.PositiveIntegerField(default=0 , null=False)
-    dislike = models.PositiveIntegerField(default=0 , null=False)
+    video = models.FileField(upload_to='videos',blank=True,null=True)
+    game = models.FileField(upload_to='games',blank=True, null=True)
+    like = models.PositiveIntegerField(default=0)
+    dislike = models.PositiveIntegerField(default=0)
 
 
 
@@ -163,11 +157,6 @@ class CompetitionMember(models.Model):
     team = models.ForeignKey(Team , null=True ,blank=True, on_delete=models.PROTECT , related_name='members')
     has_team = models.BooleanField(default=False)
     is_head = models.BooleanField(default=False)
-    request_state = models.CharField(
-        max_length=2,
-        choices=TEAM_REQUEST_STATE,
-        default='RE'
-    )
     def __str__(self):
         return self.user.user_name
     

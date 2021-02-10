@@ -20,10 +20,19 @@ def send_email(user):
         [user['email'],],
     )
     email.send(fail_silently=False)
-    print(user)
-    return {'status':True}
+    return {'success':True}
 
-
-
-def send_team_request(data):
-    pass
+def send_team_request(team_data):
+    context = team_data
+    context['tid'] = urlsafe_base64_encode(force_bytes(team_data['tid']))
+    context['mid'] = urlsafe_base64_encode(force_bytes(team_data['mid']))
+    email_subject = 'Team Request'
+    email_body = render_to_string('team_request_message.txt' , context)
+    email = EmailMessage(
+        email_subject,
+        email_body,
+        settings.DEFAULT_FROM_EMAIL,
+        [context['email'],],
+    )
+    email.send(fail_silently=False)
+    return {'success':True}

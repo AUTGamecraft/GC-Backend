@@ -18,7 +18,8 @@ from rest_framework.decorators import api_view, permission_classes
 from collections import defaultdict
 from .viewsets import *
 from tasks.tasks import send_team_requests_task
-
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all()
@@ -51,10 +52,10 @@ class UserServicesViewSet(ResponseGenericViewSet):
 
 
 class CompetitionMemberViewSet(ResponseGenericViewSet,
-                  mixins.UpdateModelMixin,
-                  mixins.DestroyModelMixin,
-                  mixins.ListModelMixin,
-                  mixins.RetrieveModelMixin):
+                               mixins.UpdateModelMixin,
+                               mixins.DestroyModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.RetrieveModelMixin):
     queryset = CompetitionMember.objects.all()
     serializer_class = CompetitionMemberSerializer
     permission_classes_by_action = {
@@ -64,7 +65,6 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         'update': [IsAdminUser],
     }
 
-
     def retrieve(self, request, *args, **kwargs):
         response_data = super(CompetitionMemberViewSet, self).retrieve(
             request, *args, **kwargs)
@@ -73,7 +73,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         if not response_data.data:
             self.response_format["message"] = "Empty"
         return Response(self.response_format)
-        
+
     def list(self, request, *args, **kwargs):
         response_data = super(CompetitionMemberViewSet, self).list(
             request, *args, **kwargs)
@@ -98,35 +98,34 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["status"] = 200
         return Response(self.response_format)
 
-    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
-    def register(self,request):
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
+    def register(self, request):
         user = request.user
-        member = CompetitionMember(user=user , has_team=False,is_head=False,request_state='RE')
+        member = CompetitionMember(
+            user=user, has_team=False, is_head=False, request_state='RE')
         member.save()
         serializer = self.serializer_class(member)
-        # put payment module 
-        return self.set_response(data=serializer.data ,message="user added to competition")
-    
-    @action(methods=['GET'] , detail=False , permission_classes=[IsAuthenticated])
-    def is_registered(self,request):
+        # put payment module
+        return self.set_response(data=serializer.data, message="user added to competition")
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def is_registered(self, request):
         try:
             email = request.data['email']
-            result = CompetitionMember.objects.filter(user__email=email,has_team=False).exists()
+            result = CompetitionMember.objects.filter(
+                user__email=email, has_team=False).exists()
             if result:
                 return self.set_response(data={
-                    'available':True
+                    'available': True
                 })
             else:
                 return self.set_response(data={
-                    'available':False
-                },message="requested user is not registered or already has a team")
+                    'available': False
+                }, message="requested user is not registered or already has a team")
         except KeyError as e:
-            return self.set_response(error='bad request' , status_code=status.HTTP_400_BAD_REQUEST)
+            return self.set_response(error='bad request', status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e1:
-            return self.set_response(error=str(e1) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-    
+            return self.set_response(error=str(e1), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_permissions(self):
         try:
@@ -135,7 +134,6 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         except KeyError:
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]
-
 
 
 class TeamViewSet(ResponseGenericViewSet,
@@ -151,7 +149,7 @@ class TeamViewSet(ResponseGenericViewSet,
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
-    
+
     def retrieve(self, request, *args, **kwargs):
         response_data = super(TeamViewSet, self).retrieve(
             request, *args, **kwargs)
@@ -185,31 +183,43 @@ class TeamViewSet(ResponseGenericViewSet,
         self.response_format["status"] = 200
         return Response(self.response_format)
 
-    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
-    def create_team(self,request):
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
+    def create_team(self, request):
+        print(request.data)
         try:
             head = CompetitionMember.objects.get(user=request.user)
             if head.has_team:
                 raise ValidationError(f"you already have a team !!!")
             head.is_head = True
             head.has_team = True
-            ser = self.serializer_class(data=request.data)
-            if not ser.is_valid():
-                raise ValidationError("data is not valid")
-            team = ser.save()
-            members = CompetitionMember.objects.filter(user__email__in=request.data['emails'])
+            team = Team.objects.create(name=request.data['name'])
+            members = CompetitionMember.objects.filter(
+                user__email__in=request.data['emails'])
+            if len(members) > 5 or len(members) < 3:
+                raise ValidationError(
+                    "count of user members must be between 3 and 5 ")
             for mem in members:
                 if mem.has_team:
-                    raise ValidationError(f"user {mem.user.user_name} has team")
-                else:
-                    mem.has_team = True
-                    mem.team = team
-                    mem.save()
+                    raise ValidationError(
+                        f"user {mem.user.user_name} has team")
+                # else:
+                #     mem.has_team = True
+                #     mem.team = team
+                #     mem.save()
             head.team = team
             head.save()
             team.save()
-            send_team_requests_task.delay({})
-            return Response(data=ser.data)
+            for mem in members:
+                team_data = {
+                    'head_name': head.user.user_name,
+                    'team_name': team.name,
+                    'email': mem.user.email,
+                    'first_name':mem.user.first_name,
+                    'tid':team.pk,
+                    'mid':mem.pk
+                }
+                send_team_requests_task.delay(team_data)
+            return Response(data=self.serializer_class(team).data)
         except CompetitionMember.DoesNotExist as e:
             return self.set_response(error=str(e))
         except ValidationError as e1:
@@ -226,8 +236,6 @@ class TeamViewSet(ResponseGenericViewSet,
             return [permission() for permission in self.permission_classes]
 
 
-
-
 class PresenterViweSet(ResponseModelViewSet):
     queryset = Presenter.objects.all()
     serializer_class = PresenterSerializer
@@ -239,3 +247,52 @@ class PresenterViweSet(ResponseModelViewSet):
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
+
+
+class VerifyTeamRequestView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, tid, mid):
+        tid = force_text(urlsafe_base64_decode(tid))
+        mid = force_text(urlsafe_base64_decode(mid))
+        try:
+            member = CompetitionMember.objects.get(pk=mid)
+            member.has_team = True
+            team = Team.objects.get(pk=tid)
+            member.team = team
+            member.save()
+            if len(team.members.all()) >=3:
+                team.state = 'AC'
+            team.save()
+            data = {
+                'message': 'user activated',
+                'error': None,
+                'status': 202,
+                'data': CompetitionMemberSerializer(member).data
+            }
+            return Response(data=data, status=status.HTTP_202_ACCEPTED)
+        except CompetitionMember.DoesNotExist as e:
+            data = {
+                'message': 'user not found',
+                'error': str(e),
+                'status': 400,
+                'data': []
+            }
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        except Team.DoesNotExist as e1:
+            data = {
+                'message': 'team not found',
+                'error': str(e1),
+                'status': 400,
+                'data': []
+            }
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e2:
+            data = {
+                'message': 'something went wrong',
+                'error': str(e2),
+                'status': 400,
+                'data': []
+            }
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        
