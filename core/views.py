@@ -44,7 +44,7 @@ class UserServicesViewSet(ResponseGenericViewSet):
     def services(self, request):
         try:
             user = request.user
-            services = EventService.objects.filter(user=user)
+            services = user.services
             data = EventServiceSerializer(services, many=True)
             return Response(data.data)
         except EventService.DoesNotExist:

@@ -126,7 +126,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
                     message="user has already enrolled in this course",
                     status=208,
                     status_code=status.HTTP_208_ALREADY_REPORTED,
-                    data=EventServiceSerializer(query.get(0)).data
+                    data=EventServiceSerializer(query[0]).data
                 )
 
             args['service_type'] = self.service_type
@@ -149,19 +149,17 @@ class ServicesModelViewSet(ResponseModelViewSet):
     @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
     def services(self, request, pk):
         
-        model_name = str(self.model.__name__).lower()
-        args = {
-            f'{model_name}__pk': pk
-        }
-        services = EventService.objects.filter(**args)
-        serialzer = EventServiceSerializer(services, many=True)
+        services = model.services
+        serializer = EventServiceSerializer(services, many=True)
         message = ""
-        if not serialzer.data:
+        if not serializer.data:
             message = f"there is no {model_name} service!!!"
         return self.set_response(
             message = message,
-            data=serialzer.data
+            data=serializer.data
         )
+
+    
 
     def get_permissions(self):
         try:

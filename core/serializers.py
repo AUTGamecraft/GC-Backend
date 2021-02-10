@@ -17,35 +17,11 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = [
-            'first_name','last_name','email','descriptions','linked_in','workshops','talks'
+            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks'
         ]
 
 
 class EventServiceSerializer(serializers.ModelSerializer):
-
-    def get_talk(self, obj):
-        t: Talk = obj.talk
-        if t is None:
-            return None
-        return {
-            'id': t.id,
-            'title': t.title,
-            'cost': t.cost
-        }
-    talk = serializers.SerializerMethodField()
-
-    def get_workshop(self, obj):
-        w: Workshop = obj.workshop
-        if w is None:
-            return None
-        return {
-            'id': w.id,
-            'title': w.title,
-            'cost': w.cost
-        }
-    workshop = serializers.SerializerMethodField()
-
-    user = CustomUserSerializer()
 
     def get_payment_state(self, obj):
         return obj.get_payment_state_display()
@@ -57,7 +33,7 @@ class EventServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventService
-        fields = ['id', 'user', 'workshop',
+        fields = ['user', 'workshop',
                   'payment_state', 'service_type', 'talk']
 
 
@@ -76,8 +52,6 @@ class TalksPageSerializer(serializers.ModelSerializer):
                         'remain_capacity': {'read_only': True}}
 
 
-
-
 class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
@@ -90,8 +64,6 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
                   'participant_count', 'presenters', 'pk', 'cost']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
-
-
 
 
 class CompetitionMemberSerializer(serializers.ModelSerializer):
@@ -108,7 +80,6 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
         extra_kwargs = {'pk': {'read_only': True}}
 
 
-
 class TeamSerialzer(serializers.ModelSerializer):
     def get_state(self, obj):
         return obj.get_state_display()
@@ -119,7 +90,7 @@ class TeamSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = [
-            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails', 'name','pk'
+            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails', 'name', 'pk'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 
