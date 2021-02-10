@@ -202,10 +202,6 @@ class TeamViewSet(ResponseGenericViewSet,
                 if mem.has_team:
                     raise ValidationError(
                         f"user {mem.user.user_name} has team")
-                # else:
-                #     mem.has_team = True
-                #     mem.team = team
-                #     mem.save()
             head.team = team
             head.save()
             team.save()
@@ -260,7 +256,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             team = Team.objects.get(pk=tid)
             if member.has_team:
                 data = {
-                    'message': 'User allready has a team!!!',
+                    'message': 'User already has a team!!!',
                     'error': None,
                     'status': 200,
                     'data': []

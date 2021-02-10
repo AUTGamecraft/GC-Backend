@@ -5,7 +5,7 @@ from core.models import (
     EventService,
     Team,
     CompetitionMember
-    )
+)
 from rest_framework import serializers
 
 from user.serializers import CustomUserSerializer
@@ -16,7 +16,9 @@ from copy import deepcopy
 class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
-        fields = '__all__'
+        fields = [
+            'first_name','last_name','email','descriptions','linked_in','workshops','talks'
+        ]
 
 
 class EventServiceSerializer(serializers.ModelSerializer):
@@ -56,7 +58,7 @@ class EventServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventService
         fields = ['id', 'user', 'workshop',
-            'payment_state', 'service_type', 'talk']
+                  'payment_state', 'service_type', 'talk']
 
 
 class TalksPageSerializer(serializers.ModelSerializer):
@@ -65,26 +67,15 @@ class TalksPageSerializer(serializers.ModelSerializer):
         return obj.get_remain_capacity()
 
     remain_capacity = serializers.SerializerMethodField()
-    presenter = PresenterSerializer(read_only=True)
-    presenter_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Talk
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'presenter', 'pk', 'presenter_id', 'cost']
+                  'participant_count', 'pk',  'cost', 'presenters']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
-    def create(self, validated_data):
-        presenter_id = self.initial_data['presenter_id']
-        try:
-            p = Presenter.objects.get(id=presenter_id)
-        except Presenter.DoesNotExist:
-            raise serializers.ValidationError("no presenter with this id")
-        talk = Talk(**validated_data)
-        talk.presenter = p
-        talk.save()
-        return talk
+
 
 
 class WorkshopPageSerializer(serializers.ModelSerializer):
@@ -92,42 +83,34 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
         return obj.get_remain_capacity()
 
     remain_capacity = serializers.SerializerMethodField()
-    presenter = PresenterSerializer(read_only=True)
-    presenter_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'presenter', 'pk', 'presenter_id', 'cost']
+                  'participant_count', 'presenters', 'pk', 'cost']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
-    def create(self, validated_data):
-        presenter_id = self.initial_data['presenter_id']
-        try:
-            p = Presenter.objects.get(id=presenter_id)
-        except Presenter.DoesNotExist:
-            raise serializers.ValidationError("no presenter with this id")
-        work_shop = Workshop(**validated_data)
-        work_shop.presenter = p
-        work_shop.save()
-        return work_shop
+
 
 
 class CompetitionMemberSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = CompetitionMember
         fields = [
             'team',
             'user',
             'has_team',
-            'is_head'
+            'is_head',
+            'pk'
         ]
+        extra_kwargs = {'pk': {'read_only': True}}
+
 
 
 class TeamSerialzer(serializers.ModelSerializer):
-    def get_state(self,obj):
+    def get_state(self, obj):
         return obj.get_state_display()
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
@@ -136,8 +119,9 @@ class TeamSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = [
-            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails','name'
+            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails', 'name','pk'
         ]
+        extra_kwargs = {'pk': {'read_only': True}}
 
     def create(self, validated_data):
         val = deepcopy(validated_data)
