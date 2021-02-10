@@ -257,11 +257,28 @@ class VerifyTeamRequestView(generics.GenericAPIView):
         mid = force_text(urlsafe_base64_decode(mid))
         try:
             member = CompetitionMember.objects.get(pk=mid)
-            member.has_team = True
             team = Team.objects.get(pk=tid)
+            if member.has_team:
+                data = {
+                    'message': 'User allready has a team!!!',
+                    'error': None,
+                    'status': 200,
+                    'data': []
+                }
+                return Response(data=data, status=status.HTTP_200_OK)  
+            members = team.members.all() 
+            if len(members) > 5:
+                data = {
+                    'message': 'team is full!!!',
+                    'error': None,
+                    'status': 200,
+                    'data': []
+                }
+                return Response(data=data, status=status.HTTP_200_OK)  
+            member.has_team = True
             member.team = team
             member.save()
-            if len(team.members.all()) >=3:
+            if len() >=3:
                 team.state = 'AC'
             team.save()
             data = {
