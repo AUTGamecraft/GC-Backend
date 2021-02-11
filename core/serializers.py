@@ -17,8 +17,9 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = [
-            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks'
+            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks','pk'
         ]
+        extra_kwargs = {'pk': {'read_only': True}}
 
 
 class EventServiceSerializer(serializers.ModelSerializer):

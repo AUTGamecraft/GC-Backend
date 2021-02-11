@@ -111,26 +111,21 @@ class ServicesModelViewSet(ResponseModelViewSet):
     def enroll(self, request, pk):
         model_name = str(self.model.__name__).lower()
         try:
-            obj = get_object_or_404(self.model, pk=pk)
             obj = self.model.objects.get(pk=pk)
             user = request.user
-
             args = {
                 'user': user,
-                model_name: obj
+                model_name: obj,
+                'service_type':self.service_type
             }
-
             query = EventService.objects.filter(**args)
             if query.exists():
                 return self.set_response(
-                    message="user has already enrolled in this course",
+                    message=f"user has already enrolled in this {model_name}",
                     status=208,
                     status_code=status.HTTP_208_ALREADY_REPORTED,
                     data=EventServiceSerializer(query[0]).data
                 )
-
-            args['service_type'] = self.service_type
-
             ev_service = EventService.objects.create(**args)
             ev_service.save()
             return self.set_response(

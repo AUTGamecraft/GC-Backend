@@ -154,7 +154,7 @@ class Team(models.Model):
 
 class CompetitionMember(models.Model):
     user = models.OneToOneField(AUTH_USER_MODEL , blank=False,unique=True , on_delete=models.CASCADE)
-    team = models.ForeignKey(Team , null=True ,blank=True, on_delete=models.PROTECT , related_name='members')
+    team = models.ForeignKey(Team , null=True ,blank=True, on_delete=models.SET_NULL , related_name='members')
     has_team = models.BooleanField(default=False)
     is_head = models.BooleanField(default=False)
     def __str__(self):

@@ -98,12 +98,48 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["status"] = 200
         return Response(self.response_format)
 
+    
+    # @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
+    # def enroll(self, request, pk):
+    #     model_name = str(self.model.__name__).lower()
+    #     try:
+    #         obj = self.model.objects.get(pk=pk)
+    #         user = request.user
+    #         args = {
+    #             'user': user,
+    #             model_name: obj,
+    #             'service_type':self.service_type
+    #         }
+    #         query = EventService.objects.filter(**args)
+    #         if query.exists():
+    #             return self.set_response(
+    #                 message=f"user has already enrolled in this {model_name}",
+    #                 status=208,
+    #                 status_code=status.HTTP_208_ALREADY_REPORTED,
+    #                 data=EventServiceSerializer(query[0]).data
+    #             )
+    #         ev_service = EventService.objects.create(**args)
+    #         ev_service.save()
+    #         return self.set_response(
+    #             message=f'{model_name} successfully added',
+    #             data=EventServiceSerializer(ev_service).data,
+    #         )
+    #     except self.model.DoesNotExist:
+    #         return self.set_response(
+    #             message=f"requested {model_name} doesn't exist",
+    #             error=True,
+    #             status=404,
+    #             status_code=status.HTTP_404_NOT_FOUND
+    #         )
+            
+    
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def register(self, request):
         user = request.user
         member = CompetitionMember(
-            user=user, has_team=False, is_head=False, request_state='RE')
+            user=user, has_team=False, is_head=False)
         member.save()
+
         serializer = self.serializer_class(member)
         # put payment module
         return self.set_response(data=serializer.data, message="user added to competition")
@@ -187,13 +223,13 @@ class TeamViewSet(ResponseGenericViewSet,
     def create_team(self, request):
         print(request.data)
         try:
-            head = CompetitionMember.objects.get(user=request.user)
+            head = CompetitionMember.objects.select_related('user').get(user=request.user)
             if head.has_team:
                 raise ValidationError(f"you already have a team !!!")
             head.is_head = True
             head.has_team = True
             team = Team.objects.create(name=request.data['name'])
-            members = CompetitionMember.objects.filter(
+            members = CompetitionMember.objects.select_related('user').filter(
                 user__email__in=request.data['emails'])
             if len(members) > 5 or len(members) < 3:
                 raise ValidationError(
@@ -262,8 +298,8 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'data': []
                 }
                 return Response(data=data, status=status.HTTP_200_OK)  
-            members = team.members.all() 
-            if len(members) > 5:
+            members_num = team.members.count()
+            if members_num > 5:
                 data = {
                     'message': 'team is full!!!',
                     'error': None,
@@ -274,7 +310,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             member.has_team = True
             member.team = team
             member.save()
-            if len() >=3:
+            if members_num >=3:
                 team.state = 'AC'
             team.save()
             data = {
