@@ -6,6 +6,7 @@ from .models import (
     EventService,
     CompetitionMember,
     Team,
+    Payment
 )
 
 
@@ -15,4 +16,4 @@ admin.site.register(EventService)
 admin.site.register(Presenter)
 admin.site.register(Team)
 admin.site.register(CompetitionMember)
-
+admin.site.register(Payment)

@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
-
+BASE_URL = config('BASE_URL')
 # Application definition
 
 INSTALLED_APPS = [
@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'GD.wsgi.application'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -199,3 +199,8 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECT': False,
     'SHOW_TOOLBAR_CALLBACK': show_toolbar
 }
+
+
+
+MERCHANT = config('MERCHANT')
+  

@@ -8,4 +8,5 @@ pep8
 pip-chill
 psycopg2
 python-decouple
+redis
 zeep

@@ -20,6 +20,15 @@ from .viewsets import *
 from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from GD.settings.base import BASE_URL
+from GD.settings.base import MERCHANT
+
+
+ZARINPAL_CLIENT_URL = 'https://www.zarinpal.com/pg/services/WebGate/wsdl'
+ZARINPAL_CALLBACKURL = BASE_URL + 'service/verify/'
+ZARINPAL_PAYMENT_DESCRIPTION = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید" 
+ZARINPAL_REDIRECT_WEBPAGE = '‫‪https://www.zarinpal.com/pg/StartPay/‬‬{}'
+ZARINPAL_REDIRECT_WEBPAGE = '‫‪https://www.zarinpal.com/pg/StartPay/‬‬{}/MobileGate'
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all()
@@ -49,6 +58,25 @@ class UserServicesViewSet(ResponseGenericViewSet):
             return Response(data.data)
         except EventService.DoesNotExist:
             return Http404
+
+    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated],url_name='zarinpal/payment')
+    def payment(self, request):
+        user = request.user
+        services = EventService.objects.filter(user=user).select_related('talk' , 'workshop')
+        total_price = 0
+        for service in services:
+            if service.payment_state == 'PN':
+                if service.service_type == 'CP':
+                    total_price += COMPETITION_COST
+                    continue
+                event = service.talk if service.service_type == 'TK' else service.workshop
+                if event.get_remain_capacity() > 0:
+                    total_price += event.cost
+                else:
+                    return self.set_response(message=f"event {event.title} is full!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE)
+        
+
+                
 
 
 class CompetitionMemberViewSet(ResponseGenericViewSet,
@@ -99,40 +127,17 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         return Response(self.response_format)
 
     
-    # @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
-    # def enroll(self, request, pk):
-    #     model_name = str(self.model.__name__).lower()
-    #     try:
-    #         obj = self.model.objects.get(pk=pk)
-    #         user = request.user
-    #         args = {
-    #             'user': user,
-    #             model_name: obj,
-    #             'service_type':self.service_type
-    #         }
-    #         query = EventService.objects.filter(**args)
-    #         if query.exists():
-    #             return self.set_response(
-    #                 message=f"user has already enrolled in this {model_name}",
-    #                 status=208,
-    #                 status_code=status.HTTP_208_ALREADY_REPORTED,
-    #                 data=EventServiceSerializer(query[0]).data
-    #             )
-    #         ev_service = EventService.objects.create(**args)
-    #         ev_service.save()
-    #         return self.set_response(
-    #             message=f'{model_name} successfully added',
-    #             data=EventServiceSerializer(ev_service).data,
-    #         )
-    #     except self.model.DoesNotExist:
-    #         return self.set_response(
-    #             message=f"requested {model_name} doesn't exist",
-    #             error=True,
-    #             status=404,
-    #             status_code=status.HTTP_404_NOT_FOUND
-    #         )
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
+    def enroll(self, request):
+        user = request.user
+        ev_service = EventService.objects.create(user=request.user , service_type='CP')
+        ev_service.save()
+        return self.set_response(
+            message=f'{model_name} successfully added',
+            data=EventServiceSerializer(ev_service).data,
+        )
             
-    
+    # for debug
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def register(self, request):
         user = request.user

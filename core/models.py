@@ -34,6 +34,9 @@ TEAM_MEMBER_ROLE = [
     ('NO' , 'NOTEAM')
 ]
 
+COMPETITION_COST = 300000
+
+
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
     last_name = models.CharField(max_length=30, blank=False)
@@ -54,7 +57,7 @@ class Talk(models.Model):
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
-    participant_count = models.IntegerField()
+    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
@@ -83,7 +86,7 @@ class Workshop(models.Model):
     date = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
-    participant_count = models.IntegerField()
+    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
@@ -107,6 +110,14 @@ class Workshop(models.Model):
 
 
 
+class Payment(models.Model):
+    authority = models.CharField(max_length=40, primary_key=True)
+    total_price = models.PositiveIntegerField()
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    ref_id = models.CharField(default='', max_length=40)
+
+    def __str__(self):
+        return f"Payment for {self.user.user_name}"
 
 class EventService(models.Model):
     payment_state = models.CharField(
@@ -119,6 +130,9 @@ class EventService(models.Model):
         choices=SERVICE_TYPE,
         blank=False
     )
+
+    payment = models.ForeignKey(Payment , null=True , on_delete=models.SET_NULL ,related_name='services')
+
     talk = models.ForeignKey(
         Talk, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     workshop = models.ForeignKey(
@@ -128,10 +142,6 @@ class EventService(models.Model):
 
     def __str__(self):
         return str(self.user.user_name) + '__'+str(self.service_type)
-
-    
-
-
 
 
 class Team(models.Model):
