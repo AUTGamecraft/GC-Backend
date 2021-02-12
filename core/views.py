@@ -13,22 +13,15 @@ from rest_framework.permissions import (
 )
 from rest_framework.decorators import action
 from rest_framework import viewsets
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404 , redirect
 from rest_framework.decorators import api_view, permission_classes
 from collections import defaultdict
 from .viewsets import *
 from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
-from GD.settings.base import BASE_URL
 from GD.settings.base import MERCHANT
-
-
-ZARINPAL_CLIENT_URL = 'https://www.zarinpal.com/pg/services/WebGate/wsdl'
-ZARINPAL_CALLBACKURL = BASE_URL + 'service/verify/'
-ZARINPAL_PAYMENT_DESCRIPTION = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید" 
-ZARINPAL_REDIRECT_WEBPAGE = '‫‪https://www.zarinpal.com/pg/StartPay/‬‬{}'
-ZARINPAL_REDIRECT_WEBPAGE = '‫‪https://www.zarinpal.com/pg/StartPay/‬‬{}/MobileGate'
+from .zarin import *
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all()
@@ -74,9 +67,72 @@ class UserServicesViewSet(ResponseGenericViewSet):
                     total_price += event.cost
                 else:
                     return self.set_response(message=f"event {event.title} is full!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE)
-        
-
+        result = zarin_client.service.PaymentRequest(
+            MERCHANT , 
+            total_price , 
+            ZARINPAL_PAYMENT_DESCRIPTION ,
+            user.email,
+            user.phone_number,
+            ZARINPAL_CALLBACKURL
+        )
+        if result.Status == ZARINPAL_STATUS_OK:
+            payment = Payment.objects.create(
+                authority=result.Authority,
+                total_price=total_price,
+                user=user
+            )
+            payment.services.set(services) 
+            payment.save()
+            if request.user_agent.is_mobile:
+                return redirect(ZARINPAL_REDIRECT_MOBILEPAGE.format(result.Authority))
+            else:
+                return redirect(ZARINPAL_REDIRECT_WEBPAGE.format(result.Authority))
+        else:
+            return self.set_response(
+                message="request for payment wasn't successfull!!!(go fuck your self)"
+                ,data=[{"error_code":result.Status}]
+                ,status_code=status.HTTP_400_BAD_REQUEST
+            )
                 
+    @action(methods=['GET'] , detail=False , permission_classes=[AllowAny])
+    def verfiy(self, request):
+        try:
+            status = request.GET['Status']
+            if status != 'OK':
+                pass
+            authority = request.GET['Authority']
+            payment = Payment.objects.get(authority=authority)
+            result = zarin_client.service.PaymentVerification(
+                MERCHANT,
+                authority,
+                payment.total_price
+            )
+            if result.Status == ZARINPAL_STATUS_SUBMITTED:
+                payment.is_ok = True
+                services = EventService.objects.select_related('workshop' , 'talk').filter(payment=payment)
+                for service in services:
+                    service.payment_state = 'CM'
+                    if service.workshop:
+                        service.workshop.participant_count += 1
+                        service.workshop.save()
+                    elif service.talk:
+                        service.talk.participant_count += 1
+                        service.talk.save()
+                    else:
+                        CompetitionMember.objects.create(user=user).save()
+                    service.save()
+                payment.save()
+            elif result.Status == ZARINPAL_STATUS_OK:
+                payment.ref_id = result.RefID
+                payment.save()            
+            
+            else:
+                pass
+            
+        except KeyError as e:
+            pass
+        except Payment.DoesNotExist as e1:
+            pass
 
 
 class CompetitionMemberViewSet(ResponseGenericViewSet,

@@ -113,9 +113,9 @@ class Workshop(models.Model):
 class Payment(models.Model):
     authority = models.CharField(max_length=40, primary_key=True)
     total_price = models.PositiveIntegerField()
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='payments')
     ref_id = models.CharField(default='', max_length=40)
-
+    is_ok = models.BooleanField(default=False)
     def __str__(self):
         return f"Payment for {self.user.user_name}"
 
