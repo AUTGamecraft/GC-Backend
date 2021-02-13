@@ -40,3 +40,4 @@ psycopg2
 gunicorn==20.0.4
 psycopg2-binary==2.8.5
 zeep==3.4.0
+Pillow==7.0

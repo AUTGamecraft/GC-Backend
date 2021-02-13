@@ -12,7 +12,10 @@ ENV PATH="/scripts:${PATH}"
 
 RUN mkdir /app
 WORKDIR /app
-
+RUN apk --update add \
+    build-base \
+    jpeg-dev \
+    zlib-dev
 # first install requirement.txt
 COPY ./requirements.txt .
 RUN pip install --upgrade pip

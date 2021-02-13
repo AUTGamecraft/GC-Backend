@@ -43,7 +43,7 @@ class Presenter(models.Model):
     email = models.EmailField(blank=True, null=True)
     descriptions = models.TextField()
     linked_in = models.URLField(blank=True)
-
+    profile = models.ImageField(verbose_name='presenter_profile',null=True)
     class Meta:
         unique_together = ('first_name', 'last_name')
 
@@ -155,6 +155,7 @@ class Team(models.Model):
     game = models.FileField(upload_to='games',blank=True, null=True)
     like = models.PositiveIntegerField(default=0)
     dislike = models.PositiveIntegerField(default=0)
+    profile = models.ImageField(verbose_name='team_profile' , null=True)
 
 
 
