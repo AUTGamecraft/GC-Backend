@@ -52,7 +52,7 @@ class UserServicesViewSet(ResponseGenericViewSet):
         except EventService.DoesNotExist:
             return Http404
 
-    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated],url_name='zarinpal/payment')
+    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
     def payment(self, request):
         user = request.user
         services = EventService.objects.filter(user=user).select_related('talk' , 'workshop')
@@ -223,6 +223,16 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
             return self.set_response(error='bad request', status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e1:
             return self.set_response(error=str(e1), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(methods=['GET'] , detail=False , permission_classes=[IsAuthenticated])
+    def registered_list(self,request):
+        cmembers = CompetitionMember.objects.filter(has_team=False)
+        serialized = self.serializer_class(cmembers,many=True)
+        return self.set_response(
+            data= serialized.data 
+        )
+
+
 
     def get_permissions(self):
         try:
