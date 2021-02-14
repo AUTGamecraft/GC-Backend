@@ -57,11 +57,6 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
 
-    def get_level(self,obj):
-        return obj.get_level_display()
-    level=serializers.SerializerMethodField(read_only=True)
-    level_type=serializers.CharField( max_length=2,write_only=True)
-
     remain_capacity = serializers.SerializerMethodField()
 
     class Meta:
