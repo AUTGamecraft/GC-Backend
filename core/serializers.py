@@ -17,7 +17,7 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = [
-            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks','pk'
+            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks', 'pk'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 
@@ -45,10 +45,14 @@ class TalksPageSerializer(serializers.ModelSerializer):
 
     remain_capacity = serializers.SerializerMethodField()
 
+    def get_level(self, obj):
+        return obj.get_level_display()
+    level = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Talk
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'pk',  'cost', 'presenters' , 'level']
+                  'participant_count', 'pk',  'cost', 'presenters', 'level']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
@@ -56,13 +60,18 @@ class TalksPageSerializer(serializers.ModelSerializer):
 class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
-
     remain_capacity = serializers.SerializerMethodField()
+
+    def get_level(self, obj):
+        return obj.get_level_display()
+    level = serializers.SerializerMethodField(read_only=True)
+
+
 
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'presenters', 'pk', 'cost' , 'level']
+                  'participant_count', 'presenters', 'pk', 'cost', 'level']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
