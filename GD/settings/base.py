@@ -2,7 +2,7 @@ import os
 from decouple import config
 from pathlib import Path
 from datetime import timedelta
-DEBUG = config('DEBUG' , cast=bool )
+DEBUG = config('DEBUG', cast=bool)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
@@ -16,7 +16,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 BASE_URL = config('BASE_URL')
 
-ALLOWED_HOSTS=['*']
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
@@ -61,7 +61,6 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'GD.custom_exceptions.custom_exception_handler'
 
 }
-
 
 
 TEMPLATES = [
@@ -145,13 +144,13 @@ SIMPLE_JWT = {
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST='smtp.gmail.com'
-EMAIL_HOST_USER=config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD=config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT=int(config('EMAIL_PORT'))
-DEFAULT_FROM_EMAIL=config('DEFAULT_FROM_EMAIL')
-EMAIL_USE_TLS= True
-
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = int(config('EMAIL_PORT'))
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
 LOGGING = {
     'version': 1,
@@ -168,8 +167,8 @@ LOGGING = {
 }
 
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER','amqp://guest:guest@rabbitmq:5672/')
-
+CELERY_BROKER_URL = os.environ.get(
+    'CELERY_BROKER', 'amqp://guest:guest@rabbitmq:5672/')
 
 
 INSTALLED_APPS += [
@@ -181,7 +180,7 @@ MIDDLEWARE += [
 ]
 
 
-# DEBUG PANEL 
+# DEBUG PANEL
 
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
@@ -203,12 +202,11 @@ DEBUG_TOOLBAR_PANELS = [
 def show_toolbar(request):
     return DEBUG
 
+
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECT': False,
     'SHOW_TOOLBAR_CALLBACK': show_toolbar
 }
 
 
-
 MERCHANT = config('MERCHANT')
-  
