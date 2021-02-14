@@ -44,6 +44,7 @@ class TalksPageSerializer(serializers.ModelSerializer):
         return obj.get_remain_capacity()
 
     remain_capacity = serializers.SerializerMethodField()
+    presenters = PresenterSerializer(many=True)
 
     def get_level(self, obj):
         return obj.get_level_display()
@@ -66,6 +67,9 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     level = serializers.SerializerMethodField(read_only=True)
 
     remain_capacity = serializers.SerializerMethodField()
+
+
+    presenters = PresenterSerializer(many=True)
 
     class Meta:
         model = Workshop
