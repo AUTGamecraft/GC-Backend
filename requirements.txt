@@ -38,6 +38,10 @@ wcwidth==0.2.5
 wrapt==1.12.1
 psycopg2
 gunicorn==20.0.4
+<<<<<<< HEAD
 psycopg2-binary==2.8.5
 zeep==3.4.0
 Pillow==7.0
+=======
+psycopg2-binary==2.8.5
+>>>>>>> origin/master

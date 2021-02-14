@@ -8,6 +8,7 @@ db.sqlite3
 static_root
 **/__pycache__/*
 *.pyc
+staticfiles
 **/migrations/*
 vol/*
 vol/
