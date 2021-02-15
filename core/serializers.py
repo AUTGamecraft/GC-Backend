@@ -17,7 +17,7 @@ class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
         fields = [
-            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks','pk'
+            'first_name', 'last_name', 'email', 'descriptions', 'linked_in', 'workshops', 'talks', 'pk'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 
@@ -44,11 +44,16 @@ class TalksPageSerializer(serializers.ModelSerializer):
         return obj.get_remain_capacity()
 
     remain_capacity = serializers.SerializerMethodField()
+    presenters = PresenterSerializer(many=True)
+
+    def get_level(self, obj):
+        return obj.get_level_display()
+    level = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Talk
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'pk',  'cost', 'presenters']
+                  'participant_count', 'pk',  'cost', 'presenters', 'level']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
@@ -57,17 +62,19 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
 
-    def get_level(self,obj):
+    def get_level(self, obj):
         return obj.get_level_display()
-    level=serializers.SerializerMethodField(read_only=True)
-    level_type=serializers.CharField( max_length=2,write_only=True)
+    level = serializers.SerializerMethodField(read_only=True)
 
     remain_capacity = serializers.SerializerMethodField()
+
+
+    presenters = PresenterSerializer(many=True)
 
     class Meta:
         model = Workshop
         fields = ['capacity', 'date', 'content', 'title', 'remain_capacity',
-                  'participant_count', 'presenters', 'pk', 'cost']
+                  'participant_count', 'presenters', 'pk', 'cost', 'level']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 

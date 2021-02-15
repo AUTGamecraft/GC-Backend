@@ -56,3 +56,4 @@ services:
     depends_on:
       - rabbitmq
 
+
