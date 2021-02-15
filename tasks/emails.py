@@ -12,7 +12,7 @@ from django.utils.html import strip_tags
 def send_email(user):
     context = {
         'first_name': user['first_name'],
-        'uid': urlsafe_base64_encode(force_bytes(user['pk'])),
+        'uid': user['uid'],
         'base_url':settings.BASE_URL
     }
 
