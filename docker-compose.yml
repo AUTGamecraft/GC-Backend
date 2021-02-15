@@ -33,7 +33,7 @@ services:
       context: .
       target: DJANGO_APP
     volumes:
-      - /opt/data/staticfiles:/app/staticfiles
+      - /opt/data/staticfiles:/app/vol
       - .:/app
     ports:
       - '8000:8000'
