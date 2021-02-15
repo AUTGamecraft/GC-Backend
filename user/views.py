@@ -37,9 +37,9 @@ class UserViewSet(ResponseGenericViewSet):
         if serializer.is_valid():
             try:
                 user = serializer.save()
-            except IntegrityError as e:
+            except get_user_model().DoesNotExist as e:
                 return self.set_response(
-                    message="account with this email already exists",
+                    message=str(e),
                     status=409,
                     status_code=status.HTTP_409_CONFLICT,
                     error=str((e))
@@ -94,7 +94,8 @@ class UserViewSet(ResponseGenericViewSet):
 
 class VerfiyUserView(generics.GenericAPIView):
     permission_classes=[AllowAny]
-    def post(self , request , uid):
+    serializer_class=CustomUserSerializer
+    def get(self , request , uid):
         userid = force_text(urlsafe_base64_decode(uid))
         print(userid)
         try:            
