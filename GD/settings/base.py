@@ -105,8 +105,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 
 VENV_PATH = os.path.dirname(BASE_DIR)
-MEDIA_URL = os.path.join(BASE_DIR, 'vol/web/media/') if DEBUG else os.path.join(BASE_DIR, '/opt/data/staticfiles/web/media/')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'vol/web/media/') if DEBUG else os.path.join(BASE_DIR, '/opt/data/staticfiles/web/media/')
+MEDIA_URL =  os.path.join(BASE_DIR, 'staticfiles/web/media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles/web/media/')
 
 
 # my custom user model
