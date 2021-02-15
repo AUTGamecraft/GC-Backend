@@ -1,14 +1,13 @@
-<div style="background-image: url('http://gamecraft.ce.aut.ac.ir/assets/svg/pattern.svg');background-color:#52006b;height: 100%;justify-content: center;">
+<div style="background-color:#52006b;height: 100%;justify-content: center;">
     <div style="justify-content: center;display: flex;direction: rtl;margin-bottom: 10px;padding-top: 20px;">
         <p style="margin-left: -5px;font-family: 'Estedad-Black';color: #a04db9;font-size: 24px;z-index: 0;">گیمـ</p>
         <img style="width: 100.8px;z-index: 1;" src="http://gamecraft.ce.aut.ac.ir/assets/svg/dark-3d.png">
         <p style="margin-right: -5px;font-family: 'Estedad-Black';color: #a04db9;font-size: 24px;z-index: 0;">کرفت</p>
     </div>
     <div style="background-color: #fafafa;text-align: center;padding: 20px 70px;width: fit-content;margin: auto;border-radius: 16px;margin-top: 56px;">
-        <p style="color: #52006b;font-family: 'Estedad-SemiBold';margin-bottom: 0;">!سلام دیبز</p>
+        <p style="color: #52006b;font-family: 'Estedad-SemiBold';margin-bottom: 0;">! {{first_name|safe}} سلام</p>
         <p style="color: #52006b;font-family: 'Estedad-SemiBold';margin-bottom: 0;">از اینکه در رویداد بازی سازی امیرکبیر شرکت کردی ممنونیم</p>
         <p style="color: #52006b;font-family: 'Estedad-Black';">برای تایید ثبت نام روی لینک زیر کلیک کن</p>
-        <a href="https://www.google.com">fuck</a>
+        <a href="{{base_url|safe}}{% url 'activation' uid=uid %}">تایید</a>
     </div>
 </div>
-
