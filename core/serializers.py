@@ -22,22 +22,6 @@ class PresenterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'pk': {'read_only': True}}
 
 
-class EventServiceSerializer(serializers.ModelSerializer):
-
-    def get_payment_state(self, obj):
-        return obj.get_payment_state_display()
-    payment_state = serializers.SerializerMethodField()
-
-    def get_service_type(self, obj):
-        return obj.get_service_type_display()
-    service_type = serializers.SerializerMethodField()
-
-    class Meta:
-        model = EventService
-        fields = ['user', 'workshop',
-                  'payment_state', 'service_type', 'talk']
-
-
 class TalksPageSerializer(serializers.ModelSerializer):
 
     def get_remain_capacity(self, obj):
@@ -113,3 +97,36 @@ class TeamSerialzer(serializers.ModelSerializer):
         team = Team.objects.create(**val)
         team.save()
         return team
+
+class WorkshopCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workshop
+        fields = [
+            'title','date','cost'
+        ]
+
+
+class TalkCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Talk
+        fields = [
+            'title','date','cost'
+        ]
+
+
+class EventServiceSerializer(serializers.ModelSerializer):
+
+    def get_payment_state(self, obj):
+        return obj.get_payment_state_display()
+    payment_state = serializers.SerializerMethodField()
+
+    def get_service_type(self, obj):
+        return obj.get_service_type_display()
+    service_type = serializers.SerializerMethodField()
+    workshop = WorkshopCartSerializer(read_only=True)
+    talk = TalkCartSerializer(read_only=True)
+
+    class Meta:
+        model = EventService
+        fields = ['pk','user', 'workshop',
+                  'payment_state', 'service_type', 'talk']
