@@ -56,7 +56,3 @@ services:
     depends_on:
       - rabbitmq
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c5e7fdafd6172d1c0e5867906c8e838854a42b09

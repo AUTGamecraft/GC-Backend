@@ -13,7 +13,8 @@ def send_email(user):
     context = {
         'first_name': user['first_name'],
         'uid': user['uid'],
-        'base_url':settings.BASE_URL
+        'base_url':settings.BASE_URL,
+        'redirect_url':settings.REDIRECT_EMAIL_ACTIVATION
     }
 
     email_subject = 'Activation'
