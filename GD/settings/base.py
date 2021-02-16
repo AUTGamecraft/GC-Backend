@@ -106,7 +106,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 
 VENV_PATH = os.path.dirname(BASE_DIR)
-MEDIA_URL =  os.path.join(BASE_DIR, 'staticfiles/web/media/')
+MEDIA_URL =  os.path.join('', 'staticfiles/web/media/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles/web/media/')
 
 
