@@ -3,6 +3,6 @@
         <p>! {{first_name|safe}} سلام</p>
         <p>از اینکه در رویداد بازی سازی امیرکبیر شرکت کردی ممنونیم</p>
         <p>برای تایید ثبت نام روی لینک زیر کلیک کن</p>
-        <a href="{{base_url|safe}}{% url 'activation' uid=uid %}">تایید</p>
+        <a href="{{url|safe}}">تایید</p>
     </div>
 </div>

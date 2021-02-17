@@ -11,15 +11,14 @@ PAYMENT_STATES = [
 ]
 
 TEAM_STATE = [
-    ('AC' , 'ACTIVATED'),
-    ('RE' , 'REQUESTED'),
-    ('RJ' , 'REJECTED'),
+    ('AC', 'ACTIVATED'),
+    ('RE', 'REQUESTED'),
+    ('RJ', 'REJECTED'),
 ]
 
 SERVICE_TYPE = [
     ('WS', 'WORKSHOP'),
     ('TK', 'TALK'),
-    ('CP', 'COMPETITION')
 ]
 
 LEVEL = [
@@ -29,27 +28,27 @@ LEVEL = [
 ]
 
 TEAM_MEMBER_ROLE = [
-    ('HE' , 'HEAD'),
-    ('ME' , 'MEMBER'),
-    ('NO' , 'NOTEAM')
+    ('HE', 'HEAD'),
+    ('ME', 'MEMBER'),
+    ('NO', 'NOTEAM')
 ]
 
-COMPETITION_COST = 300000
 
 
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
     last_name = models.CharField(max_length=30, blank=False)
     email = models.EmailField(blank=True, null=True)
-    descriptions = models.TextField(null=True , blank=True)
+    descriptions = models.TextField(null=True, blank=True)
     linked_in = models.URLField(blank=True)
-    profile = models.ImageField(verbose_name='presenter_profile',null=True,blank=True)
+    profile = models.ImageField(
+        verbose_name='presenter_profile', null=True, blank=True)
+
     class Meta:
         unique_together = ('first_name', 'last_name')
 
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
-
 
 
 class Talk(models.Model):
@@ -61,7 +60,7 @@ class Talk(models.Model):
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    presenters = models.ManyToManyField(Presenter , related_name='talks')
+    presenters = models.ManyToManyField(Presenter, related_name='talks')
 
     def clean(self):
         if self.cost < 0:
@@ -90,7 +89,8 @@ class Workshop(models.Model):
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    presenters = models.ManyToManyField(Presenter , related_name='workshops')
+    presenters = models.ManyToManyField(Presenter, related_name='workshops')
+
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
@@ -109,15 +109,17 @@ class Workshop(models.Model):
         return self.title
 
 
-
 class Payment(models.Model):
     authority = models.CharField(max_length=40, primary_key=True)
     total_price = models.PositiveIntegerField()
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='payments')
+    user = models.ForeignKey(
+        AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
     ref_id = models.CharField(default='', max_length=40)
     is_ok = models.BooleanField(default=False)
+
     def __str__(self):
         return f"Payment for {self.user.user_name}"
+
 
 class EventService(models.Model):
     payment_state = models.CharField(
@@ -131,7 +133,8 @@ class EventService(models.Model):
         blank=False
     )
 
-    payment = models.ForeignKey(Payment , null=True , on_delete=models.SET_NULL ,related_name='services')
+    payment = models.ForeignKey(
+        Payment, null=True, blank=True, on_delete=models.SET_NULL, related_name='services')
 
     talk = models.ForeignKey(
         Talk, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
@@ -140,34 +143,47 @@ class EventService(models.Model):
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services', null=True)
 
+    def clean(self):
+        if self.service_type == 'WS':
+            if self.workshop == None or self.talk != None:
+                raise ValidationError(
+                    'service type must match with selected service!!!')
+        if self.service_type == 'TK':
+            if self.talk == None or self.workshop != None:
+                raise ValidationError(
+                    'service type must match with selected service!!!')
+       
     def __str__(self):
-        return str(self.user.user_name) + '__'+str(self.service_type)
+        return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.pk)
 
 
 class Team(models.Model):
-    name = models.CharField(max_length=30 , blank=False , null=False ,unique=True)
+    name = models.CharField(max_length=30, blank=False,
+                            null=False, unique=True)
     state = models.CharField(
         max_length=2,
         choices=TEAM_STATE,
         default='RE'
     )
-    video = models.FileField(upload_to='videos',blank=True,null=True)
-    game = models.FileField(upload_to='games',blank=True, null=True)
+    video = models.FileField(upload_to='videos', blank=True, null=True)
+    game = models.FileField(upload_to='games', blank=True, null=True)
     like = models.PositiveIntegerField(default=0)
     dislike = models.PositiveIntegerField(default=0)
-    profile = models.ImageField(verbose_name='team_profile' , null=True,blank=True)
-
-
+    profile = models.ImageField(
+        verbose_name='team_profile', null=True, blank=True)
+    team_activation = models.CharField(max_length=40, null=True , blank=True)
 
     def __str__(self):
         return self.name
-    
+
 
 class CompetitionMember(models.Model):
-    user = models.OneToOneField(AUTH_USER_MODEL , blank=False,unique=True , on_delete=models.CASCADE)
-    team = models.ForeignKey(Team , null=True ,blank=True, on_delete=models.SET_NULL , related_name='members')
+    user = models.OneToOneField(
+        AUTH_USER_MODEL, blank=False, unique=True, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, null=True, blank=True,
+                             on_delete=models.SET_NULL, related_name='members')
     has_team = models.BooleanField(default=False)
     is_head = models.BooleanField(default=False)
+
     def __str__(self):
         return self.user.user_name
-    
