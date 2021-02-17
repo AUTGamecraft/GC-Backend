@@ -14,7 +14,9 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
-BASE_URL = config('BASE_URL')
+BASE_URL = 'http://localhost:8000' if DEBUG else 'http://gamecraft.ce.aut.ac.ir'
+REDIRECT_EMAIL_ACTIVATION = '/api/activation/{}' if DEBUG else '/confirm-confirm/{}'
+REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/team/join/{}/{}'
 
 ALLOWED_HOSTS = ['*']
 
@@ -105,7 +107,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 
 VENV_PATH = os.path.dirname(BASE_DIR)
-MEDIA_URL =  os.path.join('', 'staticfiles/web/media/')
+MEDIA_URL =  os.path.join(BASE_DIR, 'staticfiles/web/media/') if DEBUG else os.path.join('', 'staticfiles/web/media/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles/web/media/')
 
 

@@ -127,7 +127,7 @@ class UserViewSet(ResponseGenericViewSet,
         if serializer.is_valid():
             try:
                 user = serializer.save()
-            except get_user_model().DoesNotExist as e:
+            except IntegrityError as e:
                 return self.set_response(
                     message=str(e),
                     status=409,

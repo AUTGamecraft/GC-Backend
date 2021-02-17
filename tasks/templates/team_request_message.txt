@@ -1,7 +1,8 @@
-Hello dear {{first_name|safe}}
-
-you have request from {{head_name|safe}} to join group {{team_name|safe}}.
-if you want to join this group click on the link: 
-{% url 'request-team-activation' tid=tid mid=mid %}
-
-Thank you!!!
+<div style="background-color:#52006b;height: 100%;justify-content: center;padding: 200px">
+	<div style="background-color: #fafafa;text-align: center;padding: 20px 70px;width: fit-content;margin: auto;border-radius: 16px;margin-top: auto;">
+        <p>! {{first_name|safe}} سلام</p>
+        <p>  ! دارید {{team_name|safe}} برای عضویت در تیم {{head_name|safe}} شما یک پیام از طرف  </p>
+        <p>برای قبول کردن درخواست روی لینک زیر کلیک کن</p>
+        <a href="{{url|safe}}">تایید</p>
+    </div>
+</div>
