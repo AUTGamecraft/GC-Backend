@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 BASE_URL = 'http://localhost:8000' if DEBUG else 'http://gamecraft.ce.aut.ac.ir'
-REDIRECT_EMAIL_ACTIVATION = '/api/activation/{}' if DEBUG else '/confirm-confirm/{}'
+REDIRECT_EMAIL_ACTIVATION = '/api/activation/{}' if DEBUG else '/confirm-confirm/?activation={}'
 REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/team/join/{}/{}'
 
 ALLOWED_HOSTS = ['*']

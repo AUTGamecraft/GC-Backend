@@ -193,7 +193,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         return self.set_response(data=[] , message='user already registered in the competition')
         
 
-    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def is_registered(self, request):
         try:
             email = request.data['email']
