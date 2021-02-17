@@ -24,7 +24,13 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from core.viewsets import ResponseGenericViewSet
 from .utils import activation_code
-
+from core.models import (
+    Team,
+    CompetitionMember
+)
+from core.serializers import (
+    TeamSerialzer
+)
 
 class UserViewSet(ResponseGenericViewSet,
                   mixins.UpdateModelMixin,
@@ -118,6 +124,25 @@ class UserViewSet(ResponseGenericViewSet,
                 error=str(e)
             )
 
+    @action(methods=['GET'] , detail=False , permission_classes=[AllowAny])
+    def count(self,request):
+        count = get_user_model().objects.count()
+        return self.set_response(
+            data={
+                'count':count
+            }
+        )
+
+    @action(methods=['GET'] , detail=False , permission_classes=[IsAuthenticated])
+    def team(self,request):
+        member = CompetitionMember.objects.select_related('team').get(user=request.user)
+        serializer = TeamSerialzer(member.team)
+        return self.set_response(
+            data=serializer.data
+        )
+        
+
+    
 
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def sign_up(self, request):

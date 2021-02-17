@@ -91,6 +91,7 @@ class TeamSerialzer(serializers.ModelSerializer):
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
         write_only=True, child=serializers.EmailField())
+    members = CompetitionMemberSerializer(many=True,read_only=True)
 
     class Meta:
         model = Team
