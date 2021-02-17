@@ -13,6 +13,7 @@ from user.serializers import CustomUserSerializer
 from copy import deepcopy
 
 
+
 class PresenterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Presenter
@@ -52,7 +53,6 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
 
     remain_capacity = serializers.SerializerMethodField()
 
-
     presenters = PresenterSerializer(many=True)
 
     class Meta:
@@ -64,17 +64,25 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
 
 
 class CompetitionMemberSerializer(serializers.ModelSerializer):
+    site_user_pk = serializers.ReadOnlyField(source='user.pk')
+    profile = serializers.SerializerMethodField(read_only=True )
+    email = serializers.ReadOnlyField(source='user.email' )
+
+    def get_profile(self , member):
+        try:
+            photo_url = member.user.profile.url
+            return photo_url
+        except ValueError:
+            return None
 
     class Meta:
         model = CompetitionMember
         fields = [
-            'team',
-            'user',
-            'has_team',
-            'is_head',
-            'pk'
+            'team','user','has_team','is_head','pk','site_user_pk','profile','email'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
+        
+            
 
 
 class TeamSerialzer(serializers.ModelSerializer):
@@ -98,11 +106,12 @@ class TeamSerialzer(serializers.ModelSerializer):
         team.save()
         return team
 
+
 class WorkshopCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = [
-            'title','date','cost'
+            'title', 'date', 'cost'
         ]
 
 
@@ -110,7 +119,7 @@ class TalkCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Talk
         fields = [
-            'title','date','cost'
+            'title', 'date', 'cost'
         ]
 
 
@@ -128,5 +137,5 @@ class EventServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventService
-        fields = ['pk','user', 'workshop',
+        fields = ['pk', 'user', 'workshop',
                   'payment_state', 'service_type', 'talk']

@@ -19,9 +19,12 @@ from collections import defaultdict
 from .viewsets import *
 from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
-from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from GD.settings.base import MERCHANT
 from .zarin import *
+from .tools import team_activation_code
+from django.utils.encoding import force_bytes
+
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all()
@@ -59,9 +62,6 @@ class UserServicesViewSet(ResponseGenericViewSet):
         total_price = 0
         for service in services:
             if service.payment_state == 'PN':
-                if service.service_type == 'CP':
-                    total_price += COMPETITION_COST
-                    continue
                 event = service.talk if service.service_type == 'TK' else service.workshop
                 if event.get_remain_capacity() > 0:
                     total_price += event.cost
@@ -181,29 +181,17 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         return Response(self.response_format)
-
-    
-    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
-    def enroll(self, request):
-        user = request.user
-        ev_service = EventService.objects.create(user=request.user , service_type='CP')
-        ev_service.save()
-        return self.set_response(
-            message=f'{model_name} successfully added',
-            data=EventServiceSerializer(ev_service).data,
-        )
             
-    # for debug
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def register(self, request):
         user = request.user
-        member = CompetitionMember(
-            user=user, has_team=False, is_head=False)
-        member.save()
-
-        serializer = self.serializer_class(member)
-        # put payment module
-        return self.set_response(data=serializer.data, message="user added to competition")
+        if not CompetitionMember.objects.filter(user=user).exists():
+            member = CompetitionMember.objects.create(user=user, has_team=False, is_head=False)
+            member.save()
+            serializer = self.serializer_class(member)
+            return self.set_response(data=serializer.data, message="user added to competition")
+        return self.set_response(data=[] , message='user already registered in the competition')
+        
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def is_registered(self, request):
@@ -299,7 +287,7 @@ class TeamViewSet(ResponseGenericViewSet,
                 raise ValidationError(f"you already have a team !!!")
             head.is_head = True
             head.has_team = True
-            team = Team.objects.create(name=request.data['name'])
+            team = Team.objects.create(name=request.data['name'],team_activation=team_activation_code(request.data['name']))
             members = CompetitionMember.objects.select_related('user').filter(
                 user__email__in=request.data['emails'])
             if len(members) > 5 or len(members) < 3:
@@ -318,8 +306,8 @@ class TeamViewSet(ResponseGenericViewSet,
                     'team_name': team.name,
                     'email': mem.user.email,
                     'first_name':mem.user.first_name,
-                    'tid':team.pk,
-                    'mid':mem.pk
+                    'tid':team.team_activation,
+                    'mid':urlsafe_base64_encode(force_bytes(mem.pk))
                 }
                 send_team_requests_task.delay(team_data)
             return Response(data=self.serializer_class(team).data)
@@ -354,13 +342,12 @@ class PresenterViweSet(ResponseModelViewSet):
 
 class VerifyTeamRequestView(generics.GenericAPIView):
     permission_classes = [AllowAny]
-
-    def post(self, request, tid, mid):
-        tid = force_text(urlsafe_base64_decode(tid))
+    serializer_class = CompetitionMember
+    def get(self, request, tid, mid):
         mid = force_text(urlsafe_base64_decode(mid))
         try:
             member = CompetitionMember.objects.get(pk=mid)
-            team = Team.objects.get(pk=tid)
+            team = Team.objects.get(team_activation=tid)
             if member.has_team:
                 data = {
                     'message': 'User already has a team!!!',
