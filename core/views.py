@@ -21,7 +21,6 @@ from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from GD.settings.base import MERCHANT
-from .zarin import *
 from .tools import team_activation_code
 from django.utils.encoding import force_bytes
 
