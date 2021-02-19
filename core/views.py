@@ -55,25 +55,19 @@ class UserServicesViewSet(ResponseModelViewSet):
     }
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
-    def services(self, request):
-        user = request.user
-        services = user.services
-        data = EventServiceSerializer(services, many=True)
-        return self.set_response(data=data.data)
-
-
-    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated],url_path='services/compeleted')
-    def completed(self, request):
-        user = request.user
-        services = EventService.objects.filter(user=user , payment_state='CM',service_type='WS')
-        data = EventServiceSerializer(services, many=True)
-        return self.set_response(data=data.data)
-
-
-    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated],url_path='services/pending')
-    def pending(self, request):
+    def cart(self, request):
         user = request.user
         services = EventService.objects.filter(user=user , payment_state='PN',service_type='WS')
+        data = EventServiceSerializer(services, many=True)
+        return self.set_response(data=data.data)
+
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def dashboard(self, request):
+        user = request.user
+        query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS')
+        query2 = EventService.objects.filter(user=user,service_type='TK')
+        services = query2.union(query1)
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
 
