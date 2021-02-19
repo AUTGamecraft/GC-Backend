@@ -56,13 +56,29 @@ class UserServicesViewSet(ResponseModelViewSet):
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def services(self, request):
-        try:
-            user = request.user
-            services = user.services
-            data = EventServiceSerializer(services, many=True)
-            return Response(data.data)
-        except EventService.DoesNotExist:
-            return Http404
+        user = request.user
+        services = user.services
+        data = EventServiceSerializer(services, many=True)
+        return self.set_response(data=data.data)
+
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated],url_path='services/compeleted')
+    def completed(self, request):
+        user = request.user
+        services = EventService.objects.filter(user=user , payment_state='CM')
+        data = EventServiceSerializer(services, many=True)
+        return self.set_response(data=data.data)
+
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated],url_path='services/pending')
+    def pending(self, request):
+        user = request.user
+        services = EventService.objects.filter(user=user , payment_state='PN')
+        data = EventServiceSerializer(services, many=True)
+        return self.set_response(data=data.data)
+
+
+
 
     @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
     def payment(self, request):

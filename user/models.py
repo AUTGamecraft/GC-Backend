@@ -47,7 +47,7 @@ class CustomAccountManager(BaseUserManager):
         if not user_name:
             raise ValueError(_('you must provide a user name'))
 
-        print(f'\nuser phone number is {phone_number}\n')
+        
         email = self.normalize_email(email)
         user = self.model(email=email , user_name=user_name,first_name=first_name , phone_number=phone_number , **other_fieds)
         user.set_password(password)
@@ -100,5 +100,6 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         if not self.profile:
             self.profile = choice(DEFAULT_AVATARS)
-
+        if self.email:
+            self.email = self.email.lower()
         super(SiteUser, self).save(*args, **kwargs)
