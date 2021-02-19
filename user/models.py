@@ -9,10 +9,19 @@ from django.contrib.auth.models import(
     BaseUserManager,
     User
 )
+from random import choice
+
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+
+DEFAULT_AVATARS = [
+    'default/avatar-1.png',
+    'default/avatar-2.png',
+    'default/avatar-3.png',
+]
 
 
 
@@ -88,4 +97,8 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.user_name
 
+    def save(self, *args, **kwargs):
+        if not self.profile:
+            self.profile = choice(DEFAULT_AVATARS)
 
+        super(SiteUser, self).save(*args, **kwargs)
