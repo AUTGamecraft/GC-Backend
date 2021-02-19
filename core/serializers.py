@@ -133,8 +133,8 @@ class EventServiceSerializer(serializers.ModelSerializer):
     def get_service_type(self, obj):
         return obj.get_service_type_display()
     service_type = serializers.SerializerMethodField()
-    workshop = WorkshopCartSerializer(read_only=True)
-    talk = TalkCartSerializer(read_only=True)
+    workshop = WorkshopPageSerializer(read_only=True)
+    talk = TalksPageSerializer(read_only=True)
 
     class Meta:
         model = EventService
