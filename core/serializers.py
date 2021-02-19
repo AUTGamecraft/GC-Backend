@@ -78,7 +78,7 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitionMember
         fields = [
-            'team','user','has_team','is_head','pk','site_user_pk','profile','email'
+            'team','has_team','is_head','pk','site_user_pk','profile','email'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
         
@@ -91,7 +91,7 @@ class TeamSerialzer(serializers.ModelSerializer):
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
         write_only=True, child=serializers.EmailField())
-    members = CompetitionMemberSerializer(many=True,read_only=True)
+    members = CompetitionMemberSerializer(many=True)
 
     class Meta:
         model = Team
