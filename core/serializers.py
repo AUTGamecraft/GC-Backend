@@ -79,7 +79,7 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitionMember
         fields = [
-            'team','user','has_team','is_head','pk','site_user_pk','profile','email'
+            'team','has_team','is_head','pk','site_user_pk','profile','email'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
         
@@ -92,7 +92,7 @@ class TeamSerialzer(serializers.ModelSerializer):
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
         write_only=True, child=serializers.EmailField())
-    members = CompetitionMemberSerializer(many=True,read_only=True)
+    members = CompetitionMemberSerializer(many=True)
 
     class Meta:
         model = Team
@@ -134,8 +134,8 @@ class EventServiceSerializer(serializers.ModelSerializer):
     def get_service_type(self, obj):
         return obj.get_service_type_display()
     service_type = serializers.SerializerMethodField()
-    workshop = WorkshopCartSerializer(read_only=True)
-    talk = TalkCartSerializer(read_only=True)
+    workshop = WorkshopPageSerializer(read_only=True)
+    talk = TalksPageSerializer(read_only=True)
 
     class Meta:
         model = EventService

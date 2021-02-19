@@ -40,10 +40,19 @@ class WorkshopViewSet(ServicesModelViewSet):
     service_type = 'WS'
 
 
-class UserServicesViewSet(ResponseGenericViewSet):
+class UserServicesViewSet(ResponseModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = EventService.objects.all()
     serializer_class = EventServiceSerializer
+
+
+    permission_classes_by_action = {
+        'create': [IsAdminUser],
+        'list': [IsAdminUser],
+        'retrive': [IsAuthenticated],
+        'destroy': [IsAuthenticated],
+        'update': [IsAuthenticated],
+    }
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def services(self, request):
@@ -280,7 +289,6 @@ class TeamViewSet(ResponseGenericViewSet,
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def create_team(self, request):
-        print(request.data)
         try:
             head = CompetitionMember.objects.select_related('user').get(user=request.user)
             if head.has_team:
