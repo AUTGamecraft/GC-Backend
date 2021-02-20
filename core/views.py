@@ -1,27 +1,16 @@
-from django.shortcuts import render
-from django.http import Http404
-from rest_framework.response import Response
-from rest_framework import status
+import json
+from datetime import datetime
+
 from rest_framework import generics, mixins, views
-import user
-from .models import *
-from .serializers import *
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAdminUser,
-    AllowAny
-)
-from rest_framework.decorators import action
-from rest_framework import viewsets
+from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
+    IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
+    IDPAY_STATUS_200, IDPAY_STATUS_10
+
 from django.shortcuts import get_object_or_404 , redirect
-from rest_framework.decorators import api_view, permission_classes
-from collections import defaultdict
 from .viewsets import *
 from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
-from GD.settings.base import MERCHANT
-from .zarin import *
 from .tools import team_activation_code
 from django.utils.encoding import force_bytes
 
@@ -79,55 +68,72 @@ class UserServicesViewSet(ResponseModelViewSet):
         user = request.user
         services = EventService.objects.filter(user=user).select_related('talk' , 'workshop')
         total_price = 0
+        # check capacity to register
         for service in services:
             if service.payment_state == 'PN':
                 event = service.talk if service.service_type == 'TK' else service.workshop
                 if event.get_remain_capacity() > 0:
                     total_price += event.cost
                 else:
-                    return self.set_response(message=f"event {event.title} is full!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE)
-        result = zarin_client.service.PaymentRequest(
-            MERCHANT , 
-            total_price , 
-            ZARINPAL_PAYMENT_DESCRIPTION ,
-            user.email,
-            user.phone_number,
-            ZARINPAL_CALLBACKURL
+                    return self.set_response(message=f"event {event.title} is full you must remove it!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE,error=f"event {event.title} is full you must remove it!!!")
+        # create payment object
+        if total_price <=0:
+            return  self.set_response(message='The eventservice is empty')
+        payment = Payment.objects.create(
+            total_price=total_price,
+            user=user
         )
-        if result.Status == ZARINPAL_STATUS_OK:
-            payment = Payment.objects.create(
-                authority=result.Authority,
-                total_price=total_price,
-                user=user
-            )
-            payment.services.set(services) 
+
+
+        result = IdPayRequest().create_payment(
+             order_id=payment.pk,
+            amount=total_price ,
+             desc=IDPAY_PAYMENT_DESCRIPTION,
+            mail=user.email,
+            phone=user.phone_number,
+            callback=IDPAY_CALL_BACK,
+            name=user.first_name
+        )
+        if result['status'] == IDPAY_STATUS_201:
+            payment.services.set(services)
+            payment.created_date=datetime.now()
+            payment.payment_id=result['id']
+            payment.payment_link=result['link']
             payment.save()
-            if request.user_agent.is_mobile:
-                return redirect(ZARINPAL_REDIRECT_MOBILEPAGE.format(result.Authority))
-            else:
-                return redirect(ZARINPAL_REDIRECT_WEBPAGE.format(result.Authority))
-        else:
+            print("pk***********",payment.pk)
             return self.set_response(
-                message="request for payment wasn't successfull!!!(go fuck your self)"
-                ,data=[{"error_code":result.Status}]
-                ,status_code=status.HTTP_400_BAD_REQUEST
+                message=None
+                ,data=result
+                ,status_code=status.HTTP_200_OK
+            )
+            # return redirect('http://gamecraft.ce.aut.ac.ir')
+        else:
+            payment.delete()
+            return self.set_response(
+                message="request for payment wasn't successfull!!!"
+                ,data=result
+                ,status_code=status.HTTP_400_BAD_REQUEST,
+                error=[{"error_code":result['status']}]
+
             )
                 
-    @action(methods=['GET'] , detail=False , permission_classes=[AllowAny])
-    def verfiy(self, request):
+    @action(methods=['POST'] , detail=False , permission_classes=[AllowAny])
+    def verify(self, request):
         try:
-            status = request.GET['Status']
-            if status != 'OK':
-                pass
-            authority = request.GET['Authority']
-            payment = Payment.objects.get(authority=authority)
-            result = zarin_client.service.PaymentVerification(
-                MERCHANT,
-                authority,
-                payment.total_price
+            request_body=request.data
+            idPay_payment_id = request_body['id']
+            order_id=request_body['order_id']
+            payment = Payment.objects.get(pk=order_id)
+            payment.card_number=request_body['card_no']
+            payment.hashed_card_number=request_body['hashed_card_no']
+            payment.payment_trackID=request_body['track_id']
+            result = IdPayRequest().verify_payment(
+                order_id=order_id,
+                payment_id=idPay_payment_id,
             )
-            if result.Status == ZARINPAL_STATUS_SUBMITTED:
-                payment.is_ok = True
+            result_status=result['status']
+
+            if any(result_status == status_code for status_code in (IDPAY_STATUS_100,IDPAY_STATUS_101,IDPAY_STATUS_200)):
                 services = EventService.objects.select_related('workshop' , 'talk').filter(payment=payment)
                 for service in services:
                     service.payment_state = 'CM'
@@ -140,18 +146,25 @@ class UserServicesViewSet(ResponseModelViewSet):
                     else:
                         CompetitionMember.objects.create(user=user).save()
                     service.save()
+                print('*&*&*&*&*&*&*&*&',result)
+                payment.status = result_status
+                payment.original_data=json.dumps(result)
+                payment.verify_trackID = result['track_id']
+                payment.finished_date = datetime.utcfromtimestamp(int(result['date']))
+                payment.verified_date = datetime.utcfromtimestamp(int(result['verify']['date']))
                 payment.save()
-            elif result.Status == ZARINPAL_STATUS_OK:
-                payment.ref_id = result.RefID
-                payment.save()            
-            
+                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event')
             else:
-                pass
+                payment.status = result_status
+                payment.original_data = json.dumps(result)
+                payment.save()
+                return self.set_response(message='failed',error='failed')
             
-        except KeyError as e:
-            pass
+
         except Payment.DoesNotExist as e1:
-            pass
+            raise ValidationError('no any payment with this order_id')
+        except ConnectionError as e:
+            self.verify(request)
 
     def get_permissions(self):
         try:
