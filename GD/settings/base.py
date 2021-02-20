@@ -211,4 +211,6 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
-MERCHANT = config('MERCHANT')
+# idpay settings
+X_API_KEY=config('X_API_KEY')
+X_SANDBOX=config('X_SANDBOX')
