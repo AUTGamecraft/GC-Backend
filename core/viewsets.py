@@ -127,6 +127,8 @@ class ServicesModelViewSet(ResponseModelViewSet):
                     data=EventServiceSerializer(query[0]).data
                 )
             ev_service = EventService.objects.create(**args)
+            if obj.cost <=0:
+                ev_service.payment_state='CM'
             ev_service.save()
             return self.set_response(
                 message=f'{model_name} successfully added',
@@ -143,8 +145,9 @@ class ServicesModelViewSet(ResponseModelViewSet):
 
     @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
     def services(self, request, pk):
-        
-        services = model.services
+        model_name = str(self.model.__name__).lower()
+
+        services = self.model.services
         serializer = EventServiceSerializer(services, many=True)
         message = ""
         if not serializer.data:

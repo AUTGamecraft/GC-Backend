@@ -77,6 +77,8 @@ class UserServicesViewSet(ResponseModelViewSet):
                 else:
                     return self.set_response(message=f"event {event.title} is full you must remove it!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE,error=f"event {event.title} is full you must remove it!!!")
         # create payment object
+        if total_price <=0:
+            return  self.set_response(message='The eventservice is empty')
         payment = Payment.objects.create(
             total_price=total_price,
             user=user
@@ -95,7 +97,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         if result['status'] == IDPAY_STATUS_201:
             payment.services.set(services)
             payment.created_date=datetime.now()
-            payment.IDPAY_ID=result['id']
+            payment.payment_id=result['id']
             payment.payment_link=result['link']
             payment.save()
             print("pk***********",payment.pk)
@@ -144,11 +146,12 @@ class UserServicesViewSet(ResponseModelViewSet):
                     else:
                         CompetitionMember.objects.create(user=user).save()
                     service.save()
+                print('*&*&*&*&*&*&*&*&',result)
                 payment.status = result_status
                 payment.original_data=json.dumps(result)
                 payment.verify_trackID = result['track_id']
-                payment.finished_date = result['date']
-                payment.verified_date = result['verify']['date']
+                payment.finished_date = datetime.utcfromtimestamp(int(result['date']))
+                payment.verified_date = datetime.utcfromtimestamp(int(result['verify']['date']))
                 payment.save()
                 return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event')
             else:
@@ -160,6 +163,8 @@ class UserServicesViewSet(ResponseModelViewSet):
 
         except Payment.DoesNotExist as e1:
             raise ValidationError('no any payment with this order_id')
+        except ConnectionError as e:
+            self.verify(request)
 
     def get_permissions(self):
         try:
