@@ -98,7 +98,7 @@ class UserServicesViewSet(ResponseGenericViewSet):
                 
     @action(methods=['POST'] , detail=False , permission_classes=[AllowAny])
     def verify(self, request):
-
+        try:
             request_body=request.data
             idPay_payment_id = request_body['id']
             order_id=request_body['order_id']
@@ -111,6 +111,7 @@ class UserServicesViewSet(ResponseGenericViewSet):
                 payment_id=idPay_payment_id,
             )
             result_status=result['status']
+
             if any(result_status == status_code for status_code in (IDPAY_STATUS_100,IDPAY_STATUS_101,IDPAY_STATUS_200)):
                 services = EventService.objects.select_related('workshop' , 'talk').filter(payment=payment)
                 for service in services:
@@ -135,10 +136,11 @@ class UserServicesViewSet(ResponseGenericViewSet):
                 payment.status = result_status
                 payment.original_data = json.dumps(result)
                 payment.save()
+                return self.set_response(message='failed',error='failed')
             
 
-        # except Payment.DoesNotExist as e1:
-        #     raise ValidationError('no payment with this order_id')
+        except Payment.DoesNotExist as e1:
+            raise ValidationError('no any payment with this order_id')
 
 
 class CompetitionMemberViewSet(ResponseGenericViewSet,
