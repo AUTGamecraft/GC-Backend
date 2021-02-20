@@ -3,6 +3,22 @@ from rest_framework.exceptions import ValidationError
 
 from GD.settings.base import AUTH_USER_MODEL
 
+IDPAY_STATUS = [
+    (1, 'payment_not_made'),
+    (2,'payment_failed'),
+    (3,'error'),
+    (4,'blocked'),
+    (5,'return_to_payer'),
+    (6,'system_reversal'),
+    (7,'cancel_payment'),
+    (8,'moved_to_payment_gateway'),
+    (10,'awaiting_payment_verification'),
+    (100,'payment_is_approved'),
+    (101,'payment_is_approved'),
+    (200,'was_deposited'),
+    (201,'payment_created')
+
+]
 
 PAYMENT_STATES = [
     ('CM', 'COMPLETED'),
@@ -32,7 +48,6 @@ TEAM_MEMBER_ROLE = [
     ('ME', 'MEMBER'),
     ('NO', 'NOTEAM')
 ]
-
 
 
 class Presenter(models.Model):
@@ -110,12 +125,20 @@ class Workshop(models.Model):
 
 
 class Payment(models.Model):
-    authority = models.CharField(max_length=40, primary_key=True)
     total_price = models.PositiveIntegerField()
+    status = models.IntegerField(choices=IDPAY_STATUS,default=201)
+    payment_id = models.CharField(null=True,max_length=42)
+    payment_link = models.TextField(null=True)
+    card_number = models.CharField(null=True,max_length=16)
+    hashed_card_number = models.TextField(null=True)
+    payment_trackID = models.CharField(null=True,max_length=20)
+    verify_trackID=models.CharField(null=True,max_length=20)
+    created_date = models.DateTimeField(null=True)
+    finished_date = models.DateTimeField(null=True)
+    verified_date = models.DateTimeField(null=True)
+    original_data = models.TextField(null=True)
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
-    ref_id = models.CharField(default='', max_length=40)
-    is_ok = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Payment for {self.user.user_name}"
@@ -152,9 +175,9 @@ class EventService(models.Model):
             if self.talk == None or self.workshop != None:
                 raise ValidationError(
                     'service type must match with selected service!!!')
-       
+
     def __str__(self):
-        return str(self.user.user_name) + '__'+str(self.service_type)+'__'+str(self.pk)
+        return str(self.user.user_name) + '__' + str(self.service_type) + '__' + str(self.pk)
 
 
 class Team(models.Model):
@@ -171,7 +194,7 @@ class Team(models.Model):
     dislike = models.PositiveIntegerField(default=0)
     profile = models.ImageField(
         verbose_name='team_profile', null=True, blank=True)
-    team_activation = models.CharField(max_length=40, null=True , blank=True)
+    team_activation = models.CharField(max_length=40, null=True, blank=True)
 
     def __str__(self):
         return self.name
