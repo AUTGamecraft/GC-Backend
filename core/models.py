@@ -16,7 +16,8 @@ IDPAY_STATUS = [
     (100,'payment_is_approved'),
     (101,'payment_is_approved'),
     (200,'was_deposited'),
-    (201,'payment_created')
+    (201,'payment_created'),
+    (405,"error")
 
 ]
 
@@ -55,7 +56,7 @@ class Presenter(models.Model):
     last_name = models.CharField(max_length=30, blank=False)
     email = models.EmailField(blank=True, null=True)
     descriptions = models.TextField(null=True, blank=True)
-    linked_in = models.URLField(blank=True)
+    linked_in = models.URLField(blank=True,null=True)
     profile = models.ImageField(
         verbose_name='presenter_profile', null=True, blank=True)
 
@@ -141,7 +142,7 @@ class Payment(models.Model):
         AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
 
     def __str__(self):
-        return f"Payment for {self.user.user_name}"
+        return f"{self.pk}==>{self.user.user_name}=>{self.status}"
 
 
 class EventService(models.Model):
