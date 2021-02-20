@@ -60,7 +60,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'GD.custom_exceptions.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'GD.custom_exceptions.custom_exception_handler',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 
 }
 
@@ -211,4 +214,6 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
-MERCHANT = config('MERCHANT')
+# idpay settings
+X_API_KEY=config('X_API_KEY')
+X_SANDBOX=config('X_SANDBOX')
