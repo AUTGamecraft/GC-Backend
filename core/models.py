@@ -69,18 +69,21 @@ class Presenter(models.Model):
 
 class Talk(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    date = models.DateTimeField(blank=False)
+    start = models.DateTimeField(blank=False)
+    end = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    presenters = models.ManyToManyField(Presenter, related_name='talks')
+    # presenters = models.ManyToManyField(Presenter, related_name='talks')
 
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
+        if self.start > self.end:
+            raise ValidationError("end of the service can not be before beginning")
 
     def get_total_services(self):
         return self.services.count()
@@ -98,18 +101,21 @@ class Talk(models.Model):
 
 class Workshop(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    date = models.DateTimeField(blank=False)
+    start = models.DateTimeField(blank=False , null=False)
+    end = models.DateTimeField(blank=False , null=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    presenters = models.ManyToManyField(Presenter, related_name='workshops')
+    # presenters = models.ManyToManyField(Presenter, related_name='workshops')
 
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
+        if self.start > self.end:
+            raise ValidationError("end of the service can not be before beginning")
 
     def get_total_services(self):
         return self.services.count()

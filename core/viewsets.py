@@ -121,7 +121,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
             query = EventService.objects.filter(**args)
             if query.exists():
                 return self.set_response(
-                    message=f"user has already enrolled in this {model_name}",
+                    error=f"user has already enrolled in this {model_name}",
                     status=208,
                     status_code=status.HTTP_208_ALREADY_REPORTED,
                     data=EventServiceSerializer(query[0]).data
@@ -130,6 +130,9 @@ class ServicesModelViewSet(ResponseModelViewSet):
             if obj.cost <=0:
                 ev_service.payment_state='CM'
             ev_service.save()
+            if model_name == "talk":
+                obj.participant_count += 1
+                obj.save()
             return self.set_response(
                 message=f'{model_name} successfully added',
                 data=EventServiceSerializer(ev_service).data,

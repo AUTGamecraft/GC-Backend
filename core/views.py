@@ -134,17 +134,11 @@ class UserServicesViewSet(ResponseModelViewSet):
             result_status=result['status']
 
             if any(result_status == status_code for status_code in (IDPAY_STATUS_100,IDPAY_STATUS_101,IDPAY_STATUS_200)):
-                services = EventService.objects.select_related('workshop' , 'talk').filter(payment=payment)
+                services = EventService.objects.select_related('workshop').filter(payment=payment,service_type='WS')
                 for service in services:
                     service.payment_state = 'CM'
-                    if service.workshop:
-                        service.workshop.participant_count += 1
-                        service.workshop.save()
-                    elif service.talk:
-                        service.talk.participant_count += 1
-                        service.talk.save()
-                    else:
-                        CompetitionMember.objects.create(user=user).save()
+                    service.workshop.participant_count += 1
+                    service.workshop.save()
                     service.save()
                 print('*&*&*&*&*&*&*&*&',result)
                 payment.status = result_status
