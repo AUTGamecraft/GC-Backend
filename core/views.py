@@ -80,14 +80,14 @@ class UserServicesViewSet(ResponseModelViewSet):
         if total_price <=0:
             return  self.set_response(message='The eventservice is empty')
         payment = Payment.objects.create(
-            total_price=total_price*10,
+            total_price=total_price,
             user=user
         )
 
 
         result = IdPayRequest().create_payment(
              order_id=payment.pk,
-            amount=total_price ,
+            amount=total_price*10 ,
              desc=IDPAY_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,
