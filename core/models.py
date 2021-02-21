@@ -101,7 +101,7 @@ class Talk(models.Model):
 
 class Workshop(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    start = models.DateTimeField(blank=False , null=False)
+    start = models.DateTimeField(blank=False )
     end = models.DateTimeField(blank=False , null=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
