@@ -147,12 +147,12 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.finished_date = datetime.utcfromtimestamp(int(result['date']))
                 payment.verified_date = datetime.utcfromtimestamp(int(result['verify']['date']))
                 payment.save()
-                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event')
+                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
             else:
                 payment.status = result_status
                 payment.original_data = json.dumps(result)
                 payment.save()
-                return self.set_response(message='failed',error='failed')
+                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
             
 
         except Payment.DoesNotExist as e1:
