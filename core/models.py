@@ -1,6 +1,6 @@
 from django.db import models
 from rest_framework.exceptions import ValidationError
-
+from datetime import datetime
 from GD.settings.base import AUTH_USER_MODEL
 
 IDPAY_STATUS = [
@@ -69,8 +69,8 @@ class Presenter(models.Model):
 
 class Talk(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    start = models.DateTimeField(blank=False)
-    end = models.DateTimeField(blank=False)
+    start = models.DateTimeField(blank=False,default=datetime.now())
+    end = models.DateTimeField(blank=False,default=datetime.now())
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField(default=0)
@@ -101,8 +101,8 @@ class Talk(models.Model):
 
 class Workshop(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    start = models.DateTimeField(blank=False )
-    end = models.DateTimeField(blank=False , null=False)
+    start = models.DateTimeField(blank=False ,default=datetime.now())
+    end = models.DateTimeField(blank=False , default=datetime.now())
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
     participant_count = models.IntegerField(default=0)
