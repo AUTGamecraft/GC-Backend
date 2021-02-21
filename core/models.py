@@ -77,7 +77,7 @@ class Talk(models.Model):
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    # presenters = models.ManyToManyField(Presenter, related_name='talks')
+    presenters = models.ManyToManyField(Presenter, related_name='talks')
 
     def clean(self):
         if self.cost < 0:
@@ -109,7 +109,7 @@ class Workshop(models.Model):
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
-    # presenters = models.ManyToManyField(Presenter, related_name='workshops')
+    presenters = models.ManyToManyField(Presenter, related_name='workshops')
 
     def clean(self):
         if self.cost < 0:
