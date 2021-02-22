@@ -13,7 +13,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
 from .tools import team_activation_code
 from django.utils.encoding import force_bytes
-
+from itertools import chain
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all().order_by("start")
@@ -56,7 +56,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         user = request.user
         query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS').order_by('workshop__start')
         query2 = EventService.objects.filter(user=user,service_type='TK').order_by('talk__start')
-        services = query2 | query1
+        services = list(chain(query2 , query1))
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
 
