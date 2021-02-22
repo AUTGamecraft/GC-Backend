@@ -66,7 +66,7 @@ class UserServicesViewSet(ResponseModelViewSet):
     @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
     def payment(self, request):
         user = request.user
-        services = EventService.objects.filter(user=user,service_type='WS').select_related(workshop)
+        services = EventService.objects.filter(user=user,service_type='WS').select_related('workshop')
         total_price = 0
         # check capacity to register
         for service in services:
