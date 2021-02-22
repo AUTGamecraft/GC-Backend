@@ -54,8 +54,8 @@ class UserServicesViewSet(ResponseModelViewSet):
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def dashboard(self, request):
         user = request.user
-        query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS')
-        query2 = EventService.objects.filter(user=user,service_type='TK')
+        query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS').order_by('workshop__start')
+        query2 = EventService.objects.filter(user=user,service_type='TK').order_by('talk__start')
         services = query2.union(query1)
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
