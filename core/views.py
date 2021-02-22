@@ -16,14 +16,14 @@ from django.utils.encoding import force_bytes
 
 
 class TalkViewSet(ServicesModelViewSet):
-    queryset = Talk.objects.all()
+    queryset = Talk.objects.all().order_by("start")
     serializer_class = TalksPageSerializer
     model = Talk
     service_type = 'TK'
 
 
 class WorkshopViewSet(ServicesModelViewSet):
-    queryset = Workshop.objects.all()
+    queryset = Workshop.objects.all().order_by('start')
     serializer_class = WorkshopPageSerializer
     model = Workshop
     service_type = 'WS'
@@ -66,12 +66,12 @@ class UserServicesViewSet(ResponseModelViewSet):
     @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
     def payment(self, request):
         user = request.user
-        services = EventService.objects.filter(user=user).select_related('talk' , 'workshop')
+        services = EventService.objects.filter(user=user,service_type='WS').select_related(workshop)
         total_price = 0
         # check capacity to register
         for service in services:
             if service.payment_state == 'PN':
-                event = service.talk if service.service_type == 'TK' else service.workshop
+                event = service.workshop
                 if event.get_remain_capacity() > 0:
                     total_price += event.cost
                 else:
@@ -134,7 +134,7 @@ class UserServicesViewSet(ResponseModelViewSet):
             result_status=result['status']
 
             if any(result_status == status_code for status_code in (IDPAY_STATUS_100,IDPAY_STATUS_101,IDPAY_STATUS_200)):
-                services = EventService.objects.select_related('workshop').filter(payment=payment,service_type='WS')
+                services = EventService.objects.select_related('workshop').filter(payment=payment)
                 for service in services:
                     service.payment_state = 'CM'
                     service.workshop.participant_count += 1
