@@ -56,7 +56,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         user = request.user
         query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS').order_by('workshop__start')
         query2 = EventService.objects.filter(user=user,service_type='TK').order_by('talk__start')
-        services = query2.union(query1)
+        services = query2 | query1
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
 
