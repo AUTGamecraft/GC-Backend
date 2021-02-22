@@ -123,6 +123,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 return self.set_response(
                     error=f"user has already enrolled in this {model_name}",
                     status=208,
+                message=f"user has already enrolled in this {model_name}",
                     status_code=status.HTTP_208_ALREADY_REPORTED,
                     data=EventServiceSerializer(query[0]).data
                 )
