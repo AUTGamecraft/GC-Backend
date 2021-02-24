@@ -7,7 +7,8 @@ from .views import (
     PresenterViweSet,
     CompetitionMemberViewSet,
     TeamViewSet,
-    VerifyTeamRequestView
+    VerifyTeamRequestView,
+    CouponViewSet
 )
 
 router = routers.SimpleRouter()
@@ -17,6 +18,7 @@ router.register(r'service',UserServicesViewSet)
 router.register(r'presenter',PresenterViweSet)
 router.register(r'team',TeamViewSet)
 router.register(r'member',CompetitionMemberViewSet)
+router.register(r'coupon',CouponViewSet)
 
 urlpatterns = [
     path('' , include(router.urls)),

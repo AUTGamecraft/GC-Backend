@@ -131,6 +131,20 @@ class Workshop(models.Model):
         return self.title
 
 
+class Coupon(models.Model):
+    name = models.CharField(max_length=50 , primary_key=True , help_text="don't use / in the name!!!")
+    count = models.PositiveIntegerField(null=False,blank=False)
+    percentage = models.FloatField(default=0.0 , help_text='Enter a number between 0 to 100 !!!')
+
+    def __str__(self):
+        return self.name
+    
+
+    def clean(self):
+        if self.percentage < 0 or self.percentage > 100:
+            raise ValidationError("i said between 0 to 100 !!!")
+
+
 class Payment(models.Model):
     total_price = models.PositiveIntegerField()
     status = models.IntegerField(choices=IDPAY_STATUS,default=201)
@@ -146,7 +160,6 @@ class Payment(models.Model):
     original_data = models.TextField(null=True)
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
-
     def __str__(self):
         return f"{self.pk}==>{self.user.user_name}=>{self.status}"
 
@@ -217,3 +230,5 @@ class CompetitionMember(models.Model):
 
     def __str__(self):
         return self.user.user_name
+
+

@@ -112,6 +112,13 @@ class ServicesModelViewSet(ResponseModelViewSet):
         model_name = str(self.model.__name__).lower()
         try:
             obj = self.model.objects.get(pk=pk)
+            if obj.get_remain_capacity() == 0:
+                return self.set_response(
+                    error=f"this {model_name} is full",
+                    status=200,
+                    message=f"this {model_name} is full",
+                    status_code=status.HTTP_200_OK,
+                )
             user = request.user
             args = {
                 'user': user,
@@ -123,7 +130,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 return self.set_response(
                     error=f"user has already enrolled in this {model_name}",
                     status=208,
-                message=f"user has already enrolled in this {model_name}",
+                    message=f"user has already enrolled in this {model_name}",
                     status_code=status.HTTP_208_ALREADY_REPORTED,
                     data=EventServiceSerializer(query[0]).data
                 )
