@@ -79,6 +79,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         # create payment object
         if total_price <= 0:
             return self.set_response(message='The shopping cart is empty')
+        coupon = None
         if data['coupon'] != None:
             try:
                 coupon = Coupon.objects.get(name=data['coupon'])
@@ -115,6 +116,7 @@ class UserServicesViewSet(ResponseModelViewSet):
             payment.created_date = datetime.now()
             payment.payment_id = result['id']
             payment.payment_link = result['link']
+            payment.coupon = coupon
             payment.save()
             print("pk***********", payment.pk)
             return self.set_response(
@@ -164,13 +166,18 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.save()
                 return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
             else:
+                if payment.coupon:
+                    coupon = payment.coupon 
+                    coupon.count += 1
+                    coupon.save()
+                    
                 payment.status = result_status
                 payment.original_data = json.dumps(result)
                 payment.save()
                 return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
 
         except Payment.DoesNotExist as e1:
-            raise ValidationError('no any payment with this order_id')
+            raise ValidationError('no payment with this order_id')
         except ConnectionError as e:
             self.verify(request)
 

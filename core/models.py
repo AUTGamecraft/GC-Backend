@@ -160,6 +160,9 @@ class Payment(models.Model):
     original_data = models.TextField(null=True)
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
+    coupon = models.ForeignKey(
+        Coupon , on_delete=models.SET_NULL , default=None , null=True
+    )
     def __str__(self):
         return f"{self.pk}==>{self.user.user_name}=>{self.status}"
 
