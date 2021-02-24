@@ -6,14 +6,15 @@ from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
 
-from django.shortcuts import get_object_or_404 , redirect
+from django.shortcuts import get_object_or_404, redirect
 from .viewsets import *
 from tasks.tasks import send_team_requests_task
 from django.utils.encoding import force_text
-from django.utils.http import urlsafe_base64_decode , urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from .tools import team_activation_code
 from django.utils.encoding import force_bytes
 from itertools import chain
+
 
 class TalkViewSet(ServicesModelViewSet):
     queryset = Talk.objects.all().order_by("start")
@@ -34,7 +35,6 @@ class UserServicesViewSet(ResponseModelViewSet):
     queryset = EventService.objects.all()
     serializer_class = EventServiceSerializer
 
-
     permission_classes_by_action = {
         'create': [IsAdminUser],
         'list': [IsAdminUser],
@@ -46,49 +46,65 @@ class UserServicesViewSet(ResponseModelViewSet):
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def cart(self, request):
         user = request.user
-        services = EventService.objects.filter(user=user , payment_state='PN',service_type='WS')
+        services = EventService.objects.filter(
+            user=user, payment_state='PN', service_type='WS')
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
-
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def dashboard(self, request):
         user = request.user
-        query1 = EventService.objects.filter(user=user , payment_state='CM',service_type='WS').order_by('workshop__start')
-        query2 = EventService.objects.filter(user=user,service_type='TK').order_by('talk__start')
-        services = list(chain(query2 , query1))
+        query1 = EventService.objects.filter(
+            user=user, payment_state='CM', service_type='WS').order_by('workshop__start')
+        query2 = EventService.objects.filter(
+            user=user, service_type='TK').order_by('talk__start')
+        services = list(chain(query2, query1))
         data = EventServiceSerializer(services, many=True)
         return self.set_response(data=data.data)
 
-
-
-
-    @action(methods=['POST'] , detail=False , permission_classes=[IsAuthenticated])
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def payment(self, request):
+        data = defaultdict(lambda:None , request.data)
         user = request.user
-        services = EventService.objects.filter(user=user,service_type='WS').select_related('workshop')
+        services = EventService.objects.filter(
+            user=user, service_type='WS',payment_state='PN').select_related('workshop')
         total_price = 0
         # check capacity to register
         for service in services:
-            if service.payment_state == 'PN':
-                event = service.workshop
-                if event.get_remain_capacity() > 0:
-                    total_price += event.cost
-                else:
-                    return self.set_response(message=f"event {event.title} is full you must remove it!!!",status_code=status.HTTP_406_NOT_ACCEPTABLE,error=f"event {event.title} is full you must remove it!!!")
+            event = service.workshop
+            if event.get_remain_capacity() > 0:
+                total_price += event.cost
+            else:
+                return self.set_response(message=f"event {event.title} is full you must remove it!!!", status_code=status.HTTP_406_NOT_ACCEPTABLE, error=f"event {event.title} is full you must remove it!!!")
         # create payment object
-        if total_price <=0:
-            return  self.set_response(message='The eventservice is empty')
+        if total_price <= 0:
+            return self.set_response(message='The shopping cart is empty')
+        if data['coupon'] != None:
+            try:
+                coupon = Coupon.objects.get(name=data['coupon'])
+                if coupon.count > 0:
+                    total_price = total_price * ((100 - coupon.percentage)/100)
+                    coupon.count -= 1
+                    coupon.save()
+                else:
+                    return self.set_response(
+                        message="coupon finished",
+                        error="coupon finished"
+                    )
+            except Coupon.DoesNotExist as e:
+                return self.set_response(
+                    message="coupon does not exist",
+                    error="coupon does not exist"
+                )
         payment = Payment.objects.create(
             total_price=total_price,
             user=user
         )
 
-
         result = IdPayRequest().create_payment(
-             order_id=payment.pk,
-            amount=total_price*10 ,
-             desc=IDPAY_PAYMENT_DESCRIPTION,
+            order_id=payment.pk,
+            amount=total_price*10,
+            desc=IDPAY_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,
             callback=IDPAY_CALL_BACK,
@@ -96,56 +112,55 @@ class UserServicesViewSet(ResponseModelViewSet):
         )
         if result['status'] == IDPAY_STATUS_201:
             payment.services.set(services)
-            payment.created_date=datetime.now()
-            payment.payment_id=result['id']
-            payment.payment_link=result['link']
+            payment.created_date = datetime.now()
+            payment.payment_id = result['id']
+            payment.payment_link = result['link']
             payment.save()
-            print("pk***********",payment.pk)
+            print("pk***********", payment.pk)
             return self.set_response(
-                message=None
-                ,data=result
-                ,status_code=status.HTTP_200_OK
+                message=None, data=result, status_code=status.HTTP_200_OK
             )
             # return redirect('http://gamecraft.ce.aut.ac.ir')
         else:
             payment.delete()
             return self.set_response(
-                message="request for payment wasn't successfull!!!"
-                ,data=result
-                ,status_code=status.HTTP_400_BAD_REQUEST,
-                error=[{"error_code":result['status']}]
+                message="request for payment wasn't successfull!!!", data=result, status_code=status.HTTP_400_BAD_REQUEST,
+                error=[{"error_code": result['status']}]
 
             )
-                
-    @action(methods=['POST'] , detail=False , permission_classes=[AllowAny])
+
+    @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def verify(self, request):
         try:
-            request_body=request.data
+            request_body = request.data
             idPay_payment_id = request_body['id']
-            order_id=request_body['order_id']
+            order_id = request_body['order_id']
             payment = Payment.objects.get(pk=order_id)
-            payment.card_number=request_body['card_no']
-            payment.hashed_card_number=request_body['hashed_card_no']
-            payment.payment_trackID=request_body['track_id']
+            payment.card_number = request_body['card_no']
+            payment.hashed_card_number = request_body['hashed_card_no']
+            payment.payment_trackID = request_body['track_id']
             result = IdPayRequest().verify_payment(
                 order_id=order_id,
                 payment_id=idPay_payment_id,
             )
-            result_status=result['status']
+            result_status = result['status']
 
-            if any(result_status == status_code for status_code in (IDPAY_STATUS_100,IDPAY_STATUS_101,IDPAY_STATUS_200)):
-                services = EventService.objects.select_related('workshop').filter(payment=payment)
+            if any(result_status == status_code for status_code in (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
+                services = EventService.objects.select_related(
+                    'workshop').filter(payment=payment)
                 for service in services:
                     service.payment_state = 'CM'
                     service.workshop.participant_count += 1
                     service.workshop.save()
                     service.save()
-                print('*&*&*&*&*&*&*&*&',result)
+                print('*&*&*&*&*&*&*&*&', result)
                 payment.status = result_status
-                payment.original_data=json.dumps(result)
+                payment.original_data = json.dumps(result)
                 payment.verify_trackID = result['track_id']
-                payment.finished_date = datetime.utcfromtimestamp(int(result['date']))
-                payment.verified_date = datetime.utcfromtimestamp(int(result['verify']['date']))
+                payment.finished_date = datetime.utcfromtimestamp(
+                    int(result['date']))
+                payment.verified_date = datetime.utcfromtimestamp(
+                    int(result['verify']['date']))
                 payment.save()
                 return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
             else:
@@ -153,7 +168,6 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.original_data = json.dumps(result)
                 payment.save()
                 return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
-            
 
         except Payment.DoesNotExist as e1:
             raise ValidationError('no any payment with this order_id')
@@ -167,7 +181,6 @@ class UserServicesViewSet(ResponseModelViewSet):
         except KeyError:
             # action is not set return default permission_classes
             return [permission() for permission in self.permission_classes]
-
 
 
 class CompetitionMemberViewSet(ResponseGenericViewSet,
@@ -216,17 +229,17 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         return Response(self.response_format)
-            
+
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def register(self, request):
         user = request.user
         if not CompetitionMember.objects.filter(user=user).exists():
-            member = CompetitionMember.objects.create(user=user, has_team=False, is_head=False)
+            member = CompetitionMember.objects.create(
+                user=user, has_team=False, is_head=False)
             member.save()
             serializer = self.serializer_class(member)
             return self.set_response(data=serializer.data, message="user added to competition")
-        return self.set_response(data=[] , message='user already registered in the competition')
-        
+        return self.set_response(data=[], message='user already registered in the competition')
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def is_registered(self, request):
@@ -246,16 +259,14 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
             return self.set_response(error='bad request', status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e1:
             return self.set_response(error=str(e1), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    @action(methods=['GET'] , detail=False , permission_classes=[IsAuthenticated])
-    def registered_list(self,request):
+
+    @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
+    def registered_list(self, request):
         cmembers = CompetitionMember.objects.filter(has_team=False)
-        serialized = self.serializer_class(cmembers,many=True)
+        serialized = self.serializer_class(cmembers, many=True)
         return self.set_response(
-            data= serialized.data 
+            data=serialized.data
         )
-
-
 
     def get_permissions(self):
         try:
@@ -316,12 +327,14 @@ class TeamViewSet(ResponseGenericViewSet,
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def create_team(self, request):
         try:
-            head = CompetitionMember.objects.select_related('user').get(user=request.user)
+            head = CompetitionMember.objects.select_related(
+                'user').get(user=request.user)
             if head.has_team:
                 raise ValidationError(f"you already have a team !!!")
             head.is_head = True
             head.has_team = True
-            team = Team.objects.create(name=request.data['name'],team_activation=team_activation_code(request.data['name']))
+            team = Team.objects.create(
+                name=request.data['name'], team_activation=team_activation_code(request.data['name']))
             members = CompetitionMember.objects.select_related('user').filter(
                 user__email__in=request.data['emails'])
             if len(members) > 5 or len(members) < 3:
@@ -339,9 +352,9 @@ class TeamViewSet(ResponseGenericViewSet,
                     'head_name': head.user.user_name,
                     'team_name': team.name,
                     'email': mem.user.email,
-                    'first_name':mem.user.first_name,
-                    'tid':team.team_activation,
-                    'mid':urlsafe_base64_encode(force_bytes(mem.pk))
+                    'first_name': mem.user.first_name,
+                    'tid': team.team_activation,
+                    'mid': urlsafe_base64_encode(force_bytes(mem.pk))
                 }
                 send_team_requests_task.delay(team_data)
             return Response(data=self.serializer_class(team).data)
@@ -377,6 +390,7 @@ class PresenterViweSet(ResponseModelViewSet):
 class VerifyTeamRequestView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = CompetitionMember
+
     def get(self, request, tid, mid):
         mid = force_text(urlsafe_base64_decode(mid))
         try:
@@ -389,7 +403,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'status': 200,
                     'data': []
                 }
-                return Response(data=data, status=status.HTTP_200_OK)  
+                return Response(data=data, status=status.HTTP_200_OK)
             members_num = team.members.count()
             if members_num > 5:
                 data = {
@@ -398,11 +412,11 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'status': 200,
                     'data': []
                 }
-                return Response(data=data, status=status.HTTP_200_OK)  
+                return Response(data=data, status=status.HTTP_200_OK)
             member.has_team = True
             member.team = team
             member.save()
-            if members_num >=3:
+            if members_num >= 3:
                 team.state = 'AC'
             team.save()
             data = {
@@ -436,4 +450,60 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                 'data': []
             }
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+class CouponViewSet(ResponseGenericViewSet,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    mixins.ListModelMixin,
+                    mixins.RetrieveModelMixin):
+    queryset = Coupon.objects.all()
+    serializer_class = CouponSerializer
+    permission_classes_by_action = {
+        'list': [IsAdminUser],
+        'retrive': [IsAuthenticated],
+        'destroy': [IsAdminUser],
+        'update': [IsAdminUser],
+    }
+    lookup_field = 'name'
+
+    def retrieve(self, request, *args, **kwargs):
+        response_data = super(CouponViewSet, self).retrieve(
+            request, *args, **kwargs)
+        self.response_format["data"] = response_data.data
+        self.response_format["status"] = 200
+        if not response_data.data:
+            self.response_format["message"] = "Empty"
+        return Response(self.response_format)
+
+    def list(self, request, *args, **kwargs):
+        response_data = super(CouponViewSet, self).list(
+            request, *args, **kwargs)
+        self.response_format["data"] = response_data.data
+        self.response_format["status"] = 200
+        if not response_data.data:
+            self.response_format["message"] = "List empty"
+        return Response(self.response_format)
+
+    def update(self, request, *args, **kwargs):
+        response_data = super(CouponViewSet, self).update(
+            request, *args, **kwargs)
+        self.response_format["data"] = response_data.data
+        self.response_format["status"] = 200
+
+        return Response(self.response_format)
+
+    def destroy(self, request, *args, **kwargs):
+        response_data = super(CouponViewSet, self).destroy(
+            request, *args, **kwargs)
+        self.response_format["data"] = response_data.data
+        self.response_format["status"] = 200
+        return Response(self.response_format)
+
+    def get_permissions(self):
+        try:
+            # return permission_classes depending on `action`
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # action is not set return default permission_classes
+            return [permission() for permission in self.permission_classes]

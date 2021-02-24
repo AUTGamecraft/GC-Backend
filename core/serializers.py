@@ -4,7 +4,8 @@ from core.models import (
     Presenter,
     EventService,
     Team,
-    CompetitionMember
+    CompetitionMember,
+    Coupon
 )
 from rest_framework import serializers
 
@@ -143,3 +144,10 @@ class EventServiceSerializer(serializers.ModelSerializer):
         model = EventService
         fields = ['pk', 'user', 'workshop',
                   'payment_state', 'service_type', 'talk']
+
+
+
+class CouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coupon
+        fields = '__all__'
