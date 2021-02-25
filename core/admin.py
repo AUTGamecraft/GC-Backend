@@ -113,7 +113,7 @@ class PaymentAdmin(admin.ModelAdmin):
         #Return nothing to make sure user can't update any data
         pass
     date_hierarchy = 'created_date'
-    list_display = ['user' , 'created_date' , 'payment_state','total_price']
+    list_display = ['__str__','user' , 'created_date' , 'payment_state','total_price']
     actions_on_top = True
     list_filter = ['status']
     search_fields = ['user__email']
@@ -144,9 +144,11 @@ class EventServiceAdmin(admin.ModelAdmin):
             }
         )
     )
+    readonly_fields = ['payment']
     list_display = ['user' , 'workshop' , 'talk','payment_state','service_type']
     actions_on_top = True
     list_filter = ['payment_state','service_type']
+    search_fields = ['user__email']
 
 
 @admin.register(Team)
@@ -208,8 +210,3 @@ class CouponAdmin(admin.ModelAdmin):
     list_display = ['name' , 'count' , 'percentage']
     
     
-# admin.site.register(Talk)
-# admin.site.register(Workshop)
-# admin.site.register(Presenter)
-# admin.site.register(CompetitionMember)
-# admin.site.register(Payment)

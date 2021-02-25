@@ -124,13 +124,15 @@ class UserServicesViewSet(ResponseModelViewSet):
             payment.payment_link = result['link']
             payment.coupon = coupon
             payment.save()
-            print("pk***********", payment.pk)
             return self.set_response(
                 message=None, data=result, status_code=status.HTTP_200_OK
             )
             # return redirect('http://gamecraft.ce.aut.ac.ir')
         else:
             payment.delete()
+            if coupon:
+                coupon.count += 1
+                coupon.save()
             return self.set_response(
                 message=CREATING_PAYMENT_UNSUCCESS, data=result, status_code=status.HTTP_400_BAD_REQUEST,
                 error=[{"error_code": result['status']}]
@@ -160,7 +162,6 @@ class UserServicesViewSet(ResponseModelViewSet):
                     service.payment_state = 'CM'
                     service.workshop.save()
                     service.save()
-                print('*&*&*&*&*&*&*&*&', result)
                 payment.status = result_status
                 payment.original_data = json.dumps(result)
                 payment.verify_trackID = result['track_id']
