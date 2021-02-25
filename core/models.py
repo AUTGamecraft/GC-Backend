@@ -174,7 +174,7 @@ class Payment(models.Model):
     
     
     def __str__(self):
-        return f"{self.pk}==>{self.user.user_name}=>{self.status}"
+        return f"{self.pk}"
 
 
 class EventService(models.Model):
