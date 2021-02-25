@@ -13,6 +13,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets
 from django.contrib.auth import get_user_model
+
+from GD.messages import USER_DELETED_SUCCESSFULLY, DUPLICATE_USER_ERROR, LOG_OUT_FAILD, USER_ACTIVED, USER_NOT_FOUND, \
+    CORRECT_THE_ERRORS, USER_CREATED_SUCCESSFULLY, USER_LOGED_OUT_SUCCESSFULLY
 from .serializers import (
     CustomUserSerializer
 )
@@ -112,13 +115,13 @@ class UserViewSet(ResponseGenericViewSet,
             data = self.serializer_class(user).data
             user.delete()
             return self.set_response(
-                message="user deleted successfully",
+                message=USER_DELETED_SUCCESSFULLY,
                 data = data,
                 status_code=status.HTTP_200_OK
             )
         except Exception as e:
             return self.set_response(
-                message='log out faild',
+                message=LOG_OUT_FAILD,
                 status=400,
                 status_code=status.HTTP_400_BAD_REQUEST,
                 error=str(e)
@@ -154,7 +157,7 @@ class UserViewSet(ResponseGenericViewSet,
                 user = serializer.save()
             except IntegrityError as e:
                 return self.set_response(
-                    message=str(e),
+                    message=DUPLICATE_USER_ERROR,
                     status=409,
                     status_code=status.HTTP_409_CONFLICT,
                     error=str((e))
@@ -171,14 +174,14 @@ class UserViewSet(ResponseGenericViewSet,
                 }
                 send_email_task.delay(user_data)
                 return self.set_response(
-                    message='user created successfully',
+                    message=USER_CREATED_SUCCESSFULLY,
                     status=201,
                     status_code=status.HTTP_201_CREATED,
                     error=None,
                     data=serializer.data
                 )
         return self.set_response(
-            message="Please correct the errors",
+            message=CORRECT_THE_ERRORS,
             status=400,
             status_code=status.HTTP_400_BAD_REQUEST,
             error=serializer.errors
@@ -191,7 +194,7 @@ class UserViewSet(ResponseGenericViewSet,
             token = RefreshToken(refresh_token)
             token.blacklist()
             return self.set_response(
-                message='user loged out successfully',
+                message=USER_LOGED_OUT_SUCCESSFULLY,
                 status=205,
                 status_code=status.HTTP_205_RESET_CONTENT,
                 data={
@@ -201,7 +204,7 @@ class UserViewSet(ResponseGenericViewSet,
             )
         except Exception as e:
             return self.set_response(
-                message='log out faild',
+                message=LOG_OUT_FAILD,
                 status=400,
                 status_code=status.HTTP_400_BAD_REQUEST,
                 error=str(e)
@@ -228,7 +231,7 @@ class VerfiyUserView(generics.GenericAPIView):
             user.is_active = True
             user.save()
             data = {
-                'message': 'user activated',
+                'message': USER_ACTIVED,
                 'error': None,
                 'status': 202,
                 'data': CustomUserSerializer(user).data
@@ -236,7 +239,7 @@ class VerfiyUserView(generics.GenericAPIView):
             return Response(data=data, status=status.HTTP_202_ACCEPTED)
         except get_user_model().DoesNotExist as e:
             data = {
-                'message': 'user not found',
+                'message': USER_NOT_FOUND,
                 'error': str(e),
                 'status': 404,
                 'data': []

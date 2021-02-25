@@ -2,6 +2,12 @@ import json
 from datetime import datetime
 
 from rest_framework import generics, mixins, views
+
+from GD.messages import WORKSHOP_CAPACITY_IS_FULL, SHOPPING_CART_EMPTY, COUPON_FINISHED, COUPON_DOSE_NOT_EXIST, \
+    CREATING_PAYMENT_UNSUCCESS, EMPTY, ADDED_TO_COMPETITION, ALREADY_REGISTERED_IN_THE_COMPETITION, \
+    REQUESTED_USER_IS_NOT_REGISTERED_OR_ALREADY_HAS_A_TEAM, YOU_ALREADY_HAVE_A_TEAM, \
+    COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN, USER_X_HAS_TEAM, USER_ALREADY_HAS_A_TEAM, TEAM_ACTIVED, USER_NOT_FOUND, \
+    TEAM_NOT_FOUND, SOMETHING_IS_WRONG, TEAM_IS_FULL
 from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
@@ -75,10 +81,10 @@ class UserServicesViewSet(ResponseModelViewSet):
             if event.get_remain_capacity() > 0:
                 total_price += event.cost
             else:
-                return self.set_response(message=f"event {event.title} is full you must remove it!!!", status_code=status.HTTP_406_NOT_ACCEPTABLE, error=f"event {event.title} is full you must remove it!!!")
+                return self.set_response(message=event.title+WORKSHOP_CAPACITY_IS_FULL, status_code=status.HTTP_406_NOT_ACCEPTABLE, error=f"event {event.title} is full you must remove it!!!")
         # create payment object
         if total_price <= 0:
-            return self.set_response(message='The shopping cart is empty')
+            return self.set_response(message=SHOPPING_CART_EMPTY)
         coupon = None
         if data['coupon'] != None:
             try:
@@ -89,12 +95,12 @@ class UserServicesViewSet(ResponseModelViewSet):
                     coupon.save()
                 else:
                     return self.set_response(
-                        message="coupon finished",
+                        message=COUPON_FINISHED,
                         error="coupon finished"
                     )
             except Coupon.DoesNotExist as e:
                 return self.set_response(
-                    message="coupon does not exist",
+                    message=COUPON_DOSE_NOT_EXIST,
                     error="coupon does not exist"
                 )
         payment = Payment.objects.create(
@@ -126,7 +132,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         else:
             payment.delete()
             return self.set_response(
-                message="request for payment wasn't successfull!!!", data=result, status_code=status.HTTP_400_BAD_REQUEST,
+                message=CREATING_PAYMENT_UNSUCCESS, data=result, status_code=status.HTTP_400_BAD_REQUEST,
                 error=[{"error_code": result['status']}]
 
             )
@@ -210,7 +216,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "Empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def list(self, request, *args, **kwargs):
@@ -219,7 +225,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "List empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def update(self, request, *args, **kwargs):
@@ -245,8 +251,8 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
                 user=user, has_team=False, is_head=False)
             member.save()
             serializer = self.serializer_class(member)
-            return self.set_response(data=serializer.data, message="user added to competition")
-        return self.set_response(data=[], message='user already registered in the competition')
+            return self.set_response(data=serializer.data, message=ADDED_TO_COMPETITION)
+        return self.set_response(data=[], message=ALREADY_REGISTERED_IN_THE_COMPETITION)
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def is_registered(self, request):
@@ -261,7 +267,7 @@ class CompetitionMemberViewSet(ResponseGenericViewSet,
             else:
                 return self.set_response(data={
                     'available': False
-                }, message="requested user is not registered or already has a team")
+                }, message=REQUESTED_USER_IS_NOT_REGISTERED_OR_ALREADY_HAS_A_TEAM)
         except KeyError as e:
             return self.set_response(error='bad request', status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e1:
@@ -304,7 +310,7 @@ class TeamViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "Empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def list(self, request, *args, **kwargs):
@@ -313,7 +319,7 @@ class TeamViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "List empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def update(self, request, *args, **kwargs):
@@ -337,7 +343,7 @@ class TeamViewSet(ResponseGenericViewSet,
             head = CompetitionMember.objects.select_related(
                 'user').get(user=request.user)
             if head.has_team:
-                raise ValidationError(f"you already have a team !!!")
+                raise ValidationError(YOU_ALREADY_HAVE_A_TEAM)
             head.is_head = True
             head.has_team = True
             team = Team.objects.create(
@@ -346,11 +352,11 @@ class TeamViewSet(ResponseGenericViewSet,
                 user__email__in=request.data['emails'])
             if len(members) > 5 or len(members) < 3:
                 raise ValidationError(
-                    "count of user members must be between 3 and 5 ")
+                    COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN)
             for mem in members:
                 if mem.has_team:
                     raise ValidationError(
-                        f"user {mem.user.user_name} has team")
+                        USER_X_HAS_TEAM.format(user=mem.user.user_name))
             head.team = team
             head.save()
             team.save()
@@ -405,7 +411,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             team = Team.objects.get(team_activation=tid)
             if member.has_team:
                 data = {
-                    'message': 'User already has a team!!!',
+                    'message': USER_ALREADY_HAS_A_TEAM,
                     'error': None,
                     'status': 200,
                     'data': []
@@ -414,7 +420,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             members_num = team.members.count()
             if members_num > 5:
                 data = {
-                    'message': 'team is full!!!',
+                    'message': TEAM_IS_FULL,
                     'error': None,
                     'status': 200,
                     'data': []
@@ -427,7 +433,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                 team.state = 'AC'
             team.save()
             data = {
-                'message': 'user activated',
+                'message': TEAM_ACTIVED,
                 'error': None,
                 'status': 202,
                 'data': CompetitionMemberSerializer(member).data
@@ -435,7 +441,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             return Response(data=data, status=status.HTTP_202_ACCEPTED)
         except CompetitionMember.DoesNotExist as e:
             data = {
-                'message': 'user not found',
+                'message': USER_NOT_FOUND,
                 'error': str(e),
                 'status': 400,
                 'data': []
@@ -443,7 +449,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
         except Team.DoesNotExist as e1:
             data = {
-                'message': 'team not found',
+                'message': TEAM_NOT_FOUND,
                 'error': str(e1),
                 'status': 400,
                 'data': []
@@ -451,7 +457,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e2:
             data = {
-                'message': 'something went wrong',
+                'message': SOMETHING_IS_WRONG,
                 'error': str(e2),
                 'status': 400,
                 'data': []
@@ -480,7 +486,7 @@ class CouponViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "Empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def list(self, request, *args, **kwargs):
@@ -489,7 +495,7 @@ class CouponViewSet(ResponseGenericViewSet,
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "List empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def update(self, request, *args, **kwargs):

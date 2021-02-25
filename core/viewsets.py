@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 import user
+from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY
 from .models import *
 from .serializers import *
 from rest_framework.permissions import (
@@ -53,7 +54,7 @@ class ResponseModelViewSet(viewsets.ModelViewSet):
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "List empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def create(self, request, *args, **kwargs):
@@ -69,7 +70,7 @@ class ResponseModelViewSet(viewsets.ModelViewSet):
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
-            self.response_format["message"] = "Empty"
+            self.response_format["message"] = EMPTY
         return Response(self.response_format)
 
     def update(self, request, *args, **kwargs):
@@ -116,7 +117,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 return self.set_response(
                     error=f"this {model_name} is full",
                     status=200,
-                    message=f"this {model_name} is full",
+                    message=CAPACITY_IS_FULL,
                     status_code=status.HTTP_200_OK,
                 )
             user = request.user
@@ -130,7 +131,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 return self.set_response(
                     error=f"user has already enrolled in this {model_name}",
                     status=208,
-                    message=f"user has already enrolled in this {model_name}",
+                    message=USER_HAS_ALREADY_ENROLLED,
                     status_code=status.HTTP_208_ALREADY_REPORTED,
                     data=EventServiceSerializer(query[0]).data
                 )
@@ -142,13 +143,13 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 obj.participant_count += 1
                 obj.save()
             return self.set_response(
-                message=f'{model_name} successfully added',
+                message=SUCCESSFULLY_ADDED,
                 data=EventServiceSerializer(ev_service).data,
             )
         except self.model.DoesNotExist:
             return self.set_response(
                 message=f"requested {model_name} doesn't exist",
-                error=True,
+                error=f"requested {model_name} doesn't exist",
                 status=404,
                 status_code=status.HTTP_404_NOT_FOUND
             )
@@ -162,7 +163,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
         serializer = EventServiceSerializer(services, many=True)
         message = ""
         if not serializer.data:
-            message = f"there is no {model_name} service!!!"
+            message = NO_ANY_SERVICES
         return self.set_response(
             message = message,
             data=serializer.data
