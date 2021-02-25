@@ -152,7 +152,6 @@ class UserServicesViewSet(ResponseModelViewSet):
                     'workshop').filter(payment=payment)
                 for service in services:
                     service.payment_state = 'CM'
-                    service.workshop.participant_count += 1
                     service.workshop.save()
                     service.save()
                 print('*&*&*&*&*&*&*&*&', result)

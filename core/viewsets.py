@@ -138,9 +138,6 @@ class ServicesModelViewSet(ResponseModelViewSet):
             if obj.cost <=0:
                 ev_service.payment_state='CM'
             ev_service.save()
-            if model_name == "talk":
-                obj.participant_count += 1
-                obj.save()
             return self.set_response(
                 message=f'{model_name} successfully added',
                 data=EventServiceSerializer(ev_service).data,
