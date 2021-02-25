@@ -163,7 +163,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.verified_date = datetime.utcfromtimestamp(
                     int(result['verify']['date']))
                 payment.save()
-                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
             else:
                 if payment.coupon:
                     coupon = payment.coupon 
@@ -173,7 +173,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.status = result_status
                 payment.original_data = json.dumps(result)
                 payment.save()
-                return redirect('http://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
 
         except Payment.DoesNotExist as e1:
             raise ValidationError('no payment with this order_id')
