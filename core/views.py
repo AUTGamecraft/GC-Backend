@@ -86,7 +86,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         if total_price <= 0:
             return self.set_response(message=SHOPPING_CART_EMPTY)
         coupon = None
-        if data['coupon'] != None:
+        if data['coupon']:
             try:
                 coupon = Coupon.objects.get(name=data['coupon'])
                 if coupon.count > 0:
