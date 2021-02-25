@@ -11,5 +11,5 @@ class TalkTest(TestCase):
 
     def test_new_talk(self):
         db  = Talk
-        talk = db.objects.create(date='2020' , content='asdasdasd' , capacity=12, participant_count=0)
+        talk = db.objects.create(date='2020' , content='asdasdasd' , capacity=12)
         self.assertEqual(talk.capacity , 12)

@@ -73,7 +73,6 @@ class Talk(models.Model):
     end = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
-    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
@@ -94,6 +93,9 @@ class Talk(models.Model):
     def get_remain_capacity(self):
         registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
+    
+    def registered(self):
+        return int(self.services.filter(payment_state='CM').count())
 
     def __str__(self):
         return self.title
@@ -105,7 +107,6 @@ class Workshop(models.Model):
     end = models.DateTimeField(blank=False)
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
-    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
@@ -126,6 +127,10 @@ class Workshop(models.Model):
     def get_remain_capacity(self):
         registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
+
+    def registered(self):
+        return int(self.services.filter(payment_state='CM').count())
+
 
     def __str__(self):
         return self.title
@@ -163,6 +168,11 @@ class Payment(models.Model):
     coupon = models.ForeignKey(
         Coupon , on_delete=models.SET_NULL , default=None , null=True
     )
+    
+    def payment_state(self):
+        return self.get_status_display()
+    
+    
     def __str__(self):
         return f"{self.pk}==>{self.user.user_name}=>{self.status}"
 
