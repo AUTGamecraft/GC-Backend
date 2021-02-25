@@ -95,7 +95,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ('phone_number','first_name' , 'user_name')
 
     def __str__(self):
-        return self.user_name
+        return self.email
 
     def save(self, *args, **kwargs):
         if not self.profile:
