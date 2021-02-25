@@ -130,9 +130,9 @@ class ServicesModelViewSet(ResponseModelViewSet):
             if query.exists():
                 return self.set_response(
                     error=f"user has already enrolled in this {model_name}",
-                    status=410,
+                    status=409,
                     message=USER_HAS_ALREADY_ENROLLED,
-                    status_code=status.HTTP_208_ALREADY_REPORTED,
+                    status_code=status.HTTP_409_CONFLICT,
                     # data=EventServiceSerializer(query[0]).data
                 )
             ev_service = EventService.objects.create(**args)
