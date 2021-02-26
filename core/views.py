@@ -110,7 +110,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
         result = IdPayRequest().create_payment(
             order_id=payment.pk,
-            amount=total_price*10,
+            amount=int(total_price*10),
             desc=IDPAY_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,

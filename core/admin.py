@@ -100,6 +100,7 @@ class PaymentAdmin(admin.ModelAdmin):
         ,'verified_date'
         ,'original_data'
         ,'user'
+        ,'coupon'
     ]
     actions = None
 
