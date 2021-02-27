@@ -19,7 +19,7 @@ USER_CREATED_SUCCESSFULLY='یوزر با موفقیت ثبت شد'
 WORKSHOP_CAPACITY_IS_FULL='\nظرفیت این کارگاه پر است \nلطفا این کارگاه را از سبد خود پاک کنید'
 SHOPPING_CART_EMPTY= 'سبد خرید شما خالی است'
 COUPON_FINISHED='ظرفیت این کد تخفیف تمام شده است'
-COUPON_DOSE_NOT_EXIST='این کد تخفبف وجود ندارد و غیر معتبر هست'
+COUPON_DOSE_NOT_EXIST='این کد تخفیف وجود ندارد و غیر معتبر هست'
 CREATING_PAYMENT_UNSUCCESS='متاسفانه پرداخت ساخته نشد \n لطفا مجدد تلاش کنید'
 
 # competition
