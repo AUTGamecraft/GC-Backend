@@ -86,7 +86,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         if total_price <= 0:
             return self.set_response(message=SHOPPING_CART_EMPTY)
         coupon = None
-        if data['coupon'] != None:
+        if data['coupon']:
             try:
                 coupon = Coupon.objects.get(name=data['coupon'])
                 if coupon.count > 0:
@@ -110,7 +110,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
         result = IdPayRequest().create_payment(
             order_id=payment.pk,
-            amount=total_price*10,
+            amount=int(total_price*10),
             desc=IDPAY_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,

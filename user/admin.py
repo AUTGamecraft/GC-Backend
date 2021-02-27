@@ -28,9 +28,6 @@ class UserAdminConfig(UserAdmin):
 
     # filter by
     list_filter = (
-        'email',
-        'user_name',
-        'first_name',
         'is_active',
         'is_staff'
     )
