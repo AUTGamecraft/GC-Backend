@@ -92,7 +92,9 @@ class UserServicesViewSet(ResponseModelViewSet):
                 if Payment.objects.filter(user=user , coupon=coupon,status__in=[IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200]).exists():
                     return self.set_response(
                         message="شما از این کد تخفیف قبلا استفاده کرده اید.",
-                        error="coupon already used !!!"
+                        error="coupon already used !!!",
+                        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                        status=406
                     )
                 if coupon.count > 0:
                     total_price = total_price * ((100 - coupon.percentage)/100)
@@ -101,12 +103,16 @@ class UserServicesViewSet(ResponseModelViewSet):
                 else:
                     return self.set_response(
                         message=COUPON_FINISHED,
-                        error="coupon finished"
+                        error="coupon finished",
+                        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                        status=406
                     )
             except Coupon.DoesNotExist as e:
                 return self.set_response(
                     message=COUPON_DOSE_NOT_EXIST,
-                    error="coupon does not exist"
+                    error="coupon does not exist",
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    status=406
                 )
         payment = Payment.objects.create(
             total_price=total_price,
