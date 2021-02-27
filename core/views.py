@@ -492,13 +492,21 @@ class CouponViewSet(ResponseGenericViewSet,
     lookup_field = 'name'
 
     def retrieve(self, request, *args, **kwargs):
-        response_data = super(CouponViewSet, self).retrieve(
-            request, *args, **kwargs)
-        self.response_format["data"] = response_data.data
-        self.response_format["status"] = 200
-        if not response_data.data:
-            self.response_format["message"] = EMPTY
-        return Response(self.response_format)
+        try:
+            response_data = super(CouponViewSet, self).retrieve(
+                request, *args, **kwargs)
+            self.response_format["data"] = response_data.data
+            self.response_format["status"] = 200
+            if not response_data.data:
+                self.response_format["message"] = EMPTY
+            return Response(self.response_format)
+        except Coupon.DoesNotExist as e:
+            return self.set_response(
+                message=COUPON_DOSE_NOT_EXIST,
+                error="coupon doesn't exist",
+                status=404,
+                status_code=status.HTTP_404_NOT_FOUND
+            )
 
     def list(self, request, *args, **kwargs):
         response_data = super(CouponViewSet, self).list(
