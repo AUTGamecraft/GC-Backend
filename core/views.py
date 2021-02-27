@@ -89,6 +89,11 @@ class UserServicesViewSet(ResponseModelViewSet):
         if data['coupon']:
             try:
                 coupon = Coupon.objects.get(name=data['coupon'])
+                if Payment.objects.filter(user=user , coupon=coupon,status__in=[IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200]).exists():
+                    return self.set_response(
+                        message="شما از این کد تخفیف قبلا استفاده کرده اید.",
+                        error="coupon already used !!!"
+                    )
                 if coupon.count > 0:
                     total_price = total_price * ((100 - coupon.percentage)/100)
                     coupon.count -= 1
