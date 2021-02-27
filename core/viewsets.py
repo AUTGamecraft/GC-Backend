@@ -116,9 +116,9 @@ class ServicesModelViewSet(ResponseModelViewSet):
             if obj.get_remain_capacity() == 0:
                 return self.set_response(
                     error=f"this {model_name} is full",
-                    status=200,
+                    status=406,
                     message=CAPACITY_IS_FULL,
-                    status_code=status.HTTP_200_OK,
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
                 )
             user = request.user
             args = {
