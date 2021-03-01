@@ -129,7 +129,7 @@ class UserViewSet(ResponseGenericViewSet,
 
     @action(methods=['GET'] , detail=False , permission_classes=[AllowAny])
     def count(self,request):
-        count = get_user_model().objects.count()
+        count = get_user_model().objects.filter(is_active=True).count()
         return self.set_response(
             data={
                 'count':count
