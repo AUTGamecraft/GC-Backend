@@ -41,7 +41,7 @@ class TalksPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Talk
         fields = ['capacity', 'start', 'end', 'content', 'title', 'remain_capacity',
-                   'pk',  'cost', 'presenters', 'level','file']
+                   'pk',  'cost', 'presenters', 'level','files']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
@@ -61,7 +61,7 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = ['capacity', 'start', 'end', 'content', 'title', 'remain_capacity',
-                   'presenters', 'pk', 'cost', 'level','file']
+                   'presenters', 'pk', 'cost', 'level','files']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 

@@ -80,16 +80,14 @@ class Talk(models.Model):
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='talks')
-    file = models.FileField(upload_to="documents/", validators=[validate_file_extension],default=None,blank=True , null=True)
+    files = models.URLField(default=None,blank=True,null=True)
     
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
         if self.start > self.end:
             raise ValidationError("end of the service can not be before beginning")
-        if self.file and self.file.size > MAX_FILE_SIZE:
-            raise ValidationError('Max file size is {} MB and your file size is {} MB'.
-                                          format(round(MAX_FILE_SIZE/(1024*1024)), round(self.file.size/(1024*1024))))
+        
 
     def get_total_services(self):
         return self.services.count()
@@ -118,16 +116,14 @@ class Workshop(models.Model):
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='workshops')
-    file = models.FileField(upload_to="documents/", validators=[validate_file_extension],default=None,blank=True , null=True)
+    files = models.URLField(default=None,blank=True,null=True)
 
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
         if self.start > self.end:
             raise ValidationError("end of the service can not be before beginning")
-        if self.file and self.file.size > MAX_FILE_SIZE:
-            raise ValidationError('Max file size is {} MB and your file size is {} MB'.
-                                          format(round(MAX_FILE_SIZE/(1024*1024)), round(self.file.size/(1024*1024))))
+        
 
 
 
