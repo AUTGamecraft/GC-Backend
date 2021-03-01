@@ -42,7 +42,7 @@ class TalkAdmin(admin.ModelAdmin):
         }),
         ('Details' , {
             'fields': (
-                'title','capacity','cost','level','presentation_link','content','file'
+                'title','capacity','cost','level','presentation_link','content','files'
             ),
             'classes':('wide','extrapretty'),
             
@@ -68,7 +68,7 @@ class WorkshopAdmin(admin.ModelAdmin):
         }),
         ('Details' , {
             'fields': (
-                'title','capacity','cost','level','presentation_link','content','file'
+                'title','capacity','cost','level','presentation_link','content','files'
             ),
             'classes':('wide','extrapretty'),
         })
