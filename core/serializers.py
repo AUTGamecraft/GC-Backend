@@ -84,7 +84,7 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitionMember
         fields = [
-            'team','has_team','is_head','pk','site_user_pk','profile','email'
+            'team','has_team','is_head','pk','site_user_pk','profile','email','first_name','last_name'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
         
