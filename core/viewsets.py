@@ -113,7 +113,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
         model_name = str(self.model.__name__).lower()
         try:
             obj = self.model.objects.get(pk=pk)
-            if obj.get_remain_capacity() == 0:
+            if obj.get_remain_capacity() <= 0:
                 return self.set_response(
                     error=f"this {model_name} is full",
                     status=406,
