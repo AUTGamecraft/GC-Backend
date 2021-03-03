@@ -29,11 +29,6 @@ PAYMENT_STATES = [
     ('RJ', 'REJECTED')
 ]
 
-TEAM_STATE = [
-    ('AC', 'ACTIVATED'),
-    ('RE', 'REQUESTED'),
-    ('RJ', 'REJECTED'),
-]
 
 SERVICE_TYPE = [
     ('WS', 'WORKSHOP'),
@@ -46,11 +41,7 @@ LEVEL = [
     ('EX', 'EXPERT')
 ]
 
-TEAM_MEMBER_ROLE = [
-    ('HE', 'HEAD'),
-    ('ME', 'MEMBER'),
-    ('NO', 'NOTEAM')
-]
+
 
 MAX_FILE_SIZE = 1024 * 1024 * 400 # 400MB
 
@@ -220,37 +211,5 @@ class EventService(models.Model):
 
     def __str__(self):
         return str(self.user.user_name) + '__' + str(self.service_type) + '__' + str(self.pk)
-
-
-class Team(models.Model):
-    name = models.CharField(max_length=30, blank=False,
-                            null=False, unique=True)
-    state = models.CharField(
-        max_length=2,
-        choices=TEAM_STATE,
-        default='RE'
-    )
-    video = models.FileField(upload_to='videos', blank=True, null=True)
-    game = models.FileField(upload_to='games', blank=True, null=True)
-    like = models.PositiveIntegerField(default=0)
-    dislike = models.PositiveIntegerField(default=0)
-    profile = models.ImageField(
-        verbose_name='team_profile', null=True, blank=True)
-    team_activation = models.CharField(max_length=40, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class CompetitionMember(models.Model):
-    user = models.OneToOneField(
-        AUTH_USER_MODEL, blank=False, unique=True, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, null=True, blank=True,
-                             on_delete=models.SET_NULL, related_name='members')
-    has_team = models.BooleanField(default=False)
-    is_head = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.user.user_name
 
 

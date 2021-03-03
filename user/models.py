@@ -23,12 +23,46 @@ DEFAULT_AVATARS = [
     'default/avatar-3.png',
 ]
 
+TEAM_STATE = [
+    ('AC', 'ACTIVATED'),
+    ('RE', 'REQUESTED'),
+    ('RJ', 'REJECTED'),
+]
 
 
+TEAM_MEMBER_ROLE = [
+    ('HE', 'HEAD'),
+    ('ME', 'MEMBER'),
+    ('NO', 'NOTEAM')
+]
 
 class PhoneValidator(RegexValidator):
     regex = r'^(\+98|0)?9\d{9}$'
     message = "Phone number must be entered in the format: '+98----------' or '09---------'."
+
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=30, blank=False,
+                            null=False, unique=True)
+    state = models.CharField(
+        max_length=2,
+        choices=TEAM_STATE,
+        default='RE'
+    )
+    video = models.FileField(upload_to='videos', blank=True, null=True)
+    game = models.FileField(upload_to='games', blank=True, null=True)
+    like = models.PositiveIntegerField(default=0)
+    dislike = models.PositiveIntegerField(default=0)
+    profile = models.ImageField(
+        verbose_name='team_profile', null=True, blank=True)
+    team_activation = models.CharField(max_length=40, null=True, blank=True,unique=True)
+
+ 
+    def __str__(self):
+        return self.name
+
+
 
 
 
@@ -85,7 +119,8 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     profile = models.ImageField(verbose_name='user_profile',null=True,blank=True)
     activation_code = models.CharField(max_length=64,blank=True)
-    
+    team = models.ForeignKey(Team , on_delete=models.SET_NULL , null=True , blank=True , related_name='members')
+    team_role = models.CharField(choices=TEAM_MEMBER_ROLE , default='NO', max_length=2)
     # event informations
     phone_number = models.CharField(_("phone number"),validators=[PhoneValidator()], max_length=32 , blank=False,null=False)
 
