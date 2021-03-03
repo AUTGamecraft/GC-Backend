@@ -18,6 +18,7 @@ def send_email(user):
     email_subject = 'Activation'
     html_message = render_to_string('activation_message.html', context)
     plain_message = render_to_string('activation_message.txt', context)
+    print(f'DEFAULT :::::: {settings.DEFAULT_FROM_EMAIL}')
 
     msg = EmailMultiAlternatives(
         subject=email_subject,
