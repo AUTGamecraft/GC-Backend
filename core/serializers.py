@@ -71,6 +71,9 @@ class CompetitionMemberSerializer(serializers.ModelSerializer):
     site_user_pk = serializers.ReadOnlyField(source='user.pk')
     profile = serializers.SerializerMethodField(read_only=True )
     email = serializers.ReadOnlyField(source='user.email' )
+    first_name = serializers.ReadOnlyField(source='user.first_name' )
+    last_name = serializers.ReadOnlyField(source='user.last_name' )
+    
 
     def get_profile(self , member):
         try:
