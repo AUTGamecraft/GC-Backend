@@ -12,3 +12,4 @@ staticfiles
 **/migrations/*
 vol/*
 vol/
+*.sql

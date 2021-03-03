@@ -3,8 +3,6 @@ from core.models import (
     Workshop,
     Presenter,
     EventService,
-    Team,
-    CompetitionMember,
     Coupon
 )
 from rest_framework import serializers
@@ -67,52 +65,6 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
                         'remain_capacity': {'read_only': True}}
 
 
-class CompetitionMemberSerializer(serializers.ModelSerializer):
-    site_user_pk = serializers.ReadOnlyField(source='user.pk')
-    profile = serializers.SerializerMethodField(read_only=True )
-    email = serializers.ReadOnlyField(source='user.email' )
-    first_name = serializers.ReadOnlyField(source='user.first_name' )
-    last_name = serializers.ReadOnlyField(source='user.last_name' )
-    
-
-    def get_profile(self , member):
-        try:
-            photo_url = member.user.profile.url
-            return photo_url
-        except ValueError:
-            return None
-
-    class Meta:
-        model = CompetitionMember
-        fields = [
-            'team','has_team','is_head','pk','site_user_pk','profile','email','first_name','last_name'
-        ]
-        extra_kwargs = {'pk': {'read_only': True}}
-        
-            
-
-
-class TeamSerialzer(serializers.ModelSerializer):
-    def get_state(self, obj):
-        return obj.get_state_display()
-    state = serializers.SerializerMethodField()
-    emails = serializers.ListField(
-        write_only=True, child=serializers.EmailField())
-    members = CompetitionMemberSerializer(many=True)
-
-    class Meta:
-        model = Team
-        fields = [
-            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails', 'name', 'pk'
-        ]
-        extra_kwargs = {'pk': {'read_only': True}}
-
-    def create(self, validated_data):
-        val = deepcopy(validated_data)
-        val.pop('emails')
-        team = Team.objects.create(**val)
-        team.save()
-        return team
 
 
 class WorkshopCartSerializer(serializers.ModelSerializer):

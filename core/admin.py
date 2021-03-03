@@ -1,11 +1,9 @@
 from django.contrib import admin
 from .models import (
-    Talk,
     Workshop,
     Presenter,
     EventService,
-    CompetitionMember,
-    Team,
+    Talk,
     Payment,
     Coupon
 )
@@ -152,56 +150,7 @@ class EventServiceAdmin(admin.ModelAdmin):
     search_fields = ['user__email']
 
 
-@admin.register(Team)
-class TeamAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (None, {
-            "fields": (
-               'name' 
-            ,),
-        }),
-        ('feedbacks',{
-            'fields': (
-                'like',
-                'dislike'
-            )
-        }),
-        ('Files' ,{
-            'fields':(
-                'video','game','profile'
-            )
-        }),
-        (
-            'register state' , {
-                'fields':(
-                    'state','team_activation'
-                )
-            }
-        )
-    )
-    list_display = ['name' , 'state' , 'like','dislike']
-    actions_on_top = True
-    list_filter = ['state']
 
-    
-@admin.register(CompetitionMember)
-class CompetitionMember(admin.ModelAdmin):
-    fieldsets = (
-        (None, {
-            "fields": (
-                'user','team'
-            ),
-        }),
-        ('state' , {
-            'fields':(
-                'has_team',
-                'is_head'
-            )
-        })
-    )
-    list_display = ['user' , 'team' , 'has_team']
-    actions_on_top = True
-    
     
 @admin.register(Coupon)
 class CouponAdmin(admin.ModelAdmin):
