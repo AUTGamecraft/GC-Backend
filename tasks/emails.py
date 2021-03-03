@@ -14,7 +14,6 @@ def send_email(user):
         'first_name': user['first_name'],
         'url':settings.BASE_URL + settings.REDIRECT_EMAIL_ACTIVATION.format(user['uid']) 
     }
-
     email_subject = 'Activation'
     html_message = render_to_string('activation_message.html', context)
     plain_message = render_to_string('activation_message.txt', context)
