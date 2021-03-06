@@ -39,6 +39,7 @@ def send_email(user):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[user['email'], ],
     )
+    msg.attach_alternative(html_message , 'text/html')
     msg.send()
     return {'success': True}
 
@@ -51,7 +52,6 @@ def send_team_request(team_data):
         'team_name': team_data['team_name']
     }
     email_subject = 'Team Request'
-    email_body = render_to_string('team_request_message.txt', context)
 
     html_message = render_to_string('team_request_message.html', context)
     plain_message = render_to_string('team_request_message.txt', context)
@@ -62,5 +62,6 @@ def send_team_request(team_data):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[team_data['email'], ],
     )
+    msg.attach_alternative(html_message , 'text/html')
     msg.send()
     return {'success': True}
