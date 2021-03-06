@@ -10,13 +10,14 @@ from django.utils.html import strip_tags
 
 
 def send_simple_email(data):
-    plain_message = data['body']
+    message = data['body']
     msg = EmailMultiAlternatives(
         subject=data['subject'],
-        body=plain_message,
+        body=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[data['email'],]
     )
+    msg.attach_alternative(message , 'text/html')
     msg.send()
     return {
         'message': 'successfully sent to : {}'.format(data['email'])
