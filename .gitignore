@@ -13,4 +13,3 @@ staticfiles
 vol/*
 vol/
 *.sql
-templates/*
