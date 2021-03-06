@@ -364,7 +364,7 @@ class TeamViewSet(ResponseGenericViewSet,
                     'mid': urlsafe_base64_encode(force_bytes(mem.pk))
                 }
                 send_team_requests_task.delay(team_data)
-            return Response(data=self.serializer_class(team).data)
+            return self.set_response(data=self.serializer_class(team).data)
         except get_user_model().DoesNotExist as e:
             return self.set_response(error=str(e))
         except Exception as e2:
