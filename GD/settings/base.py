@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'anymail'
 ]
 
 MIDDLEWARE = [
@@ -148,14 +149,6 @@ SIMPLE_JWT = {
 }
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = int(config('EMAIL_PORT'))
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
 
 LOGGING = {
     'version': 1,
@@ -217,3 +210,17 @@ DEBUG_TOOLBAR_CONFIG = {
 # idpay settings
 X_API_KEY=config('X_API_KEY')
 X_SANDBOX=config('X_SANDBOX')
+
+
+
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+SERVER_EMAIL = 'smtp-relay.sendinblue.com'
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = int(config('EMAIL_PORT'))
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+ANYMAIL = {
+    "SENDINBLUE_API_KEY": config("SENDINBLUE_API_KEY")
+}

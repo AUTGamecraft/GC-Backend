@@ -161,7 +161,7 @@ class UserViewSet(ResponseGenericViewSet,
         try:
             email = request.data['email']
             result = get_user_model().objects.filter(
-                email=email, team_role='NO').exists()
+                email=email, team_role='NO' , is_active=True).exists()
             if result:
                 return self.set_response(data={
                     'available': True
@@ -177,7 +177,7 @@ class UserViewSet(ResponseGenericViewSet,
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def available_list(self, request):
-        cmembers = get_user_model().objects.filter(team_role='NO')
+        cmembers = get_user_model().objects.filter(team_role='NO', is_active=True)
         serialized = UserTeamSerialzier(cmembers, many=True)
         return self.set_response(
             data=serialized.data
@@ -340,7 +340,7 @@ class TeamViewSet(ResponseGenericViewSet,
                 name=request.data['name'], team_activation=team_activation_code(request.data['name']))
             members = get_user_model().objects.filter(
                 email__in=request.data['emails'])
-            if len(members) > 5 or len(members) < 3:
+            if len(members) > 4 or len(members) < 2:
                 raise self.set_response(
                     message =COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                     status_code=status.HTTP_409_CONFLICT,
