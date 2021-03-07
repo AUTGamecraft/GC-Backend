@@ -177,7 +177,7 @@ class UserViewSet(ResponseGenericViewSet,
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def available_list(self, request):
-        cmembers = get_user_model().objects.filter(team_role='NO', is_active=True)
+        cmembers = get_user_model().objects.filter(team_role='NO', is_active=True , is_staff=False)
         serialized = UserTeamSerialzier(cmembers, many=True)
         return self.set_response(
             data=serialized.data
