@@ -20,7 +20,8 @@ class Command(BaseCommand):
             emails = [
                 {
                     'email':service.user.email,
-                    'full_name':service.user.first_name
+                    'full_name':service.user.first_name,
+                    'phone_number': service.user.phone_number
                 }
                 for service in services
             ]
@@ -38,7 +39,9 @@ class Command(BaseCommand):
             emails = [
                 {
                     'email':service.user.email,
-                    'full_name':service.user.first_name
+                    'full_name':service.user.first_name,
+                    'phone_number': service.user.phone_number
+                    
                 }
                 for service in services
             ]
