@@ -1,6 +1,6 @@
-# GD
+# GC Backend
 
-Game Development Event Backend
+Gamecraft Backend
 
 ## Installation
 
