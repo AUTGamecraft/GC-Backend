@@ -31,9 +31,7 @@ def send_email(user):
     }
     email_subject = 'Activation'
     html_message = render_to_string('activation_message.html', context)
-    plain_message = render_to_string('activation_message.txt', context)
-    print(f'DEFAULT :::::: {settings.DEFAULT_FROM_EMAIL}')
-
+    plain_message = render_to_string('activation_message.html', context)
     msg = EmailMultiAlternatives(
         subject=email_subject,
         body=plain_message,
@@ -55,7 +53,7 @@ def send_team_request(team_data):
     email_subject = 'Team Request'
 
     html_message = render_to_string('team_request_message.html', context)
-    plain_message = render_to_string('team_request_message.txt', context)
+    plain_message = render_to_string('team_request_message.html', context)
 
     msg = EmailMultiAlternatives(
         subject=email_subject,

@@ -16,7 +16,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 BASE_URL = 'http://localhost:8000' if DEBUG else 'https://gamecraft.ce.aut.ac.ir'
 REDIRECT_EMAIL_ACTIVATION = '/api/activation/{}' if DEBUG else '/confirm-confirm/?activation={}'
-REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/team/join/{}/{}'
+REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/team/join/{}/{}' if DEBUG else '/dashboard-teams/?tid={}&mid={}'
 
 ALLOWED_HOSTS = ['*']
 
