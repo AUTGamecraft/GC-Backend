@@ -1,5 +1,4 @@
 from django.db import IntegrityError
-from django.shortcuts import render
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
@@ -10,7 +9,11 @@ from rest_framework.exceptions import ValidationError
 
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from tasks.tasks import send_team_requests_task
+from tasks.tasks import (
+    send_team_requests_task,
+    send_email_task,
+    change_pass_email_task
+)
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -24,7 +27,6 @@ from .serializers import (
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-from tasks.tasks import send_email_task
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from core.viewsets import ResponseGenericViewSet
@@ -143,7 +145,8 @@ class UserViewSet(ResponseGenericViewSet,
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def team(self, request):
         try:
-            serializer = TeamSerialzer(get_user_model().objects.get(pk = request.user.pk).team)
+            serializer = TeamSerialzer(
+                get_user_model().objects.get(pk=request.user.pk).team)
             return self.set_response(
                 data=serializer.data
             )
@@ -160,7 +163,7 @@ class UserViewSet(ResponseGenericViewSet,
         try:
             email = request.data['email']
             result = get_user_model().objects.filter(
-                email=email, team_role='NO' , is_active=True).exists()
+                email=email, team_role='NO', is_active=True).exists()
             if result:
                 return self.set_response(data={
                     'available': True
@@ -176,7 +179,8 @@ class UserViewSet(ResponseGenericViewSet,
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def available_list(self, request):
-        cmembers = get_user_model().objects.filter(team_role='NO', is_active=True , is_staff=False)
+        cmembers = get_user_model().objects.filter(
+            team_role='NO', is_active=True, is_staff=False)
         serialized = UserTeamSerialzier(cmembers, many=True)
         return self.set_response(
             data=serialized.data
@@ -222,6 +226,38 @@ class UserViewSet(ResponseGenericViewSet,
             status_code=status.HTTP_400_BAD_REQUEST,
             error=serializer.errors
         )
+
+    @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
+    def reset_pass(self, request):
+        try:
+            email = request.data['email']
+            user = get_user_model().objects.get(email=email)
+            user.activation_code = activation_code(user.user_name)
+            user.save()
+            user_data = {
+                'user_name': user.user_name,
+                'first_name': user.first_name,
+                'email': user.email,
+                'uid': user.activation_code
+            }
+            change_pass_email_task.delay(user_data)
+            return self.set_response(
+                message="ایمیل برای تغییر رمزعبور فرستاده شد",
+                status=200,
+                status_code=status.HTTP_200_OK
+            )
+        except KeyError as e:
+            return self.set_response(
+                message='bad request',
+                status_code=status.HTTP_400_BAD_REQUEST,
+                status=400
+            )
+        except get_user_model().DoesNotExist as e2:
+            return self.set_response(
+                message='کاربری با ایمیل وارد شده وجود ندارد',
+                status=404,
+                status_code=status.HTTP_404_NOT_FOUND
+            )
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def log_out(self, request):
@@ -271,6 +307,33 @@ class VerfiyUserView(generics.GenericAPIView):
                 'data': CustomUserSerializer(user).data
             }
             return Response(data=data, status=status.HTTP_202_ACCEPTED)
+        except get_user_model().DoesNotExist as e:
+            data = {
+                'message': USER_NOT_FOUND,
+                'error': str(e),
+                'status': 404,
+                'data': []
+            }
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+
+class VerfiyResetPasswordUserView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = CustomUserSerializer
+
+    def update(self, request, uid):
+        try:
+            user = get_user_model().objects.get(activation_code=uid)
+            password = request.data['password']
+            user.set_password(password)
+            user.save()
+            data = {
+                'message': "رمز عبور با موقفیت عوض شد",
+                'error': None,
+                'status': 200,
+                'data': CustomUserSerializer(user).data
+            }
+            return Response(data=data, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist as e:
             data = {
                 'message': USER_NOT_FOUND,
@@ -341,13 +404,13 @@ class TeamViewSet(ResponseGenericViewSet,
                 email__in=request.data['emails'])
             if len(members) > 4 or len(members) < 2:
                 raise self.set_response(
-                    message =COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
+                    message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                     status_code=status.HTTP_409_CONFLICT,
                     status=409)
             for mem in members:
                 if mem.team_role != 'NO':
                     raise self.set_response(
-                        message = USER_X_HAS_TEAM.format(user=mem.user_name),
+                        message=USER_X_HAS_TEAM.format(user=mem.user_name),
                         status_code=status.HTTP_409_CONFLICT,
                         status=409)
             head.team = team
