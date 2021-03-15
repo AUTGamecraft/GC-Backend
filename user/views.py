@@ -446,8 +446,8 @@ class VerifyTeamRequestView(generics.GenericAPIView):
     serializer_class = get_user_model()
 
     def get(self, request, tid, mid):
-        mid = force_text(urlsafe_base64_decode(mid))
         try:
+            mid = force_text(urlsafe_base64_decode(mid))
             member = get_user_model().objects.get(pk=mid)
             team = Team.objects.get(team_activation=tid)
             if member.team_role != 'NO':
