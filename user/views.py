@@ -320,7 +320,7 @@ class VerfiyResetPasswordUserView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = CustomUserSerializer
 
-    def update(self, request, uid):
+    def put(self, request, uid):
         try:
             user = get_user_model().objects.get(activation_code=uid)
             password = request.data['password']
