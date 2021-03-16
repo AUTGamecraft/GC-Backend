@@ -65,7 +65,7 @@ def send_team_request(team_data):
 def change_pass_email(user):
     context = {
         'first_name': user['first_name'],
-        'url': settings.BASE_URL + settings.REDIRECT_CHANGE_PASSWORD.format(user['uid'])
+        'url': settings.BASE_URL + settings.REDIRECT_EMAIL_CHANGE_PASSWORD.format(user['uid'])
     }
     email_subject = 'Gamecraft Password Reset'
     html_message = render_to_string('change_password_email.html', context)
