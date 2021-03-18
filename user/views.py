@@ -466,7 +466,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'data': []
                 }
                 return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
-            if members_num >= 3:
+            if members_num >= 2:
                 team.state = 'AC'
             team.save()
             member.team_role = 'ME'

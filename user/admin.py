@@ -50,7 +50,7 @@ class UserAdminConfig(UserAdmin):
 
 class UserTeamInline(admin.TabularInline):
     model = SiteUser
-    fields = ['email','user_name' , 'team_role']
+    fields = ['email','first_name' , 'team_role']
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
