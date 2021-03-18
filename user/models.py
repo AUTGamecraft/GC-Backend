@@ -58,6 +58,8 @@ class Team(models.Model):
         verbose_name='team_profile', null=True, blank=True)
     team_activation = models.CharField(max_length=40, null=True, blank=True,unique=True)
 
+    def member_count(self):
+        return self.members.count()
  
     def __str__(self):
         return self.name

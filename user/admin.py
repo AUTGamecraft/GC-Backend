@@ -48,6 +48,8 @@ class UserAdminConfig(UserAdmin):
         
     )
 
+class UserTeamInline(admin.TabularInline):
+    model = SiteUser
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
@@ -76,10 +78,12 @@ class TeamAdmin(admin.ModelAdmin):
             }
         )
     )
-    list_display = ['name' , 'state' , 'like','dislike']
+    list_display = ['name' , 'state' , 'member_count' ,'like','dislike']
     actions_on_top = True
     list_filter = ['state']
-
+    inlines = [
+        UserTeamInline,
+    ]
 
 
 
