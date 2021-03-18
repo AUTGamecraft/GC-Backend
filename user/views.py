@@ -453,25 +453,25 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                 data = {
                     'message': USER_ALREADY_HAS_A_TEAM,
                     'error': None,
-                    'status': 200,
+                    'status': 409,
                     'data': []
                 }
-                return Response(data=data, status=status.HTTP_200_OK)
+                return Response(data=data, status=status.HTTP_409_CONFLICT)
             members_num = team.members.count()
             if members_num > 5:
                 data = {
                     'message': TEAM_IS_FULL,
                     'error': None,
-                    'status': 200,
+                    'status': 406,
                     'data': []
                 }
-                return Response(data=data, status=status.HTTP_200_OK)
-            member.team_role = 'ME'
-            member.team = team
-            member.save()
+                return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
             if members_num >= 3:
                 team.state = 'AC'
             team.save()
+            member.team_role = 'ME'
+            member.team = team
+            member.save()
             data = {
                 'message': TEAM_ACTIVED,
                 'error': None,
