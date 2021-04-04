@@ -21,3 +21,5 @@ class Command(BaseCommand):
         with open('users.json','w') as file:
             json.dump(data , file , ensure_ascii=False)
          
+         
+         
