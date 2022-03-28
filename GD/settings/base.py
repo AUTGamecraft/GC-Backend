@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    'anymail'
+    # 'anymail'
 ]
 
 MIDDLEWARE = [
@@ -213,17 +213,24 @@ X_SANDBOX=config('X_SANDBOX')
 
 
 
-EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
-SERVER_EMAIL = 'smtp-relay.sendinblue.com'
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = int(config('EMAIL_PORT'))
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+# EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+# SERVER_EMAIL = 'smtp-relay.sendinblue.com'
+# # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# EMAIL_PORT = int(config('EMAIL_PORT'))
+# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-ANYMAIL = {
-    "SENDINBLUE_API_KEY": config("SENDINBLUE_API_KEY")
-}
+# ANYMAIL = {
+#     "SENDINBLUE_API_KEY": config("SENDINBLUE_API_KEY")
+# }
+
+
+EMAIL_HOST = config("ALT_EMAIL_HOST")
+EMAIL_HOST_USER = config("ALT_EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("ALT_EMAIL_HOST_PASSWORD")
+EMAIL_PORT = int(config("ALT_EMAIL_PORT"))
+EMAIL_BACKEND = config("ALT_EMAIL_BACKEND")
 
 
 
