@@ -29,7 +29,7 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('POSTGRES_USER'),
+        'NAME': config('POSTGRES_NAME'),
         'USER': config('POSTGRES_USER'),
         'PASSWORD' : config('POSTGRES_PASSWORD'),
         'HOST' : config('POSTGRES_HOST'),
@@ -39,4 +39,4 @@ DATABASES = {
 
 
 STRIPE_PUBLIC_KEY = ''
-STRIPE_SECRET_KEY = '' 
+STRIPE_SECRET_KEY = ''
