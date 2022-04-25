@@ -38,3 +38,4 @@ gunicorn==20.0.4
 psycopg2-binary==2.8.5
 Pillow==7.0
 django-anymail[sendinblue]
+django-tinymce==3.4.0
