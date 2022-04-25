@@ -10,11 +10,12 @@ from rest_framework_simplejwt.views import (
 
 
 urlpatterns = [
-    path('api/admin/', admin.site.urls),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/' , include('core.urls')),
-    path('api/' , include('user.urls'))
+    path('api/v2/admin/', admin.site.urls),
+    path('api/v2/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v2/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v2/' , include('core.urls')),
+    path('api/v2/' , include('user.urls')),
+    path('api/v2/' , include('game.urls'))
 ]
 
 
