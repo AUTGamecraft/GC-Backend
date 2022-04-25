@@ -1,6 +1,8 @@
 from django.db import models
 from tinymce.models import HTMLField
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
+
 import os
 # Create your models here.
 main_dir = "game"
@@ -14,7 +16,10 @@ class Game(models.Model):
     description = HTMLField()
     game_link = models.CharField(max_length=512, blank=False, null=False)
     is_verified = models.BooleanField(default=False)
-    creators = models.ManyToManyField('user.SiteUser')
+    creator = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='games', null=False)
+    other_creators = models.ManyToManyField('user.SiteUser')
+    timestamp = models.DateTimeField(default=timezone.now, editable=False)
+
     
 
 class Comment(models.Model):
@@ -24,6 +29,8 @@ class Comment(models.Model):
     score = models.IntegerField(
         validators=[MaxValueValidator(5), MinValueValidator(1)], default=5
     )
+    timestamp = models.DateTimeField(default=timezone.now, editable=False)
+    
     class Meta:
         unique_together = ('user', 'game',)
     
