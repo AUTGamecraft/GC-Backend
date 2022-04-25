@@ -2,8 +2,6 @@ from django.db import models
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
 from GD.settings.base import AUTH_USER_MODEL
-from .validators import validate_file_extension
-
 
 IDPAY_STATUS = [
     (1, 'payment_not_made'),
@@ -29,6 +27,11 @@ PAYMENT_STATES = [
     ('RJ', 'REJECTED')
 ]
 
+TEAM_STATE = [
+    ('AC', 'ACTIVATED'),
+    ('RE', 'REQUESTED'),
+    ('RJ', 'REJECTED'),
+]
 
 SERVICE_TYPE = [
     ('WS', 'WORKSHOP'),
@@ -41,9 +44,12 @@ LEVEL = [
     ('EX', 'EXPERT')
 ]
 
+TEAM_MEMBER_ROLE = [
+    ('HE', 'HEAD'),
+    ('ME', 'MEMBER'),
+    ('NO', 'NOTEAM')
+]
 
-
-MAX_FILE_SIZE = 1024 * 1024 * 400 # 400MB
 
 class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
@@ -63,22 +69,21 @@ class Presenter(models.Model):
 
 class Talk(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    start = models.DateTimeField(blank=False)
-    end = models.DateTimeField(blank=False)
+    start = models.DateTimeField(blank=False,
+    end = models.DateTimeField(blank=False,default=datetime.now())
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
+    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='talks')
-    files = models.URLField(default=None,blank=True,null=True)
-    
+
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
         if self.start > self.end:
             raise ValidationError("end of the service can not be before beginning")
-        
 
     def get_total_services(self):
         return self.services.count()
@@ -89,9 +94,6 @@ class Talk(models.Model):
     def get_remain_capacity(self):
         registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
-    
-    def registered(self):
-        return int(self.services.filter(payment_state='CM').count())
 
     def __str__(self):
         return self.title
@@ -99,24 +101,21 @@ class Talk(models.Model):
 
 class Workshop(models.Model):
     title = models.CharField(max_length=100, blank=False)
-    start = models.DateTimeField(blank=False)
-    end = models.DateTimeField(blank=False)
+    #start = models.DateTimeField(blank=False ,default=datetime.now())
+    #end = models.DateTimeField(blank=False , default=datetime.now())
     content = models.TextField(blank=False)
     capacity = models.IntegerField(blank=False)
+    participant_count = models.IntegerField(default=0)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='workshops')
-    files = models.URLField(default=None,blank=True,null=True)
 
     def clean(self):
         if self.cost < 0:
             raise ValidationError("cost cann't be a negative number.")
         if self.start > self.end:
             raise ValidationError("end of the service can not be before beginning")
-        
-
-
 
     def get_total_services(self):
         return self.services.count()
@@ -128,26 +127,8 @@ class Workshop(models.Model):
         registered_user = self.services.filter(payment_state='CM').count()
         return self.capacity - int(registered_user)
 
-    def registered(self):
-        return int(self.services.filter(payment_state='CM').count())
-
-
     def __str__(self):
         return self.title
-
-
-class Coupon(models.Model):
-    name = models.CharField(max_length=50 , primary_key=True , help_text="don't use / in the name!!!")
-    count = models.PositiveIntegerField(null=False,blank=False)
-    percentage = models.FloatField(default=0.0 , help_text='Enter a number between 0 to 100 !!!')
-
-    def __str__(self):
-        return self.name
-    
-
-    def clean(self):
-        if self.percentage < 0 or self.percentage > 100:
-            raise ValidationError("i said between 0 to 100 !!!")
 
 
 class Payment(models.Model):
@@ -165,16 +146,9 @@ class Payment(models.Model):
     original_data = models.TextField(null=True)
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments')
-    coupon = models.ForeignKey(
-        Coupon , on_delete=models.SET_NULL , default=None , null=True
-    )
-    
-    def payment_state(self):
-        return self.get_status_display()
-    
-    
+
     def __str__(self):
-        return f"{self.pk}"
+        return f"{self.pk}==>{self.user.user_name}=>{self.status}"
 
 
 class EventService(models.Model):
@@ -213,3 +187,33 @@ class EventService(models.Model):
         return str(self.user.user_name) + '__' + str(self.service_type) + '__' + str(self.pk)
 
 
+class Team(models.Model):
+    name = models.CharField(max_length=30, blank=False,
+                            null=False, unique=True)
+    state = models.CharField(
+        max_length=2,
+        choices=TEAM_STATE,
+        default='RE'
+    )
+    video = models.FileField(upload_to='videos', blank=True, null=True)
+    game = models.FileField(upload_to='games', blank=True, null=True)
+    like = models.PositiveIntegerField(default=0)
+    dislike = models.PositiveIntegerField(default=0)
+    profile = models.ImageField(
+        verbose_name='team_profile', null=True, blank=True)
+    team_activation = models.CharField(max_length=40, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CompetitionMember(models.Model):
+    user = models.OneToOneField(
+        AUTH_USER_MODEL, blank=False, unique=True, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, null=True, blank=True,
+                             on_delete=models.SET_NULL, related_name='members')
+    has_team = models.BooleanField(default=False)
+    is_head = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.user_name

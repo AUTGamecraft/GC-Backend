@@ -186,6 +186,7 @@ class UserViewSet(ResponseGenericViewSet,
             data=serialized.data
         )
 
+
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def sign_up(self, request):
 

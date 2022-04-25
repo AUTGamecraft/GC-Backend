@@ -47,12 +47,13 @@ class TalksPageSerializer(serializers.ModelSerializer):
 class WorkshopPageSerializer(serializers.ModelSerializer):
     def get_remain_capacity(self, obj):
         return obj.get_remain_capacity()
+    remain_capacity = serializers.SerializerMethodField()
 
     def get_level(self, obj):
         return obj.get_level_display()
     level = serializers.SerializerMethodField(read_only=True)
 
-    remain_capacity = serializers.SerializerMethodField()
+
 
     presenters = PresenterSerializer(many=True)
 
