@@ -15,8 +15,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 BASE_URL = 'http://localhost:8000' if DEBUG else 'https://gamecraft.ce.aut.ac.ir'
-REDIRECT_EMAIL_ACTIVATION = '/api/activation/{}' if DEBUG else '/confirm-confirm/?activation={}'
-REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/team/join/{}/{}' if DEBUG else '/dashboard-teams/?tid={}&mid={}'
+REDIRECT_EMAIL_ACTIVATION = '/api/v2/activation/{}' if DEBUG else '/confirm-confirm/?activation={}'
+REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/v2/team/join/{}/{}' if DEBUG else '/dashboard-teams/?tid={}&mid={}'
 REDIRECT_EMAIL_CHANGE_PASSWORD = '/newpassword?code={}'
 ALLOWED_HOSTS = ['*']
 
@@ -33,9 +33,12 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'user.apps.UserConfig',
     'tasks.apps.TasksConfig',
+    'game.apps.GameConfig',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    "tinymce",
+
     # 'anymail'
 ]
 
@@ -101,6 +104,25 @@ USE_L10N = True
 
 USE_TZ = True
 
+
+
+# TinyMce config
+TINYMCE_DEFAULT_CONFIG = {
+    "height": "620px",
+    "width": "960px",
+    "theme": "silver",
+    "menubar": "file edit view insert format tools table help",
+    "plugins": "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code "
+    "fullscreen insertdatetime media table paste code help wordcount spellchecker",
+    "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft "
+    "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
+    "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
+    "fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | "
+    "a11ycheck ltr rtl | showcomments addcomment code",
+    "custom_undo_redo_levels": 10,
+    "language": "fa",  # To force a specific language instead of the Django current language.
+    "directionality": "rtl",
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
@@ -231,6 +253,8 @@ EMAIL_HOST_USER = config("ALT_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("ALT_EMAIL_HOST_PASSWORD")
 EMAIL_PORT = int(config("ALT_EMAIL_PORT"))
 EMAIL_BACKEND = config("ALT_EMAIL_BACKEND")
+EMAIL_TIMEOUT = 10
+
 
 
 
