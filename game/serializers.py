@@ -31,6 +31,7 @@ class GameSerializer(serializers.ModelSerializer):
             "creator",
             "other_creators",
             "is_verified",
+            "timestamp",
         )
         extra_kwargs = {
             "title": {
@@ -90,7 +91,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ("text", "score", "game", "user")
+        fields = (
+            "text",
+            "score",
+            "game",
+            "user",
+            "timestamp",
+        )
         extra_kwargs = {
             "text": {
                 "required": True,
