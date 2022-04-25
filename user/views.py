@@ -211,7 +211,9 @@ class UserViewSet(ResponseGenericViewSet,
                     'email': user.email,
                     'uid': user.activation_code
                 }
+                print("heyyyyy")
                 send_email_task.delay(user_data)
+                print("heyyyyy")
                 return self.set_response(
                     message=USER_CREATED_SUCCESSFULLY,
                     status=201,

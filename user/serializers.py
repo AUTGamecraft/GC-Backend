@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 from .models import (
     PhoneValidator,
+    SiteUser,
     Team
 )
 
@@ -71,3 +72,8 @@ class TeamSerialzer(serializers.ModelSerializer):
         team = Team.objects.create(**val)
         team.save()
         return team
+    
+class UserSerializerMinimal(serializers.ModelSerializer):
+    class Meta:
+        model = SiteUser
+        fields = ('first_name', 'about', 'email', 'profile')
