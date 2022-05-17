@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import (
+    Assistant,
     Workshop,
     Presenter,
     EventService,
@@ -15,6 +16,9 @@ class PresenterTalkInline(admin.TabularInline):
 class PresenterWorkshopInline(admin.TabularInline):
     model = Workshop.presenters.through
     
+class WorkshopAssistantInline(admin.TabularInline):
+    model = Workshop.assistants.through
+    
 @admin.register(Presenter)
 class PresenterAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -26,6 +30,19 @@ class PresenterAdmin(admin.ModelAdmin):
     )
     inlines = [
         PresenterTalkInline ,PresenterWorkshopInline
+    ]
+
+@admin.register(Assistant)
+class AssistantAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            "fields": (
+                'first_name',"last_name",'linked_in','profile'
+            ),
+        }),
+    )
+    inlines = [
+        WorkshopAssistantInline,
     ]
     
 
@@ -73,7 +90,7 @@ class WorkshopAdmin(admin.ModelAdmin):
     )
     exclude = ['presenters']
     inlines = [
-        PresenterWorkshopInline
+        PresenterWorkshopInline, WorkshopAssistantInline,
     ]
     date_hierarchy = 'start'
     actions_on_top = True

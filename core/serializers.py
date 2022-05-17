@@ -1,4 +1,5 @@
 from core.models import (
+    Assistant,
     Talk,
     Workshop,
     Presenter,
@@ -20,6 +21,17 @@ class PresenterSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'email',
             'descriptions', 'linked_in', 'workshops',
             'talks', 'pk','profile'
+        ]
+        extra_kwargs = {'pk': {'read_only': True}}
+
+
+class AssistantsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assistant
+        fields = [
+            'pk','first_name', 
+            'last_name', 'linked_in',
+            'profile'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 
@@ -56,11 +68,12 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
 
 
     presenters = PresenterSerializer(many=True)
+    assistants = AssistantsSerializer(many=True)
 
     class Meta:
         model = Workshop
         fields = ['capacity', 'start', 'end', 'content', 'title', 'remain_capacity',
-                   'presenters', 'pk', 'cost', 'level','files']
+                   'presenters', 'assistants', 'pk', 'cost', 'level','files']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 

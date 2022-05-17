@@ -59,6 +59,20 @@ class Presenter(models.Model):
 
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
+    
+    
+class Assistant(models.Model):
+    first_name = models.CharField(max_length=30, blank=False)
+    last_name = models.CharField(max_length=30, blank=False)
+    role = models.TextField(null=False, blank=False)
+    linked_in = models.URLField(blank=True,null=True)
+    profile = models.ImageField(
+        verbose_name='assistant_profile', null=True, blank=True)
+
+
+    def __str__(self):
+        return f'{self.last_name} {self.first_name} - id={self.pk}'
+
 
 
 class Talk(models.Model):
@@ -107,6 +121,7 @@ class Workshop(models.Model):
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='workshops')
+    assistants = models.ManyToManyField(Assistant, related_name='workshops')
     files = models.URLField(default=None,blank=True,null=True)
 
     def clean(self):
