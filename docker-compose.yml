@@ -10,9 +10,9 @@ services:
       - C_FORCE_ROOT=true
     hostname: rabbitmq
     image: "rabbitmq:3-management"
-    ports:
-      - "15672:15672"
-      - "5672:5672"
+#    ports:
+#     - "15672:15672"
+#      - "5672:5672"
     volumes:
       - /opt/data/rabbitmq:/var/lib/rabbitmq
 
@@ -23,8 +23,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - /opt/data/post/:/var/lib/postgresql/data/
-    ports:
-      - '5432:5432'
+#    ports:
+#     - '5432:5432'
 
 
 
