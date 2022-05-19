@@ -43,7 +43,6 @@ def send_simple_email(data):
 def send_email(user):
     context = {
         'first_name': user['first_name'],
-        'last_name': user['last_name'],
         'url': settings.BASE_URL + settings.REDIRECT_EMAIL_ACTIVATION.format(user['uid'])
     }
     email_subject = 'Gamecraft Activation'
