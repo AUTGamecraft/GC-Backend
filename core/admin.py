@@ -37,7 +37,7 @@ class AssistantAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             "fields": (
-                'first_name',"last_name",'linked_in','profile'
+                'first_name',"last_name",'linked_in','profile','role'
             ),
         }),
     )

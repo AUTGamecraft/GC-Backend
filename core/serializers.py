@@ -31,7 +31,7 @@ class AssistantsSerializer(serializers.ModelSerializer):
         fields = [
             'pk','first_name', 
             'last_name', 'linked_in',
-            'profile'
+            'profile','role'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 
