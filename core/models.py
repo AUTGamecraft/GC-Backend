@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from datetime import datetime
 from GD.settings.base import AUTH_USER_MODEL
 from .validators import validate_file_extension
-
+from tinymce.models import HTMLField
 
 IDPAY_STATUS = [
     (1, 'payment_not_made'),
@@ -79,8 +79,9 @@ class Talk(models.Model):
     title = models.CharField(max_length=100, blank=False)
     start = models.DateTimeField(blank=False)
     end = models.DateTimeField(blank=False)
-    content = models.TextField(blank=False)
+    content = HTMLField(blank=False)
     capacity = models.IntegerField(blank=False)
+    is_online = models.BooleanField(default=True)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
@@ -115,8 +116,9 @@ class Workshop(models.Model):
     title = models.CharField(max_length=100, blank=False)
     start = models.DateTimeField(blank=False)
     end = models.DateTimeField(blank=False)
-    content = models.TextField(blank=False)
+    content = HTMLField(blank=False)
     capacity = models.IntegerField(blank=False)
+    is_online = models.BooleanField(default=True)
     presentation_link = models.URLField(blank=True)
     level = models.CharField(choices=LEVEL, default='BG', max_length=2)
     cost = models.FloatField(blank=False, default=0)
