@@ -49,7 +49,7 @@ class Presenter(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
     last_name = models.CharField(max_length=30, blank=False)
     email = models.EmailField(blank=True, null=True)
-    descriptions = models.TextField(null=True, blank=True)
+    descriptions = HTMLField(null=True, blank=True)
     linked_in = models.URLField(blank=True,null=True)
     profile = models.ImageField(
         verbose_name='presenter_profile', null=True, blank=True)
