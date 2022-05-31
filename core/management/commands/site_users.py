@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
         data = [
             {
-                'full_name':user.full_name,
+                'full_name':user.first_name,
                 'email':user.email,
                 'phone_number': user.phone_number
             }
