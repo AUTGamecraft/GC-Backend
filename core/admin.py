@@ -9,6 +9,8 @@ from core.models import (
     Coupon,
     PAYMENT_STATES
 )
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+
 import json
 import tempfile
 import zipfile
@@ -172,6 +174,17 @@ class EventServiceAdmin(admin.ModelAdmin):
     actions_on_top = True
     list_filter = ['payment_state','service_type']
     search_fields = ['user__email']
+    
+    
+    def changelist_view(self, request, extra_context=None):
+        if 'action' in request.POST and (request.POST['action'] == 'download_talk_export_csv' or request.POST['action'] == 'download_workshops_export_csv'):
+            if not request.POST.getlist(ACTION_CHECKBOX_NAME):
+                post = request.POST.copy()
+                es =  EventService.objects.all()[0]
+                post.update({ACTION_CHECKBOX_NAME: str(es.id)})
+                
+                request._set_post(post)
+        return super(EventServiceAdmin, self).changelist_view(request, extra_context)
     
     def download_talk_export_csv(modeladmin, request, queryset):
         events = Talk.objects.all()
