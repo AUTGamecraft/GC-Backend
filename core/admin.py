@@ -1,13 +1,19 @@
 from django.contrib import admin
-from .models import (
+from core.models import (
     Assistant,
     Workshop,
     Presenter,
     EventService,
     Talk,
     Payment,
-    Coupon
+    Coupon,
+    PAYMENT_STATES
 )
+import json
+import tempfile
+import zipfile
+from django.http import HttpResponse
+import csv
 
 class PresenterTalkInline(admin.TabularInline):
     model = Talk.presenters.through
@@ -160,12 +166,89 @@ class EventServiceAdmin(admin.ModelAdmin):
             }
         )
     )
+    actions = ['download_talk_export_csv', 'download_workshops_export_csv']
     readonly_fields = ['payment']
     list_display = ['user' , 'workshop' , 'talk','payment_state','service_type']
     actions_on_top = True
     list_filter = ['payment_state','service_type']
     search_fields = ['user__email']
+    
+    def download_talk_export_csv(modeladmin, request, queryset):
+        events = Talk.objects.all()
+        
+        with tempfile.SpooledTemporaryFile() as zip_tmp:
+            with zipfile.ZipFile(zip_tmp, 'w', zipfile.ZIP_DEFLATED) as archive:
+                register_records = None
+                for event in events:
+                    
+                    register_records = EventService.objects.filter(talk=event, payment_state=PAYMENT_STATES[0][0])
+                        
+                    data = [
+                        {
+                            'full_name':record.user.first_name,
+                            'email':record.user.email,
+                            'phone_number': record.user.phone_number
+                        }
+                        for record in register_records
+                    ]
 
+                    fileNameInZip = f'event_export_{event.title}.csv'
+                    
+                    keys = data[0].keys()
+                    with tempfile.NamedTemporaryFile(mode="w+") as temp_csv:
+                        dict_writer = csv.DictWriter(temp_csv, keys)
+                        dict_writer.writeheader()
+                        dict_writer.writerows(data)
+                        temp_csv.flush()
+                        temp_csv.seek(0)
+                        
+                        archive.writestr(fileNameInZip, temp_csv.read())
+
+                archive.close()
+                
+                zip_tmp.seek(0)
+                response = HttpResponse(zip_tmp.read(), content_type='application/x-zip-compressed')
+                response['Content-Disposition'] = 'attachment; filename="talk_exports.zip"'
+                return response
+            
+
+    def download_workshops_export_csv(modeladmin, request, queryset):
+        events = Workshop.objects.all()
+        
+        with tempfile.SpooledTemporaryFile() as zip_tmp:
+            with zipfile.ZipFile(zip_tmp, 'w', zipfile.ZIP_DEFLATED) as archive:
+                register_records = None
+                for event in events:
+                    
+                    register_records = EventService.objects.filter(workshop=event, payment_state=PAYMENT_STATES[0][0])
+                        
+                    data = [
+                        {
+                            'full_name':record.user.first_name,
+                            'email':record.user.email,
+                            'phone_number': record.user.phone_number
+                        }
+                        for record in register_records
+                    ]
+
+                    fileNameInZip = f'event_export_{event.title}.csv'
+                    
+                    keys = data[0].keys()
+                    with tempfile.NamedTemporaryFile(mode="w+") as temp_csv:
+                        dict_writer = csv.DictWriter(temp_csv, keys)
+                        dict_writer.writeheader()
+                        dict_writer.writerows(data)
+                        temp_csv.flush()
+                        temp_csv.seek(0)
+                        
+                        archive.writestr(fileNameInZip, temp_csv.read())
+
+                archive.close()
+                
+                zip_tmp.seek(0)
+                response = HttpResponse(zip_tmp.read(), content_type='application/x-zip-compressed')
+                response['Content-Disposition'] = 'attachment; filename="workshop_exports.zip"'
+                return response
 
 
     
@@ -175,5 +258,6 @@ class CouponAdmin(admin.ModelAdmin):
         'name','count','percentage'
     )
     list_display = ['name' , 'count' , 'percentage']
+    
     
     
