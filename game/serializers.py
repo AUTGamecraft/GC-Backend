@@ -14,6 +14,7 @@ class GameSerializer(serializers.ModelSerializer):
         queryset=SiteUser.objects.all(), many=True, required=False
     )
     # title = serializers.CharField(read_only=True)
+    game_id = serializers.CharField(read_only=True, source="pk")
 
     def to_representation(self, obj):
         self.fields["creator"] = UserSerializerMinimal()
@@ -32,6 +33,7 @@ class GameSerializer(serializers.ModelSerializer):
             "other_creators",
             "is_verified",
             "timestamp",
+            "game_id",
         )
         extra_kwargs = {
             "title": {
