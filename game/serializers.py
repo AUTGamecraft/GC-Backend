@@ -6,72 +6,6 @@ from user.serializers import UserSerializerMinimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-class GameSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(
-        queryset=SiteUser.objects.all(), required=True
-    )
-    other_creators = serializers.PrimaryKeyRelatedField(
-        queryset=SiteUser.objects.all(), many=True, required=False
-    )
-    # title = serializers.CharField(read_only=True)
-    game_id = serializers.CharField(read_only=True, source="pk")
-
-    def to_representation(self, obj):
-        self.fields["creator"] = UserSerializerMinimal()
-        self.fields["other_creators"] = UserSerializerMinimal(many=True)
-
-        return super(GameSerializer, self).to_representation(obj)
-
-    class Meta:
-        model = Game
-        fields = (
-            "title",
-            "poster",
-            "description",
-            "game_link",
-            "creator",
-            "other_creators",
-            "is_verified",
-            "timestamp",
-            "game_id",
-        )
-        extra_kwargs = {
-            "title": {
-                "required": True,
-                "write_only": False,
-            },
-            "poster": {
-                "required": True,
-                "write_only": False,
-            },
-            "description": {
-                "required": True,
-                "write_only": False,
-            },
-            "game_link": {
-                "required": True,
-                "write_only": False,
-            },
-            "is_verified": {"read_only": True},
-        }
-
-    def validate(self, attrs):
-        return super().validate(attrs)
-
-    def create(self, validated_data):
-        with transaction.atomic():
-            other_creators = validated_data.pop("other_creators", [])
-            print(other_creators)
-            game = Game.objects.create(**validated_data)
-            # game.save()
-
-            for creator in other_creators:
-                # print(creator)
-                game.other_creators.add(creator)
-            game.save()
-
-            return game
-
 
 class CommentSerializer(serializers.ModelSerializer):
     game = serializers.PrimaryKeyRelatedField(
@@ -118,3 +52,73 @@ class CommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(**validated_data)
 
         return comment
+
+class GameSerializer(serializers.ModelSerializer):
+    creator = serializers.PrimaryKeyRelatedField(
+        queryset=SiteUser.objects.all(), required=True
+    )
+    other_creators = serializers.PrimaryKeyRelatedField(
+        queryset=SiteUser.objects.all(), many=True, required=False
+    )
+    # title = serializers.CharField(read_only=True)
+    game_id = serializers.CharField(read_only=True, source="pk")
+    
+    comments = CommentSerializer(read_only=True, many=True)
+
+    def to_representation(self, obj):
+        self.fields["creator"] = UserSerializerMinimal()
+        self.fields["other_creators"] = UserSerializerMinimal(many=True)
+
+        return super(GameSerializer, self).to_representation(obj)
+
+    class Meta:
+        model = Game
+        fields = (
+            "title",
+            "poster",
+            "description",
+            "game_link",
+            "creator",
+            "other_creators",
+            "is_verified",
+            "timestamp",
+            "game_id",
+            "comments",
+        )
+        extra_kwargs = {
+            "title": {
+                "required": True,
+                "write_only": False,
+            },
+            "poster": {
+                "required": True,
+                "write_only": False,
+            },
+            "description": {
+                "required": True,
+                "write_only": False,
+            },
+            "game_link": {
+                "required": True,
+                "write_only": False,
+            },
+            "is_verified": {"read_only": True},
+        }
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            other_creators = validated_data.pop("other_creators", [])
+            print(other_creators)
+            game = Game.objects.create(**validated_data)
+            # game.save()
+
+            for creator in other_creators:
+                # print(creator)
+                game.other_creators.add(creator)
+            game.save()
+
+            return game
+
