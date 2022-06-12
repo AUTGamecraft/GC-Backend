@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from django.db import transaction
 from game.models import Game, Comment
-from user.models import SiteUser
+from user.models import SiteUser, Team
 from user.serializers import UserSerializerMinimal
 from django.core.validators import MaxValueValidator, MinValueValidator
-
-
+from user.serializers import TeamSerialzer
+from rest_framework.exceptions import ValidationError
 
 class CommentSerializer(serializers.ModelSerializer):
     game = serializers.PrimaryKeyRelatedField(
@@ -54,20 +54,16 @@ class CommentSerializer(serializers.ModelSerializer):
         return comment
 
 class GameSerializer(serializers.ModelSerializer):
-    creator = serializers.PrimaryKeyRelatedField(
-        queryset=SiteUser.objects.all(), required=True
-    )
-    other_creators = serializers.PrimaryKeyRelatedField(
-        queryset=SiteUser.objects.all(), many=True, required=False
-    )
+    
+    team = serializers.PrimaryKeyRelatedField(write_only=True, required=True, queryset=Team.objects.all())
+    
     # title = serializers.CharField(read_only=True)
     game_id = serializers.CharField(read_only=True, source="pk")
     
     comments = CommentSerializer(read_only=True, many=True)
 
     def to_representation(self, obj):
-        self.fields["creator"] = UserSerializerMinimal()
-        self.fields["other_creators"] = UserSerializerMinimal(many=True)
+        self.fields["team"] = TeamSerialzer()
 
         return super(GameSerializer, self).to_representation(obj)
 
@@ -78,8 +74,7 @@ class GameSerializer(serializers.ModelSerializer):
             "poster",
             "description",
             "game_link",
-            "creator",
-            "other_creators",
+            "team",
             "is_verified",
             "timestamp",
             "game_id",
@@ -109,16 +104,22 @@ class GameSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
+        
+        team_head = validated_data["team"].members.filter(team_role="HE")
+        user_wants_to_create_game = self.context['request'].user
+        print(user_wants_to_create_game)
+        print(team_head)
+        if user_wants_to_create_game not in team_head:
+            raise ValidationError({"message": "User should be head of team"})
+        
+        if validated_data['team'].state != 'AC':
+            raise ValidationError({"message": "Team is not activated yet"})
+            
+            
         with transaction.atomic():
-            other_creators = validated_data.pop("other_creators", [])
-            print(other_creators)
+                
             game = Game.objects.create(**validated_data)
             # game.save()
-
-            for creator in other_creators:
-                # print(creator)
-                game.other_creators.add(creator)
-            game.save()
 
             return game
 

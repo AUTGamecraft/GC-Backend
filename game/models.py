@@ -2,7 +2,9 @@ from django.db import models
 from tinymce.models import HTMLField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
-
+from rest_framework.exceptions import ValidationError
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 import os
 # Create your models here.
 main_dir = "game"
@@ -16,11 +18,16 @@ class Game(models.Model):
     description = HTMLField()
     game_link = models.CharField(max_length=512, blank=False, null=False)
     is_verified = models.BooleanField(default=False)
-    creator = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='games', null=False)
-    other_creators = models.ManyToManyField('user.SiteUser')
+    team = models.ForeignKey('user.Team', on_delete=models.CASCADE, related_name='games', null=True)
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
 
-    
+    class Meta:
+        # Because just team field should be unique, it can placed in the team field with
+        # unique=True. But I like more to put this below :)
+        unique_together = ("team",)
+        
+    # def save(self, *args, **kwargs):
+    #     super(Game, self).save(*args, **kwargs)
 
 class Comment(models.Model):
     user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='comments', null=False)
