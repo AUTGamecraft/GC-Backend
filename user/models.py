@@ -50,10 +50,6 @@ class Team(models.Model):
         choices=TEAM_STATE,
         default='RE'
     )
-    video = models.FileField(upload_to='videos', blank=True, null=True)
-    game = models.FileField(upload_to='games', blank=True, null=True)
-    like = models.PositiveIntegerField(default=0)
-    dislike = models.PositiveIntegerField(default=0)
     profile = models.ImageField(
         verbose_name='team_profile', null=True, blank=True)
     team_activation = models.CharField(max_length=40, null=True, blank=True,unique=True)

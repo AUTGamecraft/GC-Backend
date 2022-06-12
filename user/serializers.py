@@ -62,7 +62,7 @@ class TeamSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = [
-            'members', 'state', 'video', 'game', 'like', 'dislike', 'emails', 'name', 'pk'
+            'members', 'state', 'emails', 'name', 'pk'
         ]
         extra_kwargs = {'pk': {'read_only': True}}
 

@@ -57,19 +57,8 @@ class TeamAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             "fields": (
-               'name' 
+               'name'
             ,),
-        }),
-        ('feedbacks',{
-            'fields': (
-                'like',
-                'dislike'
-            )
-        }),
-        ('Files' ,{
-            'fields':(
-                'video','game','profile'
-            )
         }),
         (
             'register state' , {
@@ -79,7 +68,7 @@ class TeamAdmin(admin.ModelAdmin):
             }
         )
     )
-    list_display = ['name' , 'state' , 'member_count' ,'like','dislike']
+    list_display = ['id' ,'name' , 'state' , 'member_count']
     actions_on_top = True
     list_filter = ['state']
     inlines = [
