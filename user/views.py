@@ -404,7 +404,7 @@ class TeamViewSet(ResponseGenericViewSet,
                 name=request.data['name'], team_activation=team_activation_code(request.data['name']))
             members = get_user_model().objects.filter(
                 email__in=request.data['emails'])
-            if len(members) > 2 or len(members) < 1:
+            if len(members) > 5 or len(members) < 2:
                 raise self.set_response(
                     message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                     status_code=status.HTTP_409_CONFLICT,

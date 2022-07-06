@@ -30,7 +30,7 @@ ALREADY_REGISTERED_IN_THE_COMPETITION='شما قبلا در مسابقه ثبت 
 # team
 REQUESTED_USER_IS_NOT_REGISTERED_OR_ALREADY_HAS_A_TEAM='کاربر درخواستی شما یا تیم دارد یا ثبت نام نکرده است'
 YOU_ALREADY_HAVE_A_TEAM='شما در حال حاضر تیم دارید'
-COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN='تعداد اعضای گروه باید بین ۱ تا ۲ باشد'
+COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN='تعداد اعضای گروه باید بین ۲ تا ۵ باشد'
 USER_X_HAS_TEAM=' کاربر {user} تیم دارد'
 USER_ALREADY_HAS_A_TEAM='کاربر تیم دارد'
 TEAM_ACTIVED='تیم فعال شد'
