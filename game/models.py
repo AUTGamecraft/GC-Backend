@@ -36,8 +36,9 @@ class Comment(models.Model):
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
 
 class Like(models.Model):
-    user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='comments', null=False)
-    game = models.ForeignKey('game.Game', on_delete=models.CASCADE, related_name='comments', null=False)
+    user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='likes', null=False)
+    game = models.ForeignKey('game.Game', on_delete=models.CASCADE, related_name='likes', null=False)
+    is_deleted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
     class Meta:
         # Each user can like a game just one time

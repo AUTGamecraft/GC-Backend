@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from game.models import Game, Comment
+from game.models import Game, Comment, Like
 
 # Register your models here.
 
@@ -13,3 +13,6 @@ class GameAdmin(admin.ModelAdmin):
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "timestamp", "text")
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "timestamp", "game")

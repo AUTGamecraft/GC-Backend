@@ -21,10 +21,40 @@ class LikeSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         self.fields["user"] = UserSerializerMinimal()
 
-        return super(CommentSerializer, self).to_representation(obj)
+        return super(LikeSerializer, self).to_representation(obj)
     class Meta:
         model = Like
-        fields = ('user', 'game')
+        fields = ('user', 'game', 'is_deleted')
+        extra_kwargs = {
+            "is_deleted": {
+                "read_only": True,
+            },
+        }
+        
+        
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        if validated_data['game'].is_verified != True:
+            raise ValidationError({"message": "Game is not verified yet"})
+        
+        print("heree")
+        like = Like.objects.create(**validated_data)
+        
+        return like
+    
+    def update(self, instance, validated_data):
+        if validated_data['game'].is_verified != True:
+            raise ValidationError({"message": "Game is not verified yet"})
+                
+        like = instance
+        
+        like.is_deleted = not like.is_deleted
+        like.save()
+
+        return like
+    
 
 class CommentSerializer(serializers.ModelSerializer):
     game = serializers.PrimaryKeyRelatedField(
