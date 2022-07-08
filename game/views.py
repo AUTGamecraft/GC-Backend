@@ -117,6 +117,6 @@ class LikeViewAPI(
             if "The fields user, game must make a unique set" in str(e):
                 print("wants to update")
                 return super().update(request, *args, **kwargs)
-           
+            
             return exception_handler(e, self.get_serializer_context())
                 

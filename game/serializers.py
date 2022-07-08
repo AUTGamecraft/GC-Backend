@@ -100,7 +100,13 @@ class GameSerializer(serializers.ModelSerializer):
     game_id = serializers.CharField(read_only=True, source="pk")
     
     comments = CommentSerializer(read_only=True, many=True)
-    likes = LikeSerializer(read_only=True, many=True)
+    # likes = LikeSerializer(read_only=True, many=True)
+    likes = serializers.SerializerMethodField()
+    
+    def get_likes(self, object):
+        likes = object.likes.filter(is_deleted=False)
+        return LikeSerializer(likes, many=True).data
+        
 
     def to_representation(self, obj):
         self.fields["team"] = TeamSerialzer()
