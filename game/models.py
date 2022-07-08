@@ -33,11 +33,13 @@ class Comment(models.Model):
     user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='comments', null=False)
     game = models.ForeignKey('game.Game', on_delete=models.CASCADE, related_name='comments', null=False)
     text = models.CharField(max_length=512, blank=True, null=True)
-    score = models.IntegerField(
-        validators=[MaxValueValidator(5), MinValueValidator(1)], default=5
-    )
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
-    
+
+class Like(models.Model):
+    user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='comments', null=False)
+    game = models.ForeignKey('game.Game', on_delete=models.CASCADE, related_name='comments', null=False)
+    timestamp = models.DateTimeField(default=timezone.now, editable=False)
     class Meta:
+        # Each user can like a game just one time
         unique_together = ('user', 'game',)
     

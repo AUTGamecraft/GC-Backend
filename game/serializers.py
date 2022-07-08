@@ -1,11 +1,30 @@
 from rest_framework import serializers
 from django.db import transaction
-from game.models import Game, Comment
+from game.models import Game, Comment, Like
 from user.models import SiteUser, Team
 from user.serializers import UserSerializerMinimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from user.serializers import TeamSerialzer
 from rest_framework.exceptions import ValidationError
+
+
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    game = serializers.PrimaryKeyRelatedField(
+        queryset=Game.objects.filter(is_verified=True), required=True, write_only=True
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=SiteUser.objects.all(), required=True
+    )
+   
+    def to_representation(self, obj):
+        self.fields["user"] = UserSerializerMinimal()
+
+        return super(CommentSerializer, self).to_representation(obj)
+    class Meta:
+        model = Like
+        fields = ('user', 'game')
 
 class CommentSerializer(serializers.ModelSerializer):
     game = serializers.PrimaryKeyRelatedField(
@@ -14,12 +33,7 @@ class CommentSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=SiteUser.objects.all(), required=True
     )
-    score = serializers.IntegerField(
-        required=True,
-        write_only=False,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-    )
-
+   
     def to_representation(self, obj):
         self.fields["user"] = UserSerializerMinimal()
 
@@ -29,17 +43,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = (
             "text",
-            "score",
             "game",
             "user",
             "timestamp",
         )
         extra_kwargs = {
             "text": {
-                "required": True,
-                "write_only": False,
-            },
-            "score": {
                 "required": True,
                 "write_only": False,
             },
@@ -61,6 +70,7 @@ class GameSerializer(serializers.ModelSerializer):
     game_id = serializers.CharField(read_only=True, source="pk")
     
     comments = CommentSerializer(read_only=True, many=True)
+    likes = LikeSerializer(read_only=True, many=True)
 
     def to_representation(self, obj):
         self.fields["team"] = TeamSerialzer()
@@ -79,6 +89,7 @@ class GameSerializer(serializers.ModelSerializer):
             "timestamp",
             "game_id",
             "comments",
+            "likes",
         )
         extra_kwargs = {
             "title": {
