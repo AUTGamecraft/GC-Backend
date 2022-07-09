@@ -38,6 +38,7 @@ from .serializers import (
     TeamSerialzer,
     UserTeamSerialzier
 )
+from django.db import transaction
 
 
 class UserViewSet(ResponseGenericViewSet,
@@ -452,6 +453,16 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             mid = force_text(urlsafe_base64_decode(mid))
             member = get_user_model().objects.get(pk=mid)
             team = Team.objects.get(team_activation=tid)
+            
+            if team.state == 'RJ':
+                data = {
+                    'message': TEAM_IS_REJECTED,
+                    'error': None,
+                    'status': 406,
+                    'data': []
+                }
+                return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            
             if member.team_role != 'NO':
                 data = {
                     'message': USER_ALREADY_HAS_A_TEAM,
@@ -461,7 +472,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                 }
                 return Response(data=data, status=status.HTTP_409_CONFLICT)
             members_num = team.members.count()
-            if members_num > 5:
+            if members_num >= 5:
                 data = {
                     'message': TEAM_IS_FULL,
                     'error': None,
@@ -469,12 +480,16 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'data': []
                 }
                 return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
-            if members_num >= 2:
-                team.state = 'AC'
-            team.save()
-            member.team_role = 'ME'
-            member.team = team
-            member.save()
+            
+            with transaction.atomic():
+                if team.state == 'RE' and members_num >= 1:
+                    team.state = 'AC'
+                    team.save()
+                    
+                member.team_role = 'ME'
+                member.team = team
+                member.save()
+                
             data = {
                 'message': TEAM_ACTIVED,
                 'error': None,

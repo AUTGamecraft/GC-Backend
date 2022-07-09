@@ -36,6 +36,7 @@ USER_ALREADY_HAS_A_TEAM='کاربر تیم دارد'
 TEAM_ACTIVED='تیم فعال شد'
 TEAM_NOT_FOUND='تیم پیدا نشد'
 TEAM_IS_FULL='تیم پر است'
+TEAM_IS_REJECTED='تیم رد شده است'
 
 # general
 CORRECT_THE_ERRORS='لطفا مشخصات را کامل و به درستی وارد کنید'
