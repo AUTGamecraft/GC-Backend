@@ -7,6 +7,16 @@ from game.serializers import GameSerializer, CommentSerializer, LikeSerializer
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import exception_handler
+from rest_framework import status
+
+def custom_exception_handler(exc, context):
+
+    response = exception_handler(exc, context)
+
+    if response is None:
+        response = Response(data={"error":{"detail": "some error occurred"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return response
 
 
 class UserPermission(permissions.BasePermission):
@@ -118,5 +128,5 @@ class LikeViewAPI(
                 print("wants to update")
                 return super().update(request, *args, **kwargs)
             
-            return exception_handler(e, self.get_serializer_context())
+            return custom_exception_handler(e, None)
                 
