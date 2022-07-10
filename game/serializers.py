@@ -148,7 +148,17 @@ class GameSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        return super().validate(attrs)
+        team = attrs['team']
+        
+        try:
+            # team.game will raise an exception if corresponding team
+            # does not have a game. Thus this team is validated to create a game
+            # If team already has a game then we will raise an exception
+            game = team.game
+            raise ValidationError(detail='Team already has a teamm', code=400)
+        except Game.DoesNotExist:
+            print("here to create a game")
+            return attrs
 
     def create(self, validated_data):
         

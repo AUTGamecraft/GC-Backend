@@ -18,16 +18,8 @@ class Game(models.Model):
     description = HTMLField()
     game_link = models.CharField(max_length=512, blank=False, null=False)
     is_verified = models.BooleanField(default=False)
-    team = models.ForeignKey('user.Team', on_delete=models.CASCADE, related_name='games', null=True)
+    team = models.OneToOneField('user.Team', on_delete=models.CASCADE, related_name='game', null=True)
     timestamp = models.DateTimeField(default=timezone.now, editable=False)
-
-    class Meta:
-        # Because just team field should be unique, it can placed in the team field with
-        # unique=True. But I like more to put this below :)
-        unique_together = ("team",)
-        
-    # def save(self, *args, **kwargs):
-    #     super(Game, self).save(*args, **kwargs)
 
 class Comment(models.Model):
     user = models.ForeignKey('user.SiteUser', on_delete=models.CASCADE, related_name='comments', null=False)

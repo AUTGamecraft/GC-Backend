@@ -1,11 +1,11 @@
-from django.forms import ValidationError
 from rest_framework.viewsets import mixins, GenericViewSet
 from rest_framework import permissions
 from rest_framework.pagination import LimitOffsetPagination
 from game.models import Game, Comment, Like
+from user.models import Team
 from game.serializers import GameSerializer, CommentSerializer, LikeSerializer
 from rest_framework.response import Response
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import exception_handler
 from rest_framework import status
 
@@ -30,15 +30,27 @@ class UserPermission(permissions.BasePermission):
         else:
             return False
 
+class GameUserPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        print(view.action)
+        if view.action in ["list"]:
+            return True
+        elif view.action in ["post", "update", "partial_update", "destroy", "retrieve"]:
+            # print(request.user.is_authenticated())
+            return bool(request.user and request.user.is_authenticated)
+        else:
+            return False
+
 
 class GameViewAPI(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
     permission_classes = [
-        UserPermission,
+        GameUserPermission,
     ]
     serializer_class = GameSerializer
     pagination_class = LimitOffsetPagination
@@ -55,17 +67,21 @@ class GameViewAPI(
         request.data["creator"] = self.request.user.pk
         request.data._mutable = mutable
 
-    # TODO: for later on, update or remove document
-    # def get_object(self):
-    #     game_id = self.kwargs["pk"]
-    #     user = self.request.user
-    #     return Game.objects.get(pk=game_id, user=user)
+    def get_object(self):
+        user = self.request.user
+        try:
+            team = user.team
+            if team:
+                game = user.team.game
+                return game
+            
+            raise ValidationError(detail='team does not exist', code=status.HTTP_404_NOT_FOUND)
+        except Game.DoesNotExist:
+            raise ValidationError(detail='game does not exist', code=status.HTTP_404_NOT_FOUND)            
 
     def post(self, request, *args, **kwargs):
         self.set_request_context()
         return super().create(request, *args, **kwargs)
-
-
 class CommentViewAPI(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
