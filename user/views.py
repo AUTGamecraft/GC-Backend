@@ -418,11 +418,11 @@ class TeamViewSet(ResponseGenericViewSet,
             
             with transaction.atomic():  
                 head.team_role = 'HE'
-                team = Team.objects.create(
+                team = Team(
                     name=request.data['name'], team_activation=team_activation_code(request.data['name']))
                 members = get_user_model().objects.filter(
                     email__in=request.data['emails'])
-                if len(members) > 5 or len(members) < 2:
+                if len(members) > 4 or len(members) < 1:
                     return self.set_response(
                         message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                         status_code=status.HTTP_409_CONFLICT,
@@ -433,9 +433,9 @@ class TeamViewSet(ResponseGenericViewSet,
                             message=USER_X_HAS_TEAM.format(user=mem.user_name),
                             status_code=status.HTTP_409_CONFLICT,
                             status=409)
+                team.save()
                 head.team = team
                 head.save()
-                team.save()
                 for mem in members:
                     team_data = {
                         'head_name': head.user_name,
