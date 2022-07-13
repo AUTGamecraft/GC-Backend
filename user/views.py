@@ -445,8 +445,10 @@ class TeamViewSet(ResponseGenericViewSet,
                 return self.set_response(data=self.serializer_class(team).data)
         except get_user_model().DoesNotExist as e:
             # return self.set_response(error=str(e))
+            print(e2)
             return custom_exception_handler(e, None)
         except Exception as e2:
+            print(e2)
             # return self.set_response(error=str(e2))
             return custom_exception_handler(e2, None)
 
