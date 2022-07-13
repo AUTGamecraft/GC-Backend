@@ -39,6 +39,17 @@ from .serializers import (
     UserTeamSerialzier
 )
 from django.db import transaction
+from rest_framework.views import exception_handler
+
+
+def custom_exception_handler(exc, context):
+
+    response = exception_handler(exc, context)
+
+    if response is None:
+        response = Response(data={"error":{"detail": "some error occurred"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return response
 
 
 class UserViewSet(ResponseGenericViewSet,
@@ -400,40 +411,44 @@ class TeamViewSet(ResponseGenericViewSet,
             head = request.user
             if head.team_role != 'NO':
                 raise ValidationError(YOU_ALREADY_HAVE_A_TEAM)
-            head.team_role = 'HE'
-            team = Team.objects.create(
-                name=request.data['name'], team_activation=team_activation_code(request.data['name']))
-            members = get_user_model().objects.filter(
-                email__in=request.data['emails'])
-            if len(members) > 5 or len(members) < 2:
-                raise self.set_response(
-                    message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
-                    status_code=status.HTTP_409_CONFLICT,
-                    status=409)
-            for mem in members:
-                if mem.team_role != 'NO':
+            
+            with transaction.atomic():  
+                head.team_role = 'HE'
+                team = Team.objects.create(
+                    name=request.data['name'], team_activation=team_activation_code(request.data['name']))
+                members = get_user_model().objects.filter(
+                    email__in=request.data['emails'])
+                if len(members) > 5 or len(members) < 2:
                     raise self.set_response(
-                        message=USER_X_HAS_TEAM.format(user=mem.user_name),
+                        message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                         status_code=status.HTTP_409_CONFLICT,
                         status=409)
-            head.team = team
-            head.save()
-            team.save()
-            for mem in members:
-                team_data = {
-                    'head_name': head.user_name,
-                    'team_name': team.name,
-                    'email': mem.email,
-                    'first_name': mem.first_name,
-                    'tid': team.team_activation,
-                    'mid': urlsafe_base64_encode(force_bytes(mem.pk))
-                }
-                send_team_requests_task.delay(team_data)
-            return self.set_response(data=self.serializer_class(team).data)
+                for mem in members:
+                    if mem.team_role != 'NO':
+                        raise self.set_response(
+                            message=USER_X_HAS_TEAM.format(user=mem.user_name),
+                            status_code=status.HTTP_409_CONFLICT,
+                            status=409)
+                head.team = team
+                head.save()
+                team.save()
+                for mem in members:
+                    team_data = {
+                        'head_name': head.user_name,
+                        'team_name': team.name,
+                        'email': mem.email,
+                        'first_name': mem.first_name,
+                        'tid': team.team_activation,
+                        'mid': urlsafe_base64_encode(force_bytes(mem.pk))
+                    }
+                    send_team_requests_task.delay(team_data)
+                return self.set_response(data=self.serializer_class(team).data)
         except get_user_model().DoesNotExist as e:
-            return self.set_response(error=str(e))
+            # return self.set_response(error=str(e))
+            return custom_exception_handler(e, None)
         except Exception as e2:
-            return self.set_response(error=str(e2))
+            # return self.set_response(error=str(e2))
+            return custom_exception_handler(e, None)
 
     def get_permissions(self):
         try:
