@@ -448,7 +448,7 @@ class TeamViewSet(ResponseGenericViewSet,
             return custom_exception_handler(e, None)
         except Exception as e2:
             # return self.set_response(error=str(e2))
-            return custom_exception_handler(e, None)
+            return custom_exception_handler(e2, None)
 
     def get_permissions(self):
         try:
