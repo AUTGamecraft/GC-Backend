@@ -410,7 +410,11 @@ class TeamViewSet(ResponseGenericViewSet,
         try:
             head = request.user
             if head.team_role != 'NO':
-                raise ValidationError(YOU_ALREADY_HAVE_A_TEAM)
+                # raise ValidationError(YOU_ALREADY_HAVE_A_TEAM)
+                return self.set_response(
+                            message=YOU_ALREADY_HAVE_A_TEAM,
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            status=400)
             
             with transaction.atomic():  
                 head.team_role = 'HE'
@@ -419,7 +423,7 @@ class TeamViewSet(ResponseGenericViewSet,
                 members = get_user_model().objects.filter(
                     email__in=request.data['emails'])
                 if len(members) > 5 or len(members) < 2:
-                    raise self.set_response(
+                    return self.set_response(
                         message=COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN,
                         status_code=status.HTTP_409_CONFLICT,
                         status=409)
