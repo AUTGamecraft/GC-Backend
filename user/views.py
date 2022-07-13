@@ -444,13 +444,14 @@ class TeamViewSet(ResponseGenericViewSet,
                     send_team_requests_task.delay(team_data)
                 return self.set_response(data=self.serializer_class(team).data)
         except get_user_model().DoesNotExist as e:
-            # return self.set_response(error=str(e))
-            print(e2)
-            return custom_exception_handler(e, None)
+            return self.set_response(error=str(e), status=400, status_code=400)
+            # print(e2)
+            # return custom_exception_handler(e, None)
         except Exception as e2:
-            print(e2)
+            return self.set_response(error=str(e2), status=500, status_code=500)
             # return self.set_response(error=str(e2))
-            return custom_exception_handler(e2, None)
+            # print(e2)
+            # return custom_exception_handler(e2, None)
 
     def get_permissions(self):
         try:
