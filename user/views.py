@@ -425,7 +425,7 @@ class TeamViewSet(ResponseGenericViewSet,
                         status=409)
                 for mem in members:
                     if mem.team_role != 'NO':
-                        raise self.set_response(
+                        return self.set_response(
                             message=USER_X_HAS_TEAM.format(user=mem.user_name),
                             status_code=status.HTTP_409_CONFLICT,
                             status=409)
