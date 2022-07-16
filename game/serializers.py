@@ -6,8 +6,9 @@ from user.serializers import UserSerializerMinimal
 from django.core.validators import MaxValueValidator, MinValueValidator
 from user.serializers import TeamSerialzer
 from rest_framework.exceptions import ValidationError
+from decouple import config
 
-
+HIDE_GAME_RESULT = config("HIDE_GAME_RESULT", cast=bool)
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -104,7 +105,16 @@ class GameSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField()
     
     def get_likes(self, object):
-        likes = object.likes.filter(is_deleted=False)
+        query = {
+            "is_deleted": False,
+        }
+        if HIDE_GAME_RESULT:
+            if self.context['request'].user and self.context['request'].user.is_authenticated:
+                query["user"] = self.context['request'].user
+            else:
+                return []
+            
+        likes = object.likes.filter(**query)
         return LikeSerializer(likes, many=True).data
         
 
