@@ -8,6 +8,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import exception_handler
 from rest_framework import status
+from decouple import config
+
+CAN_CREATE_LIKE = config("CAN_CREATE_LIKE", cast=bool)
 
 def custom_exception_handler(exc, context):
 
@@ -136,6 +139,9 @@ class LikeViewAPI(
         request.data._mutable = mutable
 
     def post(self, request, *args, **kwargs):
+        if not CAN_CREATE_LIKE:
+            return Response(data={"error":"Comment submit time is over"})
+        
         self.set_request_context()
         try:
             return super().create(request, *args, **kwargs)
