@@ -140,7 +140,7 @@ class LikeViewAPI(
 
     def post(self, request, *args, **kwargs):
         if not CAN_CREATE_LIKE:
-            return Response(data={"error":"Comment submit time is over"})
+            return Response(data={"error":"Like submit time is over"})
         
         self.set_request_context()
         try:
