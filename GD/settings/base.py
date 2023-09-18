@@ -229,10 +229,13 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
+
+PAYWALL=config('PAYWALL')
 # idpay settings
 X_API_KEY=config('X_API_KEY')
 X_SANDBOX=config('X_SANDBOX')
-
+#Payping settings
+PAYPING_AUTH=config('PAYPING_AUTH')
 
 
 # EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
