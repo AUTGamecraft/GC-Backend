@@ -19,7 +19,7 @@ class PayPingRequest:
     def create_payment(self, order_id, amount, name, phone, mail, desc, callback):
         body = {
             "amount": amount,
-            "payerIdentity": email,
+            "payerIdentity": mail,
             "payerName": name,
             "description": desc,
             "returnUrl": callback,
