@@ -28,7 +28,7 @@ class PayPingRequest:
         response=requests.request(method='POST',headers=self.__headers,url=PayPing_URL,data=json.dumps(body))
         json_response=json.loads(response.text)
         json_response['status']=response.status_code
-        # print(json_response)
+        # print(json_response)``
         return json_response
         
     def verify_payment(self,amount ,payment_id):

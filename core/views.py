@@ -203,14 +203,14 @@ class UserServicesViewSet(ResponseModelViewSet):
         else:
             try:
                 request_body = request.POST
-                peyment_id = request_body['refid']
+                payment_id = request_body['refid']
                 code = request_body['code']
 
                 payment = Payment.objects.get(pk=order_id)
                 payment.card_number = request_body['cardnumber']
                 payment.hashed_card_number = request_body['cardhashpan']
                 payment.payment_trackID = payment_id
-                payment.payment_id = peyment_id
+                payment.payment_id = payment_id
                 order_id = request_body['clientrefid']
                 amount = int(payment.total_price*10)
                 result = PayPingRequest().verify_payment(
