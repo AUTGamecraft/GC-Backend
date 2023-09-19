@@ -126,7 +126,7 @@ class UserServicesViewSet(ResponseModelViewSet):
             mail=user.email,
             phone=user.phone_number,
             callback= IDPAY_CALL_BACK if PAYWALL=='idpay' else PayPing_CALL_BACK,
-            mail=user.email,K,
+            mail=user.email,
             name=user.first_name
         ) 
         success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else 200 #TODO: make it a const variable
@@ -218,7 +218,29 @@ class UserServicesViewSet(ResponseModelViewSet):
                     payment_id
                 )
                 result_status = result['status']
-                #TODO: Verify Registration
+                if result_status == PAYPING_STATUS_OK:
+                    services = EventService.objects.select_related('workshop').filter(payment=payment)
+                    for service in services:
+                        service.payment_state = 'CM'
+                        service.workshop.save()
+                        service.save()
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.verify_trackID = payment_id
+                    payment.verified_date = datetime.now()
+                    payment.finished_date = datetime.now()
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                else:
+                    if payment.coupon:
+                        coupon = payment.coupon
+                        coupon.count += 1
+                        coupon.save()
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+
             except Payment.DoesNotExist as e1:
                 raise ValidationError('no payment with this order_id')
             except ConnectionError as e:
