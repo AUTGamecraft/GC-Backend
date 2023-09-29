@@ -2,6 +2,50 @@ import requests
 from GD.settings.base import PAYPING_AUTH
 import  json
 
+PAYPING_ERRORCODES = {
+    1: "CanceledByUser",
+    2: "WrongCardPassword",
+    3: "UserDoesnotEnterCVV2OrExpireDate",
+    4: "OutOfBalance",
+    5: "ExpireDateError",
+    6: "CardIsSuspended",
+    7: "PaymentNotFound",
+    8: "BankSuspendedPayment",
+    9: "AmountError",
+    10: "WrongCardNumber",
+    11: "ConnectionError",
+    12: "BankInternalError",
+    15: "PaymentVerified",
+    18: "HosTDoesnotApproved",
+    19: "HosTDoesnotApproved",
+    25: "ServicePermanentlyUnavailable",
+    26: "PaymentCodeError",
+    27: "HosTDoesnotApproved",
+    28: "VPNError",
+    29: "ConnectionError",
+    31: "PaymentVerificationError",
+    38: "AddressError",
+    39: "PaymentFaild",
+    44: "Wrong_refid",
+    46: "TokenError",
+    47: "WrongAmount",
+    48: "ShaparakError",
+    49: "FatalError"
+}
+
+PAYPING_STATUS_OK = 200
+PAYPING_STATUS_CLIENT_ERROR = 400
+PAYPING_STATUS_SERVER_ERROR = 500
+PAYPING_STATUS_503 = 503
+PAYPING_STATUS_AUTH_ERROR = 401
+PAYPING_STATUS_403 = 403
+PAYPING_STATUS_404 = 404
+
+
+
+
+
+
 PayPing_PAYMENT_DESCRIPTION='register workshops or talks'
 PayPing_CALL_BACK='https://gamecraft.ce.aut.ac.ir/api/v2/service/verify/'
 
@@ -28,7 +72,6 @@ class PayPingRequest:
         response=requests.request(method='POST',headers=self.__headers,url=PayPing_URL,data=json.dumps(body))
         json_response=json.loads(response.text)
         json_response['status']=response.status_code
-        # print(json_response)
         return json_response
         
     def verify_payment(self,amount ,payment_id):
