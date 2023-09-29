@@ -44,6 +44,8 @@ PAYPING_STATUS_404 = 404
 
 
 
+
+
 PayPing_PAYMENT_DESCRIPTION='register workshops or talks'
 PayPing_CALL_BACK='https://gamecraft.ce.aut.ac.ir/api/v2/service/verify/'
 

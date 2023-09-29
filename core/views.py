@@ -12,7 +12,7 @@ from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
 from .payping import *
-from GD.settings import PAYWALL
+from GD.settings.base import PAYWALL
 from django.shortcuts import get_object_or_404, redirect
 from .viewsets import *
 from django.utils.encoding import force_text
@@ -126,10 +126,10 @@ class UserServicesViewSet(ResponseModelViewSet):
             mail=user.email,
             phone=user.phone_number,
             callback= IDPAY_CALL_BACK if PAYWALL=='idpay' else PayPing_CALL_BACK,
-            mail=user.email,
+            # mail=user.email,
             name=user.first_name
         ) 
-        success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else 200 #TODO: make it a const variable
+        success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else PAYPING_STATUS_OK
         if result['status'] == success_status:
             payment.services.set(services)
             payment.created_date = datetime.now()
@@ -205,13 +205,12 @@ class UserServicesViewSet(ResponseModelViewSet):
                 request_body = request.POST
                 payment_id = request_body['refid']
                 code = request_body['code']
-
+                order_id = request_body['clientrefid']
                 payment = Payment.objects.get(pk=order_id)
                 payment.card_number = request_body['cardnumber']
                 payment.hashed_card_number = request_body['cardhashpan']
                 payment.payment_trackID = payment_id
                 payment.payment_id = payment_id
-                order_id = request_body['clientrefid']
                 amount = int(payment.total_price*10)
                 result = PayPingRequest().verify_payment(
                     amount,
