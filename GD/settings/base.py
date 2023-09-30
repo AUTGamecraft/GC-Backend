@@ -188,7 +188,7 @@ LOGGING = {
 
 
 CELERY_BROKER_URL = os.environ.get(
-    'CELERY_BROKER', 'amqp://guest:guest@rabbitmq:5672/')
+    'CELERY_BROKER', 'amqp://guest:guest@localhost:5672/')
 
 
 INSTALLED_APPS += [
