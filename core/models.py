@@ -1,7 +1,7 @@
 from django.db import models
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
-from GD.settings.base import AUTH_USER_MODEL
+from GD.settings.base import AUTH_USER_MODEL, PAYWALL
 from .validators import validate_file_extension
 from tinymce.models import HTMLField
 
@@ -22,6 +22,44 @@ IDPAY_STATUS = [
     (405,"error")
 
 ]
+PAYPING_CODES = [
+    (1, "CanceledByUser"),
+    (2, "WrongCardPassword"),
+    (3, "UserDoesnotEnterCVV2OrExpireDate"),
+    (4, "OutOfBalance"),
+    (5, "ExpireDateError"),
+    (6, "CardIsSuspended"),
+    (7, "PaymentNotFound"),
+    (8, "BankSuspendedPayment"),
+    (9, "AmountError"),
+    (10, "WrongCardNumber"),
+    (11, "ConnectionError"),
+    (12, "BankInternalError"),
+    (15, "PaymentVerified"),
+    (18, "HosTDoesnotApproved"),
+    (19, "HosTDoesnotApproved"),
+    (25, "ServicePermanentlyUnavailable"),
+    (26, "PaymentCodeError"),
+    (27, "HosTDoesnotApproved"),
+    (28, "VPNError"),
+    (29, "ConnectionError"),
+    (31, "PaymentVerificationError"),
+    (38, "AddressError"),
+    (39, "PaymentFaild"),
+    (44, "Wrong_refid"),
+    (46, "TokenError"),
+    (47, "WrongAmount"),
+    (48, "ShaparakError"),
+    (49, "FatalError"),
+    (200, "OK"),
+    (400, "Client Error"),
+    (500, "Server Error"),
+    (503, "503 Service Unavailable"),
+    (401, "Authentication Error"),
+    (403, "403 Forbidden"),
+    (404, "404 Not Found")
+]
+
 
 PAYMENT_STATES = [
     ('CM', 'COMPLETED'),
@@ -169,7 +207,7 @@ class Coupon(models.Model):
 
 class Payment(models.Model):
     total_price = models.PositiveIntegerField()
-    status = models.IntegerField(choices=IDPAY_STATUS,default=201)
+    status = models.IntegerField(choices=IDPAY_STATUS if PAYWALL=='idapy' else PAYPING_CODES,default=201)
     payment_id = models.CharField(null=True,max_length=42)
     payment_link = models.TextField(null=True)
     card_number = models.CharField(null=True,max_length=16)
