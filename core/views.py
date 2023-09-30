@@ -121,7 +121,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         PayWallRequest = IdPayRequest if PAYWALL=="idpay" else PayPingRequest
         result = PayWallRequest().create_payment(
             order_id=payment.pk,
-            amount=int(total_price*10),
+            amount=int(total_price*10 if PAYWALL=="idpay" else total_price),
             desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL=='idpay' else PayPing_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,
