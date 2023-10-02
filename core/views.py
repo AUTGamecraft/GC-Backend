@@ -214,7 +214,29 @@ class UserServicesViewSet(ResponseModelViewSet):
                 self.verify(request)
         else:
             try:
+                # return Response({"w": len(request.POST.keys())})
+                # if (len(request.POST.keys()) == 3):
+                    
+                #     if payment.coupon:
+                #         coupon = payment.coupon
+                #         coupon.count += 1
+                #         coupon.save()
+                #         payment.status = result_status
+                #         payment.original_data = json.dumps(result)
+                #         payment.save()
+                #         return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
                 request_body = request.POST
+                if len(request_body.keys()) == 3:
+                    _payment = Payment.objects.get(pk=request_body['clientrefid'])
+                    if _payment.coupon:
+                        coupon = payment.coupon
+                        coupon.count += 1
+                        coupon.save()
+                    _payment.status = 1
+                    _payment.original_data = json.dumps(request_body)
+                    _payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                
                 payment_id = request_body['refid']
                 code = request_body['code']
                 order_id = request_body['clientrefid']
