@@ -20,7 +20,10 @@ finally, start the server:
 ```bash
 python manage.py runserver
 ```
-
+for gunicorn deploy:
+```bash
+gunicorn --env DJANGO_SETTINGS_MODULE=GD.production. GD.wsgi:application
+```
 
 or simply try this:
 ```bash

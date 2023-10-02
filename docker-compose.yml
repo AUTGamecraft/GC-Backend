@@ -37,7 +37,7 @@ services:
       - .:/app
     ports:
       - '8000:8000'
-    command: gunicorn --env DJANGO_SETTINGS_MODULE=GD.settings.development GD.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn --env DJANGO_SETTINGS_MODULE=GD.settings.production GD.wsgi:application --bind 0.0.0.0:8000
     environment:
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
       - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672/

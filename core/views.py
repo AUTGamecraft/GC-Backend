@@ -69,6 +69,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def payment(self, request):
+        # return Response({"paywall": PAYWALL})
         data = defaultdict(lambda:None , request.data)
         user = request.user
         services = EventService.objects.filter(
@@ -119,6 +120,7 @@ class UserServicesViewSet(ResponseModelViewSet):
         )
 
         PayWallRequest = IdPayRequest if PAYWALL=="idpay" else PayPingRequest
+        
         result = PayWallRequest().create_payment(
             order_id=payment.pk,
             amount=int(total_price*10 if PAYWALL=="idpay" else total_price),
@@ -129,6 +131,8 @@ class UserServicesViewSet(ResponseModelViewSet):
             # mail=user.email,
             name=user.first_name
         ) 
+        # return Response(result)
+
         success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else PAYPING_STATUS_OK
         if result['status'] == success_status:
             payment.services.set(services)
@@ -137,6 +141,14 @@ class UserServicesViewSet(ResponseModelViewSet):
             payment.payment_link = result['link'] if PAYWALL=="idpay" else PayPingPeymentLinkGenerator(result['code'])
             payment.coupon = coupon
             payment.save()
+        if PAYWALL != 'idpay':
+            _code = result['code']
+            _status = result['status']
+            result = None
+            result = {
+                "link": PayPingPeymentLinkGenerator(_code),
+                "status": _status
+            }
             return self.set_response(
                 message=None, data=result, status_code=status.HTTP_200_OK
             )
@@ -211,7 +223,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 payment.hashed_card_number = request_body['cardhashpan']
                 payment.payment_trackID = payment_id
                 payment.payment_id = payment_id
-                amount = int(payment.total_price*10)
+                amount = int(payment.total_price)
                 result = PayPingRequest().verify_payment(
                     amount,
                     payment_id
