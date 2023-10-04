@@ -188,7 +188,7 @@ LOGGING = {
 
 
 CELERY_BROKER_URL = os.environ.get(
-    'CELERY_BROKER', 'amqp://guest:guest@rabbitmq:5672/')
+    'CELERY_BROKER', 'amqp://guest:guest@localhost:5672/')
 
 
 INSTALLED_APPS += [
@@ -229,10 +229,13 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
+
+PAYWALL=config('PAYWALL')
 # idpay settings
 X_API_KEY=config('X_API_KEY')
 X_SANDBOX=config('X_SANDBOX')
-
+#Payping settings
+PAYPING_AUTH=config('PAYPING_AUTH')
 
 
 # EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
@@ -263,3 +266,7 @@ ALT_EMAIL_HOST_USER = config("ALT_EMAIL_HOST_USER")
 ALT_EMAIL_HOST_PASSWORD = config("ALT_EMAIL_HOST_PASSWORD")
 ALT_EMAIL_PORT = int(config("ALT_EMAIL_PORT"))
 ALT_EMAIL_BACKEND = config("ALT_EMAIL_BACKEND")
+
+
+PAYWALL=config('PAYWALL')
+PAYPING_AUTH=config("PAYPING_AUTH")

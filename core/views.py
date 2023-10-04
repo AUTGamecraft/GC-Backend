@@ -11,7 +11,8 @@ from GD.messages import WORKSHOP_CAPACITY_IS_FULL, SHOPPING_CART_EMPTY, COUPON_F
 from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
-
+from .payping import *
+from GD.settings.base import PAYWALL
 from django.shortcuts import get_object_or_404, redirect
 from .viewsets import *
 from django.utils.encoding import force_text
@@ -68,6 +69,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def payment(self, request):
+        # return Response({"paywall": PAYWALL})
         data = defaultdict(lambda:None , request.data)
         user = request.user
         services = EventService.objects.filter(
@@ -117,22 +119,36 @@ class UserServicesViewSet(ResponseModelViewSet):
             user=user
         )
 
-        result = IdPayRequest().create_payment(
+        PayWallRequest = IdPayRequest if PAYWALL=="idpay" else PayPingRequest
+        
+        result = PayWallRequest().create_payment(
             order_id=payment.pk,
-            amount=int(total_price*10),
-            desc=IDPAY_PAYMENT_DESCRIPTION,
+            amount=int(total_price*10 if PAYWALL=="idpay" else total_price),
+            desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL=='idpay' else PayPing_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,
-            callback=IDPAY_CALL_BACK,
+            callback= IDPAY_CALL_BACK if PAYWALL=='idpay' else PayPing_CALL_BACK,
+            # mail=user.email,
             name=user.first_name
-        )
-        if result['status'] == IDPAY_STATUS_201:
+        ) 
+        # return Response(result)
+
+        success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else PAYPING_STATUS_OK
+        if result['status'] == success_status:
             payment.services.set(services)
             payment.created_date = datetime.now()
-            payment.payment_id = result['id']
-            payment.payment_link = result['link']
+            payment.payment_id = result['id'] if PAYWALL == "idpay" else ""
+            payment.payment_link = result['link'] if PAYWALL=="idpay" else PayPingPeymentLinkGenerator(result['code'])
             payment.coupon = coupon
             payment.save()
+        if PAYWALL != 'idpay':
+            _code = result['code']
+            _status = result['status']
+            result = None
+            result = {
+                "link": PayPingPeymentLinkGenerator(_code),
+                "status": _status
+            }
             return self.set_response(
                 message=None, data=result, status_code=status.HTTP_200_OK
             )
@@ -150,51 +166,118 @@ class UserServicesViewSet(ResponseModelViewSet):
 
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def verify(self, request):
-        try:
-            request_body = request.data
-            idPay_payment_id = request_body['id']
-            order_id = request_body['order_id']
-            payment = Payment.objects.get(pk=order_id)
-            payment.card_number = request_body['card_no']
-            payment.hashed_card_number = request_body['hashed_card_no']
-            payment.payment_trackID = request_body['track_id']
-            result = IdPayRequest().verify_payment(
-                order_id=order_id,
-                payment_id=idPay_payment_id,
-            )
-            result_status = result['status']
+        if PAYWALL == 'idpay':
+            try:
+                request_body = request.data
+                idPay_payment_id = request_body['id']
+                order_id = request_body['order_id']
+                payment = Payment.objects.get(pk=order_id)
+                payment.card_number = request_body['card_no']
+                payment.hashed_card_number = request_body['hashed_card_no']
+                payment.payment_trackID = request_body['track_id']
+                result = IdPayRequest().verify_payment(
+                    order_id=order_id,
+                    payment_id=idPay_payment_id,
+                )
+                result_status = result['status']
 
-            if any(result_status == status_code for status_code in (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
-                services = EventService.objects.select_related(
-                    'workshop').filter(payment=payment)
-                for service in services:
-                    service.payment_state = 'CM'
-                    service.workshop.save()
-                    service.save()
-                payment.status = result_status
-                payment.original_data = json.dumps(result)
-                payment.verify_trackID = result['track_id']
-                payment.finished_date = datetime.utcfromtimestamp(
-                    int(result['date']))
-                payment.verified_date = datetime.utcfromtimestamp(
-                    int(result['verify']['date']))
-                payment.save()
-                return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
-            else:
-                if payment.coupon:
-                    coupon = payment.coupon 
-                    coupon.count += 1
-                    coupon.save()
+                if any(result_status == status_code for status_code in (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
+                    services = EventService.objects.select_related(
+                        'workshop').filter(payment=payment)
+                    for service in services:
+                        service.payment_state = 'CM'
+                        service.workshop.save()
+                        service.save()
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.verify_trackID = result['track_id']
+                    payment.finished_date = datetime.utcfromtimestamp(
+                        int(result['date']))
+                    payment.verified_date = datetime.utcfromtimestamp(
+                        int(result['verify']['date']))
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                else:
+                    if payment.coupon:
+                        coupon = payment.coupon 
+                        coupon.count += 1
+                        coupon.save()
+                        
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+
+            except Payment.DoesNotExist as e1:
+                raise ValidationError('no payment with this order_id')
+            except ConnectionError as e:
+                self.verify(request)
+        else:
+            try:
+                # return Response({"w": len(request.POST.keys())})
+                # if (len(request.POST.keys()) == 3):
                     
-                payment.status = result_status
-                payment.original_data = json.dumps(result)
-                payment.save()
-                return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                #     if payment.coupon:
+                #         coupon = payment.coupon
+                #         coupon.count += 1
+                #         coupon.save()
+                #         payment.status = result_status
+                #         payment.original_data = json.dumps(result)
+                #         payment.save()
+                #         return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                request_body = request.POST
+                if len(request_body.keys()) == 3:
+                    _payment = Payment.objects.get(pk=request_body['clientrefid'])
+                    if _payment.coupon:
+                        coupon = payment.coupon
+                        coupon.count += 1
+                        coupon.save()
+                    _payment.status = 1
+                    _payment.original_data = json.dumps(request_body)
+                    _payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                
+                payment_id = request_body['refid']
+                code = request_body['code']
+                order_id = request_body['clientrefid']
+                payment = Payment.objects.get(pk=order_id)
+                payment.card_number = request_body['cardnumber']
+                payment.hashed_card_number = request_body['cardhashpan']
+                payment.payment_trackID = payment_id
+                payment.payment_id = payment_id
+                amount = int(payment.total_price)
+                result = PayPingRequest().verify_payment(
+                    amount,
+                    payment_id
+                )
+                result_status = result['status']
+                if result_status == PAYPING_STATUS_OK:
+                    services = EventService.objects.select_related('workshop').filter(payment=payment)
+                    for service in services:
+                        service.payment_state = 'CM'
+                        service.workshop.save()
+                        service.save()
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.verify_trackID = payment_id
+                    payment.verified_date = datetime.now()
+                    payment.finished_date = datetime.now()
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                else:
+                    if payment.coupon:
+                        coupon = payment.coupon
+                        coupon.count += 1
+                        coupon.save()
+                    payment.status = result_status
+                    payment.original_data = json.dumps(result)
+                    payment.save()
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
 
-        except Payment.DoesNotExist as e1:
-            raise ValidationError('no payment with this order_id')
-        except ConnectionError as e:
-            self.verify(request)
+            except Payment.DoesNotExist as e1:
+                raise ValidationError('no payment with this order_id')
+            except ConnectionError as e:
+                self.verify(request)
 
     def get_permissions(self):
         try:
