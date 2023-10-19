@@ -216,6 +216,20 @@ class UserServicesViewSet(ResponseModelViewSet):
                 # print(request.data)
                 # print(request.POST)
                 print(request.GET.get('clientrefid'))
+                _payment = Payment.objects.get(pk=request.GET.get('clientrefid'))
+                print(_payment)
+                result = PayPingRequest().verify_payment(_payment.payment_id)
+                result_body = result['data']
+                if result['status'] == 400:
+                    if _payment.coupon:
+                        _payment.coupon+=1
+                        _payment.coupon.save()
+                    _payment.status = 1
+                    _payment.original_data = json.dumps(result['data'])
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                elif result['status'] == 200:
+                    _payment.payment_id = result_body['refid']
+                    _payment.card_number = result_body['card_number']
                 return Response({"message": "wait"})
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
