@@ -163,7 +163,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
             )
 
-    @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
+    @action(methods=['GET'], detail=False, permission_classes=[AllowAny])
     def verify(self, request):
         if PAYWALL == 'idpay':
             try:
@@ -213,9 +213,10 @@ class UserServicesViewSet(ResponseModelViewSet):
                 self.verify(request)
         else:
             try:
-                print(request.data)
-                print(request.POST)
-                return Response("message": "wait")
+                # print(request.data)
+                # print(request.POST)
+                print(request.GET.get('clientrefid'))
+                return Response({"message": "wait"})
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
                 #     _payment = Payment.objects.get(pk=request_body['clientrefid'])
