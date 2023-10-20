@@ -213,9 +213,10 @@ class UserServicesViewSet(ResponseModelViewSet):
                 self.verify(request)
         else:
             try:
+#		print('here')
                 # print(request.data)
                 # print(request.POST)
-                print(request.GET.get('clientrefid'))
+                print('here')
                 _payment = Payment.objects.get(pk=request.GET.get('clientrefid'))
                 print(_payment)
                 result = PayPingRequest().verify_payment(_payment.payment_id)
@@ -227,6 +228,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.status = 1
                     _payment.original_data = json.dumps(result['data'])
                     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+		
                 elif result['status'] == 200:
                     _payment.payment_id = result_body['refid']
                     _payment.card_number = result_body['card_number']
