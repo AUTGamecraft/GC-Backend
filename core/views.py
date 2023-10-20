@@ -222,7 +222,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 print(result['status'])
                 
                 result_body = result['data']
-                if result['status'] == 400:
+                if result['status'] != 200:
                     if _payment.coupon:
                         _payment.coupon+=1
                         _payment.coupon.save()
