@@ -216,10 +216,11 @@ class UserServicesViewSet(ResponseModelViewSet):
 #		print('here')
                 # print(request.data)
                 # print(request.POST)
-                print('here')
                 _payment = Payment.objects.get(pk=request.GET.get('clientrefid'))
                 print(_payment)
                 result = PayPingRequest().verify_payment(_payment.payment_id)
+                print(result['status'])
+                
                 result_body = result['data']
                 if result['status'] == 400:
                     if _payment.coupon:
@@ -246,7 +247,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.finished_date = datetime.now()
                     _payment.save()
                     
-                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
                 #     _payment = Payment.objects.get(pk=request_body['clientrefid'])
