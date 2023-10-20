@@ -230,7 +230,21 @@ class UserServicesViewSet(ResponseModelViewSet):
                 elif result['status'] == 200:
                     _payment.payment_id = result_body['refid']
                     _payment.card_number = result_body['card_number']
-                return Response({"message": "wait"})
+                    _payment.hashed_card_number = ""
+                    _payment.payment_trackID = _payment.payment_id
+                    services = EventService.objects.select_related('workshop').filter(payment=_payment)
+                    for service in services:
+                        service.payment_state = 'CM'
+                        service.workshop.save()
+                        service.save()
+                    _payment.status = result['status']
+                    _payment.original_data = json.dumps(result)
+                    _payment.verify_trackID = _payment.payment_id
+                    _payment.verified_date = datetime.now()
+                    _payment.finished_date = datetime.now()
+                    _payment.save()
+                    
+                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
                 #     _payment = Payment.objects.get(pk=request_body['clientrefid'])
