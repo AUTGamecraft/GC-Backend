@@ -224,7 +224,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 result_body = result['data']
                 if result['status'] != 200:
                     if _payment.coupon:
-                        _payment.coupon+=1
+                        _payment.coupon.count +=1
                         _payment.coupon.save()
                     _payment.status = 1
                     _payment.original_data = json.dumps(result['data'])
