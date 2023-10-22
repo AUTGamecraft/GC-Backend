@@ -151,7 +151,7 @@ class UserServicesViewSet(ResponseModelViewSet):
             return self.set_response(
                 message=None, data=result, status_code=status.HTTP_200_OK
             )
-            # return redirect('http://gamecraft.ce.aut.ac.ir')
+            # return redirect('http://autgamecraft.ir')
         else:
             payment.delete()
             if coupon:
@@ -195,7 +195,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     payment.verified_date = datetime.utcfromtimestamp(
                         int(result['verify']['date']))
                     payment.save()
-                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                    return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
                 else:
                     if payment.coupon:
                         coupon = payment.coupon 
@@ -205,7 +205,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     payment.status = result_status
                     payment.original_data = json.dumps(result)
                     payment.save()
-                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                    return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
 
             except Payment.DoesNotExist as e1:
                 raise ValidationError('no payment with this order_id')
@@ -228,7 +228,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                         _payment.coupon.save()
                     _payment.status = 1
                     _payment.original_data = json.dumps(result['data'])
-                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                    return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
 		
                 elif result['status'] == 200:
                     _payment.payment_id = result_body['refid']
@@ -247,7 +247,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.finished_date = datetime.now()
                     _payment.save()
                     
-                    return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                    return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
                 #     _payment = Payment.objects.get(pk=request_body['clientrefid'])
@@ -258,7 +258,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 #     _payment.status = 1
                 #     _payment.original_data = json.dumps(request_body)
                 #     _payment.save()
-                #     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                #     return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
                 
                 # payment_id = request_body['refid']
                 # code = request_body['code']
@@ -286,7 +286,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 #     payment.verified_date = datetime.now()
                 #     payment.finished_date = datetime.now()
                 #     payment.save()
-                #     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
+                #     return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
                 # else:
                 #     if payment.coupon:
                 #         coupon = payment.coupon
@@ -295,7 +295,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 #     payment.status = result_status
                 #     payment.original_data = json.dumps(result)
                 #     payment.save()
-                #     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
+                #     return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
 
             except Payment.DoesNotExist as e1:
                 raise ValidationError('no payment with this order_id')
