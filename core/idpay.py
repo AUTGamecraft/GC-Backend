@@ -29,7 +29,7 @@ IDPAY_STATUS_200=200
 IDPAY_STATUS_201=201
 
 IDPAY_PAYMENT_DESCRIPTION='register workshops or talks'
-IDPAY_CALL_BACK='https://autgamecraft.ir/api/v2/service/verify/'
+IDPAY_CALL_BACK='http://autgamecraft.ir/api/v2/service/verify/'
 
 IDPAY_URL="https://api.idpay.ir/v1.1/payment"
 IDPAY_URL_VERIFY="https://api.idpay.ir/v1.1/payment/verify"

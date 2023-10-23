@@ -23,7 +23,7 @@ PAYPING_STATUS_500 = 500
 
 
 PayPing_PAYMENT_DESCRIPTION='register workshops or talks'
-PayPing_CALL_BACK='https://autgamecraft.ir/api/v2/service/verify'
+PayPing_CALL_BACK='http://autgamecraft.ir/api/v2/service/verify'
 
 PayPing_URL="https://zify.ir/api/order/v2/create"
 PayPing_URL_VERIFY="https://zify.ir/api/order/v2/verify"
