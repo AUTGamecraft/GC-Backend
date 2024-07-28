@@ -14,7 +14,7 @@ services:
 #     - "15672:15672"
 #      - "5672:5672"
     volumes:
-      - /opt/data/rabbitmq:/var/lib/rabbitmq
+      - ./data/rabbitmq:/var/lib/rabbitmq
 
   db:
     image: "postgres"
@@ -22,7 +22,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - /opt/data/post/:/var/lib/postgresql/data/
+      - ./data/post/:/var/lib/postgresql/data/
 #    ports:
 #     - '5432:5432'
 
@@ -33,7 +33,7 @@ services:
       context: .
       target: DJANGO_APP
     volumes:
-      - /opt/data/staticfiles:/app/staticfiles
+      - ./data/staticfiles:/app/staticfiles
       - .:/app
     ports:
       - '8000:8000'

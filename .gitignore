@@ -16,3 +16,5 @@ vol/
 service_email/*
 GUESTS.html
 commands
+.venv
+data

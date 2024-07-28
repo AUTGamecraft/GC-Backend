@@ -27,7 +27,7 @@ from .serializers import (
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from core.viewsets import ResponseGenericViewSet
 from .utils import activation_code, team_activation_code
@@ -473,7 +473,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
 
     def get(self, request, tid, mid):
         try:
-            mid = force_text(urlsafe_base64_decode(mid))
+            mid = force_str(urlsafe_base64_decode(mid))
             member = get_user_model().objects.get(pk=mid)
             team = Team.objects.get(team_activation=tid)
             

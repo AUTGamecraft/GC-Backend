@@ -15,7 +15,6 @@ from .payping import *
 from GD.settings.base import PAYWALL
 from django.shortcuts import get_object_or_404, redirect
 from .viewsets import *
-from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from itertools import chain
