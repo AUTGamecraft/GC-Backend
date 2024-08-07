@@ -1,7 +1,5 @@
 from .base import *
 
-
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
@@ -13,4 +11,4 @@ DATABASES = {
 }
 
 STRIPE_PUBLIC_KEY = ''
-STRIPE_SECRET_KEY = '' 
+STRIPE_SECRET_KEY = ''
