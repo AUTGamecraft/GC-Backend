@@ -19,10 +19,9 @@ REDIRECT_EMAIL_ACTIVATION = '/api/v2/activation/{}' if DEBUG else '/confirm-conf
 REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/v2/team/join/{}/{}' if DEBUG else '/dashboard-teams/?tid={}&mid={}'
 REDIRECT_EMAIL_CHANGE_PASSWORD = '/newpassword?code={}'
 ALLOWED_HOSTS = ['*']
-
 CORS_ORIGIN_ALLOW_ALL = True
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     # default
     'django.contrib.admin',
@@ -216,8 +215,11 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECT': False,
-    'SHOW_TOOLBAR_CALLBACK': show_toolbar
+    'SHOW_TOOLBAR_CALLBACK': show_toolbar,
+    'IS_RUNNING_TESTS': False
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 PAYWALL = config('PAYWALL')
 # idpay settings
