@@ -2,11 +2,11 @@ import os
 from decouple import config
 from pathlib import Path
 from datetime import timedelta
+
 DEBUG = config('DEBUG', cast=bool)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -24,12 +24,15 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
+    # default
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Custom
     'core.apps.CoreConfig',
     'user.apps.UserConfig',
     'tasks.apps.TasksConfig',
@@ -37,8 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    "tinymce",
-
+    'tinymce',
+    'drf_yasg'
     # 'anymail'
 ]
 
@@ -56,7 +59,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'GD.urls'
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -70,7 +72,6 @@ REST_FRAMEWORK = {
     )
 
 }
-
 
 TEMPLATES = [
     {
@@ -90,7 +91,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'GD.wsgi.application'
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -104,8 +104,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-
 # TinyMce config
 TINYMCE_DEFAULT_CONFIG = {
     "height": "620px",
@@ -113,12 +111,12 @@ TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "menubar": "file edit view insert format tools table help",
     "plugins": "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code "
-    "fullscreen insertdatetime media table paste code help wordcount spellchecker",
+               "fullscreen insertdatetime media table paste code help wordcount spellchecker",
     "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft "
-    "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
-    "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
-    "fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | "
-    "a11ycheck ltr rtl | showcomments addcomment code",
+               "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
+               "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
+               "fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | "
+               "a11ycheck ltr rtl | showcomments addcomment code",
     "custom_undo_redo_levels": 10,
     "language": "fa",  # To force a specific language instead of the Django current language.
     "directionality": "rtl",
@@ -133,14 +131,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 
 VENV_PATH = os.path.dirname(BASE_DIR)
-MEDIA_URL =  os.path.join(BASE_DIR, 'staticfiles/web/media/') if DEBUG else os.path.join('', 'staticfiles/web/media/')
+MEDIA_URL = os.path.join(BASE_DIR, 'staticfiles/web/media/') if DEBUG else os.path.join('', 'staticfiles/web/media/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'staticfiles/web/media/')
-
 
 # my custom user model
 
 AUTH_USER_MODEL = 'user.SiteUser'
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
@@ -170,8 +166,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=10),
 }
 
-
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -186,10 +180,8 @@ LOGGING = {
     },
 }
 
-
 CELERY_BROKER_URL = os.environ.get(
     'CELERY_BROKER', 'amqp://guest:guest@localhost:5672/')
-
 
 INSTALLED_APPS += [
     'debug_toolbar',
@@ -198,7 +190,6 @@ INSTALLED_APPS += [
 MIDDLEWARE += [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
-
 
 # DEBUG PANEL
 
@@ -228,15 +219,12 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': show_toolbar
 }
 
-
-
-PAYWALL=config('PAYWALL')
+PAYWALL = config('PAYWALL')
 # idpay settings
-X_API_KEY=config('X_API_KEY')
-X_SANDBOX=config('X_SANDBOX')
-#Payping settings
-PAYPING_AUTH=config('PAYPING_AUTH')
-
+X_API_KEY = config('X_API_KEY')
+X_SANDBOX = config('X_SANDBOX')
+# Payping settings
+PAYPING_AUTH = config('PAYPING_AUTH')
 
 # EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 # SERVER_EMAIL = 'smtp-relay.sendinblue.com'
@@ -258,15 +246,11 @@ EMAIL_PORT = int(config("ALT_EMAIL_PORT"))
 EMAIL_BACKEND = config("ALT_EMAIL_BACKEND")
 EMAIL_TIMEOUT = 10
 
-
-
-
 ALT_EMAIL_HOST = config("ALT_EMAIL_HOST")
 ALT_EMAIL_HOST_USER = config("ALT_EMAIL_HOST_USER")
 ALT_EMAIL_HOST_PASSWORD = config("ALT_EMAIL_HOST_PASSWORD")
 ALT_EMAIL_PORT = int(config("ALT_EMAIL_PORT"))
 ALT_EMAIL_BACKEND = config("ALT_EMAIL_BACKEND")
 
-
-PAYWALL=config('PAYWALL')
-PAYPING_AUTH=config("PAYPING_AUTH")
+PAYWALL = config('PAYWALL')
+PAYPING_AUTH = config("PAYPING_AUTH")
