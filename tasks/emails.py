@@ -14,8 +14,8 @@ connection = get_connection(
     host=settings.ALT_EMAIL_HOST
 )
 
+
 def send_simple_email(data):
-    
     message = data['body']
     msg = None
     if 'yahoo' in data['email']:
@@ -81,7 +81,7 @@ def send_team_request(team_data):
     html_message = render_to_string('team_request_message.html', context)
     plain_message = render_to_string('team_request_message.html', context)
     msg = None
-    if 'yahoo' in  team_data['email']:
+    if 'yahoo' in team_data['email']:
         msg = EmailMultiAlternatives(
             subject=email_subject,
             body=plain_message,

@@ -228,12 +228,10 @@ X_SANDBOX = config('X_SANDBOX')
 # Payping settings
 PAYPING_AUTH = config('PAYPING_AUTH')
 
-# EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 # SERVER_EMAIL = 'smtp-relay.sendinblue.com'
 # # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 # EMAIL_PORT = int(config('EMAIL_PORT'))
-# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 # ANYMAIL = {
@@ -241,6 +239,7 @@ EMAIL_USE_SSL = False
 # }
 
 
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 EMAIL_HOST = config("ALT_EMAIL_HOST")
 EMAIL_HOST_USER = config("ALT_EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("ALT_EMAIL_HOST_PASSWORD")
