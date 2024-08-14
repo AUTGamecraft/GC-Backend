@@ -7,8 +7,8 @@ from django.core.mail import get_connection
 connection = get_connection(
     backend=settings.ALT_EMAIL_BACKEND,
     fail_silently=False,
-    username=settings.ALT_EMAIL_HOST_USER,
     use_tls=True,
+    username=settings.ALT_EMAIL_HOST_USER,
     password=settings.ALT_EMAIL_HOST_PASSWORD,
     port=settings.ALT_EMAIL_PORT,
     host=settings.ALT_EMAIL_HOST
@@ -31,7 +31,8 @@ def send_simple_email(data):
             subject=data['subject'],
             body=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[data['email'], ]
+            to=[data['email'], ],
+            connection=connection,
         )
     msg.attach_alternative(message, 'text/html')
     msg.send()
@@ -62,7 +63,8 @@ def send_email(user):
             subject=email_subject,
             body=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user['email'], ]
+            to=[user['email'], ],
+            connection=connection,
         )
     msg.attach_alternative(html_message, 'text/html')
     msg.send()
@@ -95,6 +97,7 @@ def send_team_request(team_data):
             body=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[team_data['email'], ],
+            connection=connection,
         )
     msg.attach_alternative(html_message, 'text/html')
     msg.send()
@@ -124,6 +127,7 @@ def change_pass_email(user):
             body=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[user['email'], ],
+            connection=connection,
         )
     msg.attach_alternative(html_message, 'text/html')
     msg.send()
