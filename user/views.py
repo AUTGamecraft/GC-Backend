@@ -167,7 +167,7 @@ class UserViewSet(ResponseGenericViewSet,
                 error=str(e),
                 status_code=status.HTTP_404_NOT_FOUND,
                 status=404,
-                message='شما تیم ندارید!!!'
+                message='شما هنوز تیمی عضو نشدید!!!'
             )
 
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
@@ -256,7 +256,7 @@ class UserViewSet(ResponseGenericViewSet,
             }
             change_pass_email_task.delay(user_data)
             return self.set_response(
-                message="ایمیل برای تغییر رمزعبور فرستاده شد",
+                message=" ایمیل برای تغییر رمز فرستاده شد ",
                 status=200,
                 status_code=status.HTTP_200_OK
             )
@@ -268,7 +268,7 @@ class UserViewSet(ResponseGenericViewSet,
             )
         except get_user_model().DoesNotExist as e2:
             return self.set_response(
-                message='کاربری با ایمیل وارد شده وجود ندارد',
+                message=' کاربری با ایمیل وارد شده یافت نشد ',
                 status=404,
                 status_code=status.HTTP_404_NOT_FOUND
             )
@@ -342,7 +342,7 @@ class VerfiyResetPasswordUserView(generics.GenericAPIView):
             user.set_password(password)
             user.save()
             data = {
-                'message': "رمز عبور با موقفیت عوض شد",
+                'message': "رمز عبور نغییر یافت",
                 'error': None,
                 'status': 200,
                 'data': CustomUserSerializer(user).data
