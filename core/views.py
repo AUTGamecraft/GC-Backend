@@ -69,10 +69,10 @@ class UserServicesViewSet(ResponseModelViewSet):
     @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
     def payment(self, request):
         # return Response({"paywall": PAYWALL})
-        data = defaultdict(lambda:None , request.data)
+        data = defaultdict(lambda: None, request.data)
         user = request.user
         services = EventService.objects.filter(
-            user=user, service_type='WS',payment_state='PN').select_related('workshop')
+            user=user, service_type='WS', payment_state='PN').select_related('workshop')
         total_price = 0
         # check capacity to register
         for service in services:
@@ -80,7 +80,9 @@ class UserServicesViewSet(ResponseModelViewSet):
             if event.get_remain_capacity() > 0:
                 total_price += event.cost
             else:
-                return self.set_response(message=event.title+WORKSHOP_CAPACITY_IS_FULL, status_code=status.HTTP_406_NOT_ACCEPTABLE, error=f"event {event.title} is full you must remove it!!!")
+                return self.set_response(message=event.title + WORKSHOP_CAPACITY_IS_FULL,
+                                         status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                         error=f"event {event.title} is full you must remove it!!!")
         # create payment object
         if total_price <= 0:
             return self.set_response(message=SHOPPING_CART_EMPTY)
@@ -96,7 +98,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 #         status=406
                 #     )
                 if coupon.count > 0:
-                    total_price = total_price * ((100 - coupon.percentage)/100)
+                    total_price = total_price * ((100 - coupon.percentage) / 100)
                     coupon.count -= 1
                     coupon.save()
                 else:
@@ -118,26 +120,27 @@ class UserServicesViewSet(ResponseModelViewSet):
             user=user
         )
 
-        PayWallRequest = IdPayRequest if PAYWALL=="idpay" else PayPingRequest
-        
+        PayWallRequest = IdPayRequest if PAYWALL == "idpay" else PayPingRequest
+
         result = PayWallRequest().create_payment(
             order_id=payment.pk,
-            amount=int(total_price*10 if PAYWALL=="idpay" else total_price),
-            desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL=='idpay' else PayPing_PAYMENT_DESCRIPTION,
+            amount=int(total_price * 10 if PAYWALL == "idpay" else total_price),
+            desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL == 'idpay' else PayPing_PAYMENT_DESCRIPTION,
             mail=user.email,
             phone=user.phone_number,
-            callback= IDPAY_CALL_BACK if PAYWALL=='idpay' else PayPing_CALL_BACK,
+            callback=IDPAY_CALL_BACK if PAYWALL == 'idpay' else PayPing_CALL_BACK,
             # mail=user.email,
             name=user.first_name
-        ) 
+        )
         # return Response(result)
 
-        success_status = IDPAY_STATUS_201 if PAYWALL=="idpay" else PAYPING_STATUS_OK
+        success_status = IDPAY_STATUS_201 if PAYWALL == "idpay" else PAYPING_STATUS_OK
         if result['status'] == success_status:
             payment.services.set(services)
             payment.created_date = datetime.now()
             payment.payment_id = result['id'] if PAYWALL == "idpay" else result['data']['order']
-            payment.payment_link = result['link'] if PAYWALL=="idpay" else PayPingPeymentLinkGenerator(result['data']['order'])
+            payment.payment_link = result['link'] if PAYWALL == "idpay" else PayPingPeymentLinkGenerator(
+                result['data']['order'])
             payment.coupon = coupon
             payment.save()
         if PAYWALL != 'idpay':
@@ -179,7 +182,8 @@ class UserServicesViewSet(ResponseModelViewSet):
                 )
                 result_status = result['status']
 
-                if any(result_status == status_code for status_code in (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
+                if any(result_status == status_code for status_code in
+                       (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
                     services = EventService.objects.select_related(
                         'workshop').filter(payment=payment)
                     for service in services:
@@ -197,10 +201,10 @@ class UserServicesViewSet(ResponseModelViewSet):
                     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
                 else:
                     if payment.coupon:
-                        coupon = payment.coupon 
+                        coupon = payment.coupon
                         coupon.count += 1
                         coupon.save()
-                        
+
                     payment.status = result_status
                     payment.original_data = json.dumps(result)
                     payment.save()
@@ -212,23 +216,23 @@ class UserServicesViewSet(ResponseModelViewSet):
                 self.verify(request)
         else:
             try:
-#		print('here')
+                #		print('here')
                 # print(request.data)
                 # print(request.POST)
                 _payment = Payment.objects.get(pk=request.GET.get('clientrefid'))
                 print(_payment)
                 result = PayPingRequest().verify_payment(_payment.payment_id)
                 print(result['status'])
-                
+
                 result_body = result['data']
                 if result['status'] != 200:
                     if _payment.coupon:
-                        _payment.coupon.count +=1
+                        _payment.coupon.count += 1
                         _payment.coupon.save()
                     _payment.status = 1
                     _payment.original_data = json.dumps(result['data'])
                     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
-		
+
                 elif result['status'] == 200:
                     _payment.payment_id = result_body['refid']
                     _payment.card_number = result_body['card_number']
@@ -245,7 +249,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.verified_date = datetime.now()
                     _payment.finished_date = datetime.now()
                     _payment.save()
-                    
+
                     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=true')
                 # request_body = request.POST
                 # if len(request_body.keys()) == 3:
@@ -258,7 +262,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 #     _payment.original_data = json.dumps(request_body)
                 #     _payment.save()
                 #     return redirect('https://gamecraft.ce.aut.ac.ir/dashboard-event/?status=false')
-                
+
                 # payment_id = request_body['refid']
                 # code = request_body['code']
                 # order_id = request_body['clientrefid']

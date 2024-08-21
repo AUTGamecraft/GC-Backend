@@ -43,11 +43,11 @@ from rest_framework.views import exception_handler
 
 
 def custom_exception_handler(exc, context):
-
     response = exception_handler(exc, context)
 
     if response is None:
-        response = Response(data={"error":{"detail": "some error occurred"}}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response = Response(data={"error": {"detail": "some error occurred"}},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return response
 
@@ -57,7 +57,6 @@ class UserViewSet(ResponseGenericViewSet,
                   mixins.DestroyModelMixin,
                   mixins.ListModelMixin,
                   mixins.RetrieveModelMixin):
-
     queryset = get_user_model().objects.all()
     serializer_class = CustomUserSerializer
     permission_classes_by_action = {
@@ -198,7 +197,6 @@ class UserViewSet(ResponseGenericViewSet,
             data=serialized.data
         )
 
-
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def sign_up(self, request):
 
@@ -212,11 +210,10 @@ class UserViewSet(ResponseGenericViewSet,
                     message=DUPLICATE_USER_ERROR,
                     status=409,
                     status_code=status.HTTP_409_CONFLICT,
-                    error=str((e))
+                    error=str(e)
                 )
             if user:
-                user.activation_code = activation_code(
-                    user.user_name, length=32)
+                user.activation_code = activation_code(user.user_name, length=32)
                 user.save()
                 user_data = {
                     'user_name': user.user_name,
@@ -224,9 +221,9 @@ class UserViewSet(ResponseGenericViewSet,
                     'email': user.email,
                     'uid': user.activation_code
                 }
-                print("heyyyyy")
+                print("hey 1")
                 send_email_task.delay(user_data)
-                print("heyyyyy")
+                print("hey 2")
                 return self.set_response(
                     message=USER_CREATED_SUCCESSFULLY,
                     status=201,
@@ -412,10 +409,10 @@ class TeamViewSet(ResponseGenericViewSet,
             if head.team_role != 'NO':
                 # raise ValidationError(YOU_ALREADY_HAVE_A_TEAM)
                 return self.set_response(
-                            message=YOU_ALREADY_HAVE_A_TEAM,
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            status=400)
-            
+                    message=YOU_ALREADY_HAVE_A_TEAM,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status=400)
+
             members = get_user_model().objects.filter(
                 email__in=request.data['emails'])
             if len(members) > 4 or len(members) < 1:
@@ -429,9 +426,9 @@ class TeamViewSet(ResponseGenericViewSet,
                         message=USER_X_HAS_TEAM.format(user=mem.user_name),
                         status_code=status.HTTP_409_CONFLICT,
                         status=409)
-            
-            with transaction.atomic():  
-                
+
+            with transaction.atomic():
+
                 team = Team.objects.create(
                     name=request.data['name'], team_activation=team_activation_code(request.data['name']))
                 head.team_role = 'HE'
@@ -476,7 +473,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
             mid = force_str(urlsafe_base64_decode(mid))
             member = get_user_model().objects.get(pk=mid)
             team = Team.objects.get(team_activation=tid)
-            
+
             if team.state == 'RJ':
                 data = {
                     'message': TEAM_IS_REJECTED,
@@ -485,7 +482,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'data': []
                 }
                 return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
-            
+
             if member.team_role != 'NO':
                 data = {
                     'message': USER_ALREADY_HAS_A_TEAM,
@@ -503,16 +500,16 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                     'data': []
                 }
                 return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
-            
+
             with transaction.atomic():
                 if team.state == 'RE' and members_num >= 1:
                     team.state = 'AC'
                     team.save()
-                    
+
                 member.team_role = 'ME'
                 member.team = team
                 member.save()
-                
+
             data = {
                 'message': TEAM_ACTIVED,
                 'error': None,
