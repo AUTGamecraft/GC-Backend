@@ -4,10 +4,6 @@ services:
   rabbitmq:
     restart: always
     container_name: "rabbitmq"
-    environment:
-      - RABBITMQ_ERLANG_COOKIE='secret_cookie'
-      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=80%
-      - C_FORCE_ROOT=true
     hostname: rabbitmq
     image: "rabbitmq:3-management"
 #    ports:
@@ -15,8 +11,10 @@ services:
 #      - "5672:5672"
     volumes:
       - ./data/rabbitmq:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
   db:
+    container_name: "gc_postgres"
     image: "postgres"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -29,6 +27,7 @@ services:
 
 
   app:
+    container_name: "gc_app"
     build:
       context: .
       target: DJANGO_APP
@@ -47,6 +46,7 @@ services:
 
 
   celery:
+    container_name: "gc_celery"
     build: .
     command : celery -A GD worker -l INFO
     volumes:
