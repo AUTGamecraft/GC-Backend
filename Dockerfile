@@ -1,5 +1,5 @@
 
-FROM python:3.8-alpine AS DJANGO_APP
+FROM python:3.12.5-alpine AS DJANGO_APP
 
 # install some package for postgresql
 RUN apk update \
@@ -35,5 +35,5 @@ RUN mkdir -p /vol/web/static
 
 
 
-CMD ["entrypoint.sh"]
+CMD ["/scripts/entrypoint.sh"]
 
