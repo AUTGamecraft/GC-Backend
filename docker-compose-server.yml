@@ -1,0 +1,88 @@
+version: '3.7'
+services:
+
+  rabbitmq:
+    restart: always
+    container_name: "rabbitmq"
+    hostname: rabbitmq
+    image: "rabbitmq:3-management"
+#    ports:
+#     - "15672:15672"
+#      - "5672:5672"
+    volumes:
+      - ./GC-Backend/data/rabbitmq:/var/lib/rabbitmq
+      - ./GC-Backend/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  db:
+    container_name: "gc_postgres"
+    image: "postgres"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./GC-Backend/data/post/:/var/lib/postgresql/data/
+#    ports:
+#     - '5432:5432'
+
+
+
+  app:
+    container_name: "gc_app"
+    build:
+      context: ./GC-Backend
+      dockerfile: ./Dockerfile
+      target: DJANGO_APP
+    volumes:
+      - ./GC-Backend/data/staticfiles:/app/staticfiles
+      - ./GC-Backend:/app
+    ports:
+      - '8000:8000'
+    command: gunicorn --env DJANGO_SETTINGS_MODULE=GD.settings.production GD.wsgi:application --bind 0.0.0.0:8000
+    environment:
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+      - db
+
+
+  celery:
+    container_name: "gc_celery"
+    build:
+      context: ./GC-Backend
+      dockerfile: ./Dockerfile
+    command : celery -A GD worker -l INFO
+    volumes:
+      - ./GC-Backend:/app
+    env_file: .env
+
+    depends_on:
+      - rabbitmq
+
+  front:
+    container_name: "gc_front"
+    build:
+      context: ./GC-Front
+      dockerfile: ./dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - app
+
+  nginx:
+      image: nginx:alpine
+      container_name: gc_nginx
+      volumes:
+          - "/etc/letsencrypt/live/autgamecraft.ir/fullchain.pem:/etc/nginx/ssl/server.crt"
+          - "/etc/letsencrypt/live/autgamecraft.ir/privkey.pem:/etc/nginx/ssl/server.key"
+          - "./nginx/default.conf:/etc/nginx/nginx.conf"
+          - ./nginx/log:/var/log/nginx
+          - ./nginx/proxy_params:/etc/nginx/proxy_params 
+      ports:
+          - "80:80"
+          - "443:443"
+      restart: always
+      depends_on:
+        - app
+        - front
+
