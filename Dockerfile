@@ -24,9 +24,7 @@ RUN pip install -r requirements.txt
 # now copy project to app
 COPY . /app
 
-
-
-COPY ./scripts /scripts
+ADD ./scripts /scripts
 
 RUN chmod +x /scripts/*
 
@@ -34,6 +32,5 @@ RUN mkdir -p /vol/web/media
 RUN mkdir -p /vol/web/static
 
 
-
-CMD ["/scripts/entrypoint.sh"]
+CMD "/scripts/entrypoint.sh"
 
