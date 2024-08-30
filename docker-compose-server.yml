@@ -6,6 +6,8 @@ services:
     container_name: "rabbitmq"
     hostname: rabbitmq
     image: "rabbitmq:3-management"
+    env_file:
+      - .env
 #    ports:
 #     - "15672:15672"
 #      - "5672:5672"
@@ -16,7 +18,10 @@ services:
   db:
     container_name: "gc_postgres"
     image: "postgres"
+    env_file:
+      - .env
     environment:
+      - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
@@ -32,6 +37,8 @@ services:
       context: ./GC-Backend
       dockerfile: ./Dockerfile
       target: DJANGO_APP
+    env_file:
+      - .env
     volumes:
       - ./GC-Backend/data/staticfiles:/app/staticfiles
       - ./GC-Backend:/app
@@ -77,6 +84,7 @@ services:
           - "./nginx/default.conf:/etc/nginx/nginx.conf"
           - ./nginx/log:/var/log/nginx
           - ./nginx/proxy_params:/etc/nginx/proxy_params 
+          - ./GC-Backend/data/staticfiles:/var/www/app/staticfiles
       ports:
           - "80:80"
           - "443:443"
