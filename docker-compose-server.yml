@@ -84,6 +84,7 @@ services:
           - "./nginx/default.conf:/etc/nginx/nginx.conf"
           - ./nginx/log:/var/log/nginx
           - ./nginx/proxy_params:/etc/nginx/proxy_params 
+          - ./GC-Backend/data/staticfiles:/var/www/app/staticfiles
       ports:
           - "80:80"
           - "443:443"
