@@ -1,5 +1,5 @@
 
-FROM python:3.8-alpine AS DJANGO_APP
+FROM python:3.12.5-alpine AS DJANGO_APP
 
 # install some package for postgresql
 RUN apk update \
@@ -24,9 +24,7 @@ RUN pip install -r requirements.txt
 # now copy project to app
 COPY . /app
 
-
-
-COPY ./scripts /scripts
+ADD ./scripts /scripts
 
 RUN chmod +x /scripts/*
 
@@ -34,6 +32,5 @@ RUN mkdir -p /vol/web/media
 RUN mkdir -p /vol/web/static
 
 
-
-CMD ["entrypoint.sh"]
+CMD "/scripts/entrypoint.sh"
 
