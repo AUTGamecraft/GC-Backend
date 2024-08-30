@@ -14,7 +14,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
-BASE_URL = 'http://localhost:8000' if DEBUG else 'https://gamecraft.ce.aut.ac.ir'
+BASE_URL = 'http://localhost:8000' if DEBUG else os.getenv("BASE_URL")
+CSRF_TRUSTED_ORIGINS=[f"https://*.{BASE_URL}"]
 REDIRECT_EMAIL_ACTIVATION = '/api/v2/activation/{}' if DEBUG else '/confirm-confirm/?activation={}'
 REDIRECT_TEAM_EMAIL_ACTIVATION = '/api/v2/team/join/{}/{}' if DEBUG else '/dashboard-teams/?tid={}&mid={}'
 REDIRECT_EMAIL_CHANGE_PASSWORD = '/newpassword?code={}'
