@@ -41,7 +41,7 @@ class PayPingRequest:
             "payerName": name,
             "amount": amount,
             "payerIdentity": payerIdentity,
-            "returnUrl": PayPing_CALL_BACK,
+            "returnURL": PayPing_CALL_BACK,
             "description": PayPing_PAYMENT_DESCRIPTION,
             "clientRefId": order_id,
 
