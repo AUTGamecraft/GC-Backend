@@ -7,7 +7,7 @@ from GD.messages import WORKSHOP_CAPACITY_IS_FULL, SHOPPING_CART_EMPTY, COUPON_F
     CREATING_PAYMENT_UNSUCCESS, EMPTY, ADDED_TO_COMPETITION, ALREADY_REGISTERED_IN_THE_COMPETITION, \
     REQUESTED_USER_IS_NOT_REGISTERED_OR_ALREADY_HAS_A_TEAM, YOU_ALREADY_HAVE_A_TEAM, \
     COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN, USER_X_HAS_TEAM, USER_ALREADY_HAS_A_TEAM, TEAM_ACTIVED, USER_NOT_FOUND, \
-    TEAM_NOT_FOUND, SOMETHING_IS_WRONG, TEAM_IS_FULL
+    TEAM_NOT_FOUND, SOMETHING_IS_WRONG, TEAM_IS_FULL, INACTIVE_WORKSHOP_EXISTS
 from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
@@ -78,7 +78,12 @@ class UserServicesViewSet(ResponseModelViewSet):
         for service in services:
             event = service.workshop
             if event.get_remain_capacity() > 0:
-                total_price += event.cost
+                if event.is_registration_active:
+                    total_price += event.cost
+                else:
+                    return self.set_response(message=event.title + INACTIVE_WORKSHOP_EXISTS,
+                                             status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                                             error=f"event {event.title} is inactive. Remove it")
             else:
                 return self.set_response(message=event.title + WORKSHOP_CAPACITY_IS_FULL,
                                          status_code=status.HTTP_406_NOT_ACCEPTABLE,

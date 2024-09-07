@@ -4,6 +4,7 @@ CAPACITY_IS_FULL= 'ظرفیت پر است'
 USER_HAS_ALREADY_ENROLLED='شما قبلا ثبت نام کرده اید'
 SUCCESSFULLY_ADDED='باموفقیت اضافه شد'
 NO_ANY_SERVICES='هیچ سرویسی وجود ندارد'
+INACTIVE='غیرفعال است'
 
 
 # user and activation
@@ -21,7 +22,7 @@ SHOPPING_CART_EMPTY= 'سبد خرید شما خالی است'
 COUPON_FINISHED='ظرفیت این کد تخفیف تمام شده است'
 COUPON_DOSE_NOT_EXIST='این کد تخفیف وجود ندارد و غیر معتبر هست'
 CREATING_PAYMENT_UNSUCCESS='متاسفانه پرداخت ساخته نشد \n لطفا مجدد تلاش کنید'
-
+INACTIVE_WORKSHOP_EXISTS= 'کارگاهی غیرفعال در سبد خرید شما وجود دارد!\n آن را حذف کنید و دوباره امتحان کنید.'
 # competition
 ADDED_TO_COMPETITION='باموفقیت به مسابقه اضافه شدید'
 ALREADY_REGISTERED_IN_THE_COMPETITION='شما قبلا در مسابقه ثبت نام کرده اید'

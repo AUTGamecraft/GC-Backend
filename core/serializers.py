@@ -51,7 +51,7 @@ class TalksPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Talk
         fields = ['capacity', 'start', 'end', 'content', 'title', 'remain_capacity',
-                   'pk',  'cost', 'presenters', 'level','files']
+                   'pk',  'cost', 'presenters', 'level','files', 'is_registration_active']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
@@ -73,7 +73,7 @@ class WorkshopPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = ['capacity', 'start', 'end', 'content', 'title', 'remain_capacity',
-                   'presenters', 'assistants', 'pk', 'cost', 'level','files']
+                   'presenters', 'assistants', 'pk', 'cost', 'level','files', 'is_registration_active']
         extra_kwargs = {'pk': {'read_only': True},
                         'remain_capacity': {'read_only': True}}
 
@@ -84,7 +84,7 @@ class WorkshopCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workshop
         fields = [
-            'title', 'date', 'cost'
+            'title', 'date', 'cost', 'is_registration_active'
         ]
 
 
@@ -92,7 +92,7 @@ class TalkCartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Talk
         fields = [
-            'title', 'date', 'cost'
+            'title', 'date', 'cost', 'is_registration_active'
         ]
 
 

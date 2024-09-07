@@ -65,7 +65,7 @@ class TalkAdmin(admin.ModelAdmin):
         }),
         ('Details' , {
             'fields': (
-                'title','capacity','cost','level','is_online','presentation_link','content','files'
+                'title','capacity','cost','level','is_online','presentation_link','content','files','is_registration_active'
             ),
             'classes':('wide','extrapretty'),
             
@@ -91,7 +91,7 @@ class WorkshopAdmin(admin.ModelAdmin):
         }),
         ('Details' , {
             'fields': (
-                'title','capacity','cost','level','is_online','presentation_link','content','files'
+                'title','capacity','cost','level','is_online','presentation_link','content','files','is_registration_active'
             ),
             'classes':('wide','extrapretty'),
         })

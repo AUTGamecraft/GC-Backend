@@ -94,6 +94,7 @@ class Talk(models.Model):
     cost = models.FloatField(blank=False, default=0)
     presenters = models.ManyToManyField(Presenter, related_name='talks')
     files = models.URLField(default=None, blank=True, null=True)
+    is_registration_active = models.BooleanField(default=False)
 
     def clean(self):
         if self.cost < 0:
@@ -131,6 +132,7 @@ class Workshop(models.Model):
     presenters = models.ManyToManyField(Presenter, related_name='workshops')
     assistants = models.ManyToManyField(Assistant, related_name='workshops')
     files = models.URLField(default=None, blank=True, null=True)
+    is_registration_active = models.BooleanField(default=False)
 
     def clean(self):
         if self.cost < 0:
@@ -140,6 +142,9 @@ class Workshop(models.Model):
 
     def get_total_services(self):
         return self.services.count()
+
+    def get_is_registration_active(self):
+        return self.servi
 
     def get_services(self):
         return self.services.all()

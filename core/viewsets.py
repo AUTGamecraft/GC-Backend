@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 import user
-from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY
+from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY, INACTIVE
 from .models import *
 from .serializers import *
 from rest_framework.permissions import (
@@ -118,6 +118,13 @@ class ServicesModelViewSet(ResponseModelViewSet):
                     error=f"this {model_name} is full",
                     status=406,
                     message=CAPACITY_IS_FULL,
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            if not obj.is_registration_active:
+                return self.set_response(
+                    error=f"{model_name} is inactive",
+                    status=406,
+                    message=INACTIVE,
                     status_code=status.HTTP_406_NOT_ACCEPTABLE,
                 )
             user = request.user
