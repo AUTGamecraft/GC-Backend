@@ -107,6 +107,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     activation_code = models.CharField(max_length=64, blank=True)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(choices=TEAM_MEMBER_ROLE, default='NO', max_length=2)
+    favorite_game_title = models.CharField(max_length=50, blank=True)
     # event informations
     phone_number = models.CharField(_("phone number"), validators=[PhoneValidator()], max_length=32, blank=False,
                                     null=False)
