@@ -25,7 +25,7 @@ PayPing_URL_VERIFY = "https://api.payping.ir/v2/pay/verify"
 
 
 def PayPingPeymentLinkGenerator(code):
-    return f'https://zify.ir/order/accept/{code}'
+    return f'https://api.payping.ir/v2/pay/gotoipg/{code}'
 
 
 class PayPingRequest:
