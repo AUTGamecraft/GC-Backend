@@ -137,7 +137,7 @@ class UserServicesViewSet(ResponseModelViewSet):
             name=user.first_name
         )
         # return Response(result)
-
+        raise Exception(result)
         success_status = IDPAY_STATUS_201 if PAYWALL == "idpay" else PAYPING_STATUS_OK
         if result['status'] == success_status:
             payment.services.set(services)
