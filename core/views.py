@@ -134,7 +134,6 @@ class UserServicesViewSet(ResponseModelViewSet):
             mail=user.email,
             phone=user.phone_number,
             callback=IDPAY_CALL_BACK if PAYWALL == 'idpay' else PayPing_CALL_BACK,
-            # mail=user.email,
             name=user.first_name
         )
         # return Response(result)
@@ -226,7 +225,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                 # print(request.POST)
                 _payment = Payment.objects.get(pk=request.GET.get('clientrefid'))
                 print(_payment)
-                result = PayPingRequest().verify_payment(_payment.payment_id)
+                result = PayPingRequest().verify_payment(_payment.payment_id, _payment.total_price)
                 print(result['status'])
 
                 result_body = result['data']
