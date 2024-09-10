@@ -75,7 +75,7 @@ class PayPingRequest:
             # "tax_total": 0
         }
         response = requests.request(method='POST', headers=self.__headers, url=PayPing_URL, data=json.dumps(body))
-        raise Exception(response.text)
+        raise Exception("token: " + PAYPING_AUTH)
         json_response = json.loads(response.text)
         if 'status' not in json_response:
             json_response['status'] = response.status_code
