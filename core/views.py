@@ -254,7 +254,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
 
             except Payment.DoesNotExist as e:
-                raise ValidationError('no payment with this order_id: ' + request.data + " ## " + request.GET)
+                raise ValidationError('no payment with this order_id: here ###')
             except ConnectionError:
                 self.verify(request)
 
