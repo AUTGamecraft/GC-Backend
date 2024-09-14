@@ -227,30 +227,31 @@ class UserServicesViewSet(ResponseModelViewSet):
 
                 _payment = Payment.objects.get(pk=pk)
                 result = PayPingRequest().verify_payment(_payment.payment_id, _payment.total_price)
+                raise ValidationError(result)
 
-                if result['status'] != 200:
-                    if _payment.coupon:
-                        _payment.coupon.count += 1
-                        _payment.coupon.save()
-                    _payment.status = 1
-                    _payment.original_data = json.dumps(result)
-                    return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
-                elif result['status'] == 200:
-                    _payment.card_number = result['cardNumber']
-                    _payment.hashed_card_number = result["cardHashPan"]
-                    _payment.payment_trackID = _payment.payment_id
-                    services = EventService.objects.select_related('workshop').filter(payment=_payment)
-                    for service in services:
-                        service.payment_state = 'CM'
-                        service.workshop.save()
-                        service.save()
-                    _payment.status = result['status']
-                    _payment.original_data = json.dumps(result)
-                    _payment.verify_trackID = _payment.payment_id
-                    _payment.verified_date = datetime.now()
-                    _payment.finished_date = datetime.now()
-                    _payment.save()
-                    return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
+                # if result['status'] != 200:
+                #     if _payment.coupon:
+                #         _payment.coupon.count += 1
+                #         _payment.coupon.save()
+                #     _payment.status = 1
+                #     _payment.original_data = json.dumps(result)
+                #     return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
+                # elif result['status'] == 200:
+                #     _payment.card_number = result['cardNumber']
+                #     _payment.hashed_card_number = result["cardHashPan"]
+                #     _payment.payment_trackID = _payment.payment_id
+                #     services = EventService.objects.select_related('workshop').filter(payment=_payment)
+                #     for service in services:
+                #         service.payment_state = 'CM'
+                #         service.workshop.save()
+                #         service.save()
+                #     _payment.status = result['status']
+                #     _payment.original_data = json.dumps(result)
+                #     _payment.verify_trackID = _payment.payment_id
+                #     _payment.verified_date = datetime.now()
+                #     _payment.finished_date = datetime.now()
+                #     _payment.save()
+                #     return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
 
             except Payment.DoesNotExist as e:
                 raise ValidationError('no payment with this order_id! ' + e)
