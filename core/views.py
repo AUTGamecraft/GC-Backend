@@ -169,7 +169,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
             )
 
-    @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
+    @action(methods=['POST', 'GET'], detail=False, permission_classes=[AllowAny])
     def verify(self, request):
         if PAYWALL == 'idpay':
             try:
