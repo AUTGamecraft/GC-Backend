@@ -220,8 +220,12 @@ class UserServicesViewSet(ResponseModelViewSet):
                 self.verify(request)
         else:
             try:
-                request_body = request.data
-                _payment = Payment.objects.get(pk=request_body['clientrefid'])
+                if request.method == 'GET':
+                    pk = request.GET.get('clientrefid')
+                else:
+                    pk = request.data['clientrefid']
+
+                _payment = Payment.objects.get(pk=pk)
                 result = PayPingRequest().verify_payment(_payment.payment_id, _payment.total_price)
 
                 if result['status'] != 200:
