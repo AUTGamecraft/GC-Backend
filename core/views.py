@@ -224,7 +224,7 @@ class UserServicesViewSet(ResponseModelViewSet):
                     refId = request.GET.get('refid')
                 else:
                     pk = request.data['clientrefid']
-                    refId = request.data('refid')
+                    refId = request.data['refid']
 
                 _payment = Payment.objects.get(pk=pk)
                 _payment.payment_id = refId
