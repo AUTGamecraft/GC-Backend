@@ -18,7 +18,7 @@ PAYPING_STATUS_404 = 404
 PAYPING_STATUS_500 = 500
 
 PayPing_PAYMENT_DESCRIPTION = 'register workshops or talks'
-PayPing_CALL_BACK = 'https://autgamecraft.ir/api/v2/service/verify'
+PayPing_CALL_BACK = 'https://autgamecraft.ir/api/v2/service/verify/'
 
 PayPing_URL = "https://api.payping.ir/v2/pay"
 PayPing_URL_VERIFY = "https://api.payping.ir/v2/pay/verify"
