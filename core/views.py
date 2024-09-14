@@ -228,7 +228,14 @@ class UserServicesViewSet(ResponseModelViewSet):
                 _payment = Payment.objects.get(pk=pk)
                 result = PayPingRequest().verify_payment(_payment.payment_id, _payment.total_price)
 
-                if result['status'] == 200:
+                if result['status'] != 200:
+                    if _payment.coupon:
+                        _payment.coupon.count += 1
+                        _payment.coupon.save()
+                    _payment.status = 1
+                    _payment.original_data = json.dumps(result)
+                    return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
+                elif result['status'] == 200:
                     _payment.card_number = result['cardNumber']
                     _payment.hashed_card_number = result["cardHashPan"]
                     _payment.payment_trackID = _payment.payment_id
@@ -245,16 +252,8 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.save()
                     return redirect('https://autgamecraft.ir/dashboard-event/?status=true')
 
-                else:
-                    if _payment.coupon:
-                        _payment.coupon.count += 1
-                        _payment.coupon.save()
-                    _payment.status = 1
-                    _payment.original_data = json.dumps(result)
-                    return redirect('https://autgamecraft.ir/dashboard-event/?status=false')
-
             except Payment.DoesNotExist as e:
-                raise ValidationError('no payment with this order_id founded! ' + e)
+                raise ValidationError('no payment with this order_id! ' + e)
             except ConnectionError:
                 self.verify(request)
 

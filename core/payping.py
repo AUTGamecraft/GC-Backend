@@ -44,37 +44,8 @@ class PayPingRequest:
             "returnURL": PayPing_CALL_BACK,
             "description": PayPing_PAYMENT_DESCRIPTION,
             "clientRefId": order_id,
-
-            # old version:
-            # "payer" : {
-            #     "first_name": "",
-            #     "last_name": name,
-            #     "phone": phone,
-            #     "email": mail,
-            #     "state": "",
-            #     "city": "",
-            #     "address_1": "",
-            #     "address_2": "",
-            #
-            # },
-            # "products" :[
-            #     {
-            #     "code": "000",
-            #     "sellQuantity": 1,
-            #     "title": "GAME CRAFT PAY",
-            #     "amount": amount,
-            #     "unlimited": True,
-            #     "quantity": 100,
-            #     "description": PayPing_PAYMENT_DESCRIPTION
-            #     }
-            # ],
-            # "returnUrl": PayPing_CALL_BACK,
-            # "clientRefId": order_id,
-            # "shipping_total": 0,
-            # "off_total": 0,
-            # "tax_total": 0
         }
-        
+
         response = requests.request(method='POST', headers=self.__headers, url=PayPing_URL, data=json.dumps(body))
         json_response = json.loads(response.text)
         if 'status' not in json_response:
@@ -83,8 +54,7 @@ class PayPingRequest:
 
     def verify_payment(self, refId, amount):
         body = {"refId": refId, "amount": amount}
-        response = requests.request(
-            method='POST', headers=self.__headers, url=PayPing_URL_VERIFY, data=json.dumps(body))
+        response = requests.request(method='POST', headers=self.__headers, url=PayPing_URL_VERIFY, data=json.dumps(body))
 
         json_response = json.loads(response.text)
         if 'status' not in json_response:
