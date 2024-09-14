@@ -227,7 +227,7 @@ class UserServicesViewSet(ResponseModelViewSet):
 
                 _payment = Payment.objects.get(pk=pk)
                 result = PayPingRequest().verify_payment(_payment.payment_id, _payment.total_price)
-                raise ValidationError(result)
+                raise ValidationError(json.dumps(result))
 
                 # if result['status'] != 200:
                 #     if _payment.coupon:
