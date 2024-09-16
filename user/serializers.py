@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import (
     PhoneValidator,
@@ -77,3 +80,8 @@ class UserSerializerMinimal(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
         fields = ('first_name', 'about', 'email', 'profile')
+
+class CustomTokenObtainSerializer(TokenObtainPairSerializer):
+    default_error_messages = {
+        'اکانت فعالی یافت نشد.': 'اگر ثبت نام کرده اید ایمیل فعال سازی خود را چک کنید.'
+    }
