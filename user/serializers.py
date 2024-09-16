@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import (
     PhoneValidator,
@@ -54,6 +57,7 @@ class UserTeamSerialzier(serializers.ModelSerializer):
 class TeamSerialzer(serializers.ModelSerializer):
     def get_state(self, obj):
         return obj.get_state_display()
+
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
         write_only=True, child=serializers.EmailField())
@@ -72,7 +76,8 @@ class TeamSerialzer(serializers.ModelSerializer):
         team = Team.objects.create(**val)
         team.save()
         return team
-    
+
+
 class UserSerializerMinimal(serializers.ModelSerializer):
     class Meta:
         model = SiteUser

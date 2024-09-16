@@ -59,6 +59,19 @@ class UserAdminConfig(UserAdmin):
         'is_staff'
     )
 
+    exclude = None
+    fields = None
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("user_name", "password1", "password2"),
+            },
+        ),
+    )
+
     # field set
     fieldsets = (
         (None, {'fields': ('email', 'user_name', 'first_name', 'password')}),
