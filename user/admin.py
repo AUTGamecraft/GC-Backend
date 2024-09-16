@@ -32,7 +32,7 @@ class UserAdminConfig(UserAdmin):
 
     actions = ['export_selected_users', 'export_selected_class_participants']
     export_selected_users.short_description = 'Export selected site users'
-    export_selected_class_participants.short_description = "Export selected site users classes'"
+    export_selected_class_participants.short_description = "Export selected site users' classes"
 
     # search by fields
     search_fields = (

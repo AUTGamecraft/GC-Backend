@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 import user
-from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY, INACTIVE
+from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY, INACTIVE, \
+    NO_ANY_SERVICES
 from .models import *
 from .serializers import *
 from rest_framework.permissions import (
@@ -34,7 +35,7 @@ class ResponseGenericViewSet(viewsets.GenericViewSet):
         self.response_format = ResponseInfo().response
         super(viewsets.GenericViewSet, self).__init__(**kwargs)
 
-    def set_response(self,message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
+    def set_response(self, message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
         self.response_format['message'] = message
         self.response_format['error'] = error
         self.response_format['data'] = data
@@ -88,7 +89,7 @@ class ResponseModelViewSet(viewsets.ModelViewSet):
         self.response_format["status"] = 200
         return Response(self.response_format)
 
-    def set_response(self,message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
+    def set_response(self, message=None, error=None, data=[], status=200, status_code=status.HTTP_200_OK):
         self.response_format['message'] = message
         self.response_format['error'] = error
         self.response_format['data'] = data
@@ -131,7 +132,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
             args = {
                 'user': user,
                 model_name: obj,
-                'service_type':self.service_type
+                'service_type': self.service_type
             }
             query = EventService.objects.filter(**args)
             if query.exists():
@@ -143,8 +144,8 @@ class ServicesModelViewSet(ResponseModelViewSet):
                     # data=EventServiceSerializer(query[0]).data
                 )
             ev_service = EventService.objects.create(**args)
-            if obj.cost <=0:
-                ev_service.payment_state='CM'
+            if obj.cost < 1:
+                ev_service.payment_state = 'CM'
             ev_service.save()
             return self.set_response(
                 message=SUCCESSFULLY_ADDED,
@@ -157,7 +158,6 @@ class ServicesModelViewSet(ResponseModelViewSet):
                 status=404,
                 status_code=status.HTTP_404_NOT_FOUND
             )
-            
 
     @action(methods=['GET'], detail=True, permission_classes=[IsAdminUser])
     def services(self, request, pk):
@@ -169,11 +169,9 @@ class ServicesModelViewSet(ResponseModelViewSet):
         if not serializer.data:
             message = NO_ANY_SERVICES
         return self.set_response(
-            message = message,
+            message=message,
             data=serializer.data
         )
-
-    
 
     def get_permissions(self):
         try:
