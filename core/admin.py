@@ -175,7 +175,7 @@ class EventServiceAdmin(admin.ModelAdmin):
             }
         )
     )
-    actions = ['download_talk_export_csv', 'download_workshops_export_csv']
+    # actions = ['download_talk_export_csv', 'download_workshops_export_csv']
     readonly_fields = ['payment']
     list_display = ['user', 'workshop', 'talk', 'payment_state', 'service_type']
     actions_on_top = True
