@@ -144,7 +144,7 @@ class Workshop(models.Model):
         return self.services.count()
 
     def get_is_registration_active(self):
-        return self.servi
+        return self.is_registration_active
 
     def get_services(self):
         return self.services.all()
