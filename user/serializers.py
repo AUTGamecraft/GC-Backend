@@ -57,6 +57,7 @@ class UserTeamSerialzier(serializers.ModelSerializer):
 class TeamSerialzer(serializers.ModelSerializer):
     def get_state(self, obj):
         return obj.get_state_display()
+
     state = serializers.SerializerMethodField()
     emails = serializers.ListField(
         write_only=True, child=serializers.EmailField())
@@ -75,13 +76,9 @@ class TeamSerialzer(serializers.ModelSerializer):
         team = Team.objects.create(**val)
         team.save()
         return team
-    
+
+
 class UserSerializerMinimal(serializers.ModelSerializer):
     class Meta:
         model = SiteUser
         fields = ('first_name', 'about', 'email', 'profile')
-
-class CustomTokenObtainSerializer(TokenObtainPairSerializer):
-    default_error_messages = {
-        'اکانت فعالی یافت نشد.': 'اگر ثبت نام کرده اید ایمیل فعال سازی خود را چک کنید.'
-    }
