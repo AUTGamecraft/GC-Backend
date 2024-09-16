@@ -2,7 +2,6 @@ from excel_response import ExcelResponse
 from django.contrib import admin
 from .models import SiteUser, Team
 from django.contrib.auth.admin import UserAdmin
-from core.models import EventService
 
 
 class UserAdminConfig(UserAdmin):
@@ -17,22 +16,23 @@ class UserAdminConfig(UserAdmin):
 
         return ExcelResponse(data=data, worksheet_name="Users")
 
-    def export_class_participants(self, request, queryset):
+    def export_selected_class_participants(self, request, queryset):
         data = []
         headers = ['Username (Email)', 'Password (Phone Number)', 'Name', 'Talk / workshop']
         data.append(headers)
 
-        for service in EventService.objects.all():
-            if service.payment_state == "CM":
-                event = service.talk or service.workshop
-                data.append([service.user.email, service.user.phone_number, service.user.first_name, event.title])
+        for user in queryset:
+            for service in user.services.all():
+                if service.payment_state == "CM":
+                    event = service.talk or service.workshop
+                    data.append([service.user.email, service.user.phone_number, service.user.first_name, event.title])
 
-        data.sort(key=lambda x: x[4])
-        return ExcelResponse(data=data, worksheet_name="Users")
+        data.sort(key=lambda x: x[3])
+        return ExcelResponse(data=data, worksheet_name="Participants")
 
-    actions = ['export_all_users_to_excel', 'export_all_participants_to_excel']
-    export_selected_users.short_description = 'Export selected users'
-    export_class_participants.short_description = 'Export all class participants'
+    actions = ['export_selected_users', 'export_selected_class_participants']
+    export_selected_users.short_description = 'Export selected site users'
+    export_selected_class_participants.short_description = "Export selected site users classes'"
 
     # search by fields
     search_fields = (
