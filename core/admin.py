@@ -1,4 +1,3 @@
-from PIL.JpegPresets import presets
 from django.contrib import admin
 from core.models import (
     Assistant,

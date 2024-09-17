@@ -146,6 +146,7 @@ class ServicesModelViewSet(ResponseModelViewSet):
             ev_service = EventService.objects.create(**args)
             if obj.cost < 1:
                 ev_service.payment_state = 'CM'
+
             ev_service.save()
             return self.set_response(
                 message=SUCCESSFULLY_ADDED,
