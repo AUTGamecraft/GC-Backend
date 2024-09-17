@@ -1,3 +1,4 @@
+from PIL.JpegPresets import presets
 from django.contrib import admin
 from core.models import (
     Assistant,
@@ -57,6 +58,13 @@ class AssistantAdmin(admin.ModelAdmin):
     ]
 
 
+def main_presenter(obj):
+    if presenters := obj.presenters.all():
+        return presenters[0]
+    else:
+        return "no presenters"
+
+
 @admin.register(Talk)
 class TalkAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -80,7 +88,7 @@ class TalkAdmin(admin.ModelAdmin):
     exclude = ['presenters']
     date_hierarchy = 'start'
     actions_on_top = True
-    list_display = ('title', 'start', 'end', 'registered', 'capacity')
+    list_display = ('title', main_presenter, 'start', 'registered', 'capacity')
     search_fields = ['title']
     show_full_result_count = True
 
@@ -107,7 +115,7 @@ class WorkshopAdmin(admin.ModelAdmin):
     ]
     date_hierarchy = 'start'
     actions_on_top = True
-    list_display = ('title', 'start', 'end', 'registered', 'capacity')
+    list_display = ('title', main_presenter, 'start', 'registered', 'capacity')
     show_full_result_count = True
     search_fields = ['title']
 
