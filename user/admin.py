@@ -14,7 +14,7 @@ class UserAdminConfig(UserAdmin):
         for user in queryset:
             data.append([user.first_name, user.email, user.phone_number, user.start_date])
 
-        return ExcelResponse(data=data, worksheet_name="Users")
+        return ExcelResponse(data=data, worksheet_name="Users", output_format="users")
 
     def export_selected_services(self, request, queryset):
         data = []
@@ -28,7 +28,7 @@ class UserAdminConfig(UserAdmin):
 
         data.sort(key=lambda x: x[3])
         data.insert(0, headers)
-        return ExcelResponse(data=data, worksheet_name="Participants")
+        return ExcelResponse(data=data, worksheet_name="Services", output_filename="services")
 
     def export_selected_online_participants(self, request, queryset):
         data = []
@@ -46,7 +46,7 @@ class UserAdminConfig(UserAdmin):
             if classes:
                 data.append([user.email, user.phone_number, user.first_name, classes[1:], "normal"])
 
-        return ExcelResponse(data=data, worksheet_name="Participants")
+        return ExcelResponse(data=data, worksheet_name="Participants", output_filename="participants")
 
     actions = ['export_selected_users', 'export_selected_services', 'export_selected_online_participants']
     export_selected_users.short_description = 'Export selected site users'
