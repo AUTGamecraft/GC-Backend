@@ -16,10 +16,9 @@ class UserAdminConfig(UserAdmin):
 
         return ExcelResponse(data=data, worksheet_name="Users")
 
-    def export_selected_class_participants(self, request, queryset):
+    def export_selected_services(self, request, queryset):
         data = []
-        headers = ['Username (Email)', 'Password (Phone Number)', 'Name', 'Talk / workshop']
-        data.append(headers)
+        headers = ['Username / Email', 'Phone Number', 'Name', 'Talk / workshop']
 
         for user in queryset:
             for service in user.services.all():
@@ -28,11 +27,31 @@ class UserAdminConfig(UserAdmin):
                     data.append([service.user.email, service.user.phone_number, service.user.first_name, event.title])
 
         data.sort(key=lambda x: x[3])
+        data.insert(0, headers)
         return ExcelResponse(data=data, worksheet_name="Participants")
 
-    actions = ['export_selected_users', 'export_selected_class_participants']
+    def export_selected_online_participants(self, request, queryset):
+        data = []
+        headers = ['Username / Email', 'Phone Number', 'Name', 'Classes', 'Access']
+        data.append(headers)
+
+        for user in queryset:
+            classes = ""
+            for service in user.services.all():
+                if service.payment_state == "CM" and service.service_type == "TK":
+                    talk = service.talk
+                    if talk and talk.is_online and talk.presentation_link:
+                        classes += ',' + talk.presentation_link.split('/')[-1]
+
+            if classes:
+                data.append([user.email, user.phone_number, user.first_name, classes[1:], "normal"])
+
+        return ExcelResponse(data=data, worksheet_name="Participants")
+
+    actions = ['export_selected_users', 'export_selected_services', 'export_selected_online_participants']
     export_selected_users.short_description = 'Export selected site users'
-    export_selected_class_participants.short_description = "Export selected site users' classes"
+    export_selected_services.short_description = "Export selected site users' services"
+    export_selected_online_participants.short_description = "Export selected site users' online classes"
 
     # search by fields
     search_fields = (
