@@ -14,7 +14,7 @@ class UserAdminConfig(UserAdmin):
         for user in queryset:
             data.append([user.first_name, user.email, user.phone_number, user.start_date])
 
-        return ExcelResponse(data=data, worksheet_name="Users", output_format="users")
+        return ExcelResponse(data=data, worksheet_name="Users", output_filename="users")
 
     def export_selected_services(self, request, queryset):
         data = []
