@@ -4,9 +4,9 @@ from .emails import (
     send_email,
     send_team_request,
     send_simple_email,
-    change_pass_email
+    change_pass_email,
+    send_reminder_email
 )
-from celery.utils.log import get_task_logger
 
 
 @shared_task
@@ -27,3 +27,7 @@ def send_simple_email_task(data):
 @shared_task
 def change_pass_email_task(user_data):
     return change_pass_email(user_data)
+
+@shared_task
+def reminder_email_task(service_data):
+    return send_reminder_email(service_data)

@@ -71,6 +71,22 @@ def send_email(user):
     return {'success': True, 'email': user['email']}
 
 
+def send_reminder_email(service_data):
+    email_subject = 'GameCraft Reminder'
+    html_message = render_to_string('event_reminder.html', service_data)
+    msg = EmailMultiAlternatives(
+        subject=email_subject,
+        body=html_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[service_data["email"], ],
+        connection=connection,
+    )
+
+    msg.attach_alternative(html_message, 'text/html')
+    msg.send()
+    return {'success': True, 'email': service_data['email']}
+
+
 def send_team_request(team_data):
     context = {
         'url': settings.BASE_URL + settings.REDIRECT_TEAM_EMAIL_ACTIVATION.format(team_data['tid'], team_data['mid']),
