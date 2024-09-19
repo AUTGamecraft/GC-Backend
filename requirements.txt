@@ -27,6 +27,8 @@ gunicorn==22.0.0
 idna==3.7
 inflection==0.5.1
 isort==5.13.2
+jalali_core==1.0.0
+jdatetime==5.0.0
 jdcal==1.4.1
 kombu==5.3.7
 lazy-object-proxy==1.10.0

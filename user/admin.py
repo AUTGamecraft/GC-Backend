@@ -32,7 +32,7 @@ class UserAdminConfig(UserAdmin):
 
     def export_selected_online_participants(self, request, queryset):
         data = []
-        headers = ['Username / Email', 'Phone Number', 'Name', 'Classes', 'Access']
+        headers = ['Phone Number', 'Password', 'Name', 'Classes', 'Access']
         data.append(headers)
 
         for user in queryset:
@@ -44,7 +44,7 @@ class UserAdminConfig(UserAdmin):
                         classes += ',' + talk.presentation_link.split('/')[-1]
 
             if classes:
-                data.append([user.email, user.phone_number, user.first_name, classes[1:], "normal"])
+                data.append([user.phone_number, 'gamecraft2024', user.first_name, classes[1:], "normal"])
 
         return ExcelResponse(data=data, worksheet_name="Participants", output_filename="participants")
 

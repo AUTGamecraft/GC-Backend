@@ -1,3 +1,5 @@
+import jdatetime
+from dill import objects
 from django.contrib import admin
 from core.models import (
     Assistant,
@@ -10,10 +12,11 @@ from core.models import (
     PAYMENT_STATES
 )
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from tasks.tasks import reminder_email_task
 
 import tempfile
 import zipfile
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import csv
 
 
@@ -64,8 +67,32 @@ def main_presenter(obj):
         return "no presenters"
 
 
+def send_reminder(service):
+    presentation = service.talk or service.workshop
+    user = service.user
+    date = presentation.start
+    context = {
+        'name': user.first_name,
+        'email': user.email,
+        'title': presentation.title,
+        'is_online': bool(presentation.is_online),
+        'link': presentation.presentation_link,
+        'date': jdatetime.datetime.
+        fromgregorian(year=date.year, month=date.month, day=date.day, hour=date.hour, minute=date.minute,
+                      locale=jdatetime.FA_LOCALE).strftime('%a, %d %b %Y %H:%M')
+    }
+    reminder_email_task.delay(context)
+
+
 @admin.register(Talk)
 class TalkAdmin(admin.ModelAdmin):
+    def send_reminder_emails(self, request, queryset):
+        for event in queryset.all():
+            for service in EventService.objects.filter(talk=event):
+                send_reminder(service)
+
+        return JsonResponse({"message": "Emails sent."})
+
     fieldsets = (
         ('Dates', {
             "fields": (
@@ -84,6 +111,9 @@ class TalkAdmin(admin.ModelAdmin):
     inlines = [
         PresenterTalkInline
     ]
+
+    actions = ['send_reminder_emails']
+    send_reminder_emails.short_description = 'Send reminder emails'
     exclude = ['presenters']
     date_hierarchy = 'start'
     actions_on_top = True
@@ -94,6 +124,13 @@ class TalkAdmin(admin.ModelAdmin):
 
 @admin.register(Workshop)
 class WorkshopAdmin(admin.ModelAdmin):
+    def send_reminder_emails(self, request, queryset):
+        for event in queryset.all():
+            for service in EventService.objects.filter(workshop=event):
+                send_reminder(service)
+
+        return JsonResponse({"message": "Emails sent."})
+
     fieldsets = (
         ('Dates', {
             "fields": (
@@ -112,6 +149,9 @@ class WorkshopAdmin(admin.ModelAdmin):
     inlines = [
         PresenterWorkshopInline, WorkshopAssistantInline,
     ]
+
+    actions = ['send_reminder_emails']
+    send_reminder_emails.short_description = 'Send reminder emails'
     date_hierarchy = 'start'
     actions_on_top = True
     list_display = ('title', main_presenter, 'start', 'registered', 'capacity')
@@ -182,97 +222,11 @@ class EventServiceAdmin(admin.ModelAdmin):
             }
         )
     )
-    # actions = ['download_talk_export_csv', 'download_workshops_export_csv']
     readonly_fields = ['payment']
     list_display = ['user', 'workshop', 'talk', 'payment_state', 'service_type']
     actions_on_top = True
     list_filter = ['payment_state', 'service_type']
     search_fields = ['user__email']
-
-    def changelist_view(self, request, extra_context=None):
-        if 'action' in request.POST and (request.POST['action'] == 'download_talk_export_csv' or request.POST[
-            'action'] == 'download_workshops_export_csv'):
-            if not request.POST.getlist(ACTION_CHECKBOX_NAME):
-                post = request.POST.copy()
-                es = EventService.objects.all()[0]
-                post.update({ACTION_CHECKBOX_NAME: str(es.id)})
-
-                request._set_post(post)
-        return super(EventServiceAdmin, self).changelist_view(request, extra_context)
-
-    def download_talk_export_csv(modeladmin, request, queryset):
-        events = Talk.objects.all()
-
-        with tempfile.SpooledTemporaryFile() as zip_tmp:
-            with zipfile.ZipFile(zip_tmp, 'w', zipfile.ZIP_DEFLATED) as archive:
-                register_records = None
-                for event in events:
-                    register_records = EventService.objects.filter(talk=event, payment_state=PAYMENT_STATES[0][0])
-
-                    data = [
-                        {
-                            'full_name': record.user.first_name,
-                            'email': record.user.email,
-                            'phone_number': record.user.phone_number
-                        }
-                        for record in register_records
-                    ]
-
-                    fileNameInZip = f'event_export_{event.title}.csv'
-
-                    keys = data[0].keys()
-                    with tempfile.NamedTemporaryFile(mode="w+") as temp_csv:
-                        dict_writer = csv.DictWriter(temp_csv, keys)
-                        dict_writer.writeheader()
-                        dict_writer.writerows(data)
-                        temp_csv.flush()
-                        temp_csv.seek(0)
-
-                        archive.writestr(fileNameInZip, temp_csv.read())
-
-                archive.close()
-
-                zip_tmp.seek(0)
-                response = HttpResponse(zip_tmp.read(), content_type='application/x-zip-compressed')
-                response['Content-Disposition'] = 'attachment; filename="talk_exports.zip"'
-                return response
-
-    def download_workshops_export_csv(modeladmin, request, queryset):
-        events = Workshop.objects.all()
-
-        with tempfile.SpooledTemporaryFile() as zip_tmp:
-            with zipfile.ZipFile(zip_tmp, 'w', zipfile.ZIP_DEFLATED) as archive:
-                register_records = None
-                for event in events:
-                    register_records = EventService.objects.filter(workshop=event, payment_state=PAYMENT_STATES[0][0])
-
-                    data = [
-                        {
-                            'full_name': record.user.first_name,
-                            'email': record.user.email,
-                            'phone_number': record.user.phone_number
-                        }
-                        for record in register_records
-                    ]
-
-                    fileNameInZip = f'event_export_{event.title}.csv'
-
-                    keys = data[0].keys()
-                    with tempfile.NamedTemporaryFile(mode="w+") as temp_csv:
-                        dict_writer = csv.DictWriter(temp_csv, keys)
-                        dict_writer.writeheader()
-                        dict_writer.writerows(data)
-                        temp_csv.flush()
-                        temp_csv.seek(0)
-
-                        archive.writestr(fileNameInZip, temp_csv.read())
-
-                archive.close()
-
-                zip_tmp.seek(0)
-                response = HttpResponse(zip_tmp.read(), content_type='application/x-zip-compressed')
-                response['Content-Disposition'] = 'attachment; filename="workshop_exports.zip"'
-                return response
 
 
 @admin.register(Coupon)

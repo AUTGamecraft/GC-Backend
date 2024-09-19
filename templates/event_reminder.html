@@ -1,0 +1,70 @@
+<div dir="rtl"
+     style="background-image: url('https://autgamecraft.ir/assets/images/pattern.png');background-color:#474666;height: 100%;">
+    <table style="width: 100%;text-align: center;">
+        <tbody style="text-align: center;">
+        <tr style="text-align: center;">
+            <td style="text-align: center;">
+                <div
+                        style="display: flex;direction: rtl;margin: auto;margin-bottom: 10px;padding-top: 20px;width: fit-content;">
+                    <p
+                            style="margin-left: -5px;font-family: 'Estedad-Black';color: #FFFFFF;font-size: 24px;z-index: 0;">
+                        گیمـ</p>
+                    <img style="z-index: 1;object-fit: contain;"
+                         src="https://autgamecraft.ir/assets/images/dark-3d.png" alt="GameCraft"
+                         title="gamecraft" style="display:block" width="100" height="75"/>
+                    <p
+                            style="margin-right: -5px;font-family: 'Estedad-Black';color: #FFFFFF;font-size: 24px;z-index: 0;">
+                        کرفت</p>
+                </div>
+            </td>
+        </tr>
+        <tr style="text-align: center;">
+            <td style="text-align: center;">
+                <div style="background-color: #E8E7FF;text-align: center;padding: 20px 70px;width: fit-content;border-radius: 16px;margin: auto;margin-top: 56px;">
+                    <p style="color: #474666;font-family: 'Estedad-SemiBold';margin-bottom: 0;">{{ name|safe }}
+                        عزیز سلام!</p>
+                    <p style="color: #474666;font-family: 'Estedad-SemiBold';margin-bottom: 0;">
+                        از اینکه همراه ما هستی، بسیار خرسندیم.
+                    </p>
+                    <label style="color: #474666;font-family: 'Estedad-SemiBold';margin-bottom: 0;">
+                        یادآوری رویداد: {{ title }}
+                    </label> <br/>
+                    <label style="color: #474666;font-family: 'Estedad-SemiBold';margin-bottom: 0;">
+                        تاریخ: {{ date }}
+                    </label> <br/>
+
+                    {% if is_online %}
+                        <label style="color: #474666;font-family: 'Estedad-SemiBold';margin-bottom: 0;">
+                            لینک اسکای روم: {{ link }}
+                        </label> <br/>
+                        <label>
+                            نام کاربری و رمز اسکای روم شما به ترتیب شماره موبایل و gamecraft2024 می باشد.
+                        </label>
+                    {% else %}
+                        <a style="color: blue; font-family: 'Estedad-SemiBold'; margin-bottom: 0;"
+                           href="https://t.me/AUTGamecraft">
+                            اطلاع از محل برگزاری در تلگرام ما
+                        </a>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<style>
+    @font-face {
+        font-family: Estedad-SemiBold;
+        src: url('https://autgamecraft.ir/assets/fonts/Estedad-SemiBold.ttf');
+    }
+
+    @font-face {
+        font-family: Estedad-Bold;
+        src: url('https://autgamecraft.ir/assets/fonts/Estedad-Bold.ttf');
+    }
+
+    @font-face {
+        font-family: Estedad-Black;
+        src: url('https://autgamecraft.ir/assets/fonts/Estedad-Black.ttf');
+    }
+</style>
