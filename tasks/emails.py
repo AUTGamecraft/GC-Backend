@@ -78,13 +78,13 @@ def send_reminder_email(service_data):
         subject=email_subject,
         body=html_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[service_data["email"], ],
+        to=service_data["emails"],
         connection=connection,
     )
 
     msg.attach_alternative(html_message, 'text/html')
     msg.send()
-    return {'success': True, 'email': service_data['email']}
+    return {'success': True}
 
 
 def send_team_request(team_data):

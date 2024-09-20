@@ -1,3 +1,5 @@
+from datetime import timezone
+
 import jdatetime
 from dill import objects
 from django.contrib import admin
@@ -67,29 +69,38 @@ def main_presenter(obj):
         return "no presenters"
 
 
-def send_reminder(service):
-    presentation = service.talk or service.workshop
-    user = service.user
+def send_reminder(services):
+    if not services:
+        return
+
+    sample = services[0]
+    presentation = sample.talk or sample.workshop
     date = presentation.start
+    j_date = (jdatetime.datetime.utcfromtimestamp(date.timestamp())
+              .aslocale(jdatetime.FA_LOCALE).
+              strftime('%a, %d %b %Y (%H:%M)'))
+    emails = [service.user.email for service in services]
+
     context = {
-        'name': user.first_name,
-        'email': user.email,
+        'emails': emails,
         'title': presentation.title,
         'is_online': bool(presentation.is_online),
         'link': presentation.presentation_link,
-        'date': jdatetime.datetime.
-        fromgregorian(year=date.year, month=date.month, day=date.day, hour=date.hour, minute=date.minute,
-                      locale=jdatetime.FA_LOCALE).strftime('%a, %d %b %Y %H:%M')
+        'date': j_date
     }
-    reminder_email_task.delay(context)
+    reminder_email_task(context)
 
 
 @admin.register(Talk)
 class TalkAdmin(admin.ModelAdmin):
     def send_reminder_emails(self, request, queryset):
         for event in queryset.all():
-            for service in EventService.objects.filter(talk=event):
-                send_reminder(service)
+            services = []
+            for service in EventService.objects.filter(talk_id=event.id):
+                if service.payment_state == "CM":
+                    services.append(service)
+
+            send_reminder(services)
 
         return JsonResponse({"message": "Emails sent."})
 
@@ -126,8 +137,12 @@ class TalkAdmin(admin.ModelAdmin):
 class WorkshopAdmin(admin.ModelAdmin):
     def send_reminder_emails(self, request, queryset):
         for event in queryset.all():
-            for service in EventService.objects.filter(workshop=event):
-                send_reminder(service)
+            services = []
+            for service in EventService.objects.filter(workshop_id=event.id):
+                if service.payment_state == "CM":
+                    services.append(service)
+
+            send_reminder(services)
 
         return JsonResponse({"message": "Emails sent."})
 
