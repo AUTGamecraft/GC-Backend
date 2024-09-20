@@ -88,7 +88,7 @@ def send_reminder(services):
         'link': presentation.presentation_link,
         'date': j_date
     }
-    reminder_email_task(context)
+    reminder_email_task.delay(context)
 
 
 @admin.register(Talk)
