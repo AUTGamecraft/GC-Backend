@@ -1,16 +1,16 @@
 from datetime import datetime
-from logging import exception
+from struct import error
 
 from django.db import IntegrityError
+from django.shortcuts import redirect
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
     AllowAny,
 )
-from rest_framework import generics, mixins, views
-from rest_framework.exceptions import ValidationError
+from rest_framework import generics, mixins
 
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 from GD.settings.base import PAYWALL
@@ -27,7 +27,6 @@ from tasks.tasks import (
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import viewsets
 from django.contrib.auth import get_user_model
 
 from GD.messages import *
@@ -35,26 +34,20 @@ from .serializers import (
     CustomUserSerializer
 )
 from rest_framework import status
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from core.viewsets import ResponseGenericViewSet
 from .utils import activation_code, team_activation_code
-from .models import (
-    Team,
-)
-from .serializers import (
-    TeamSerializer,
-    UserTeamSerializer
-)
+from .models import Team
+
+from .serializers import TeamSerializer, UserTeamSerializer
 from django.db import transaction
 from rest_framework.views import exception_handler
 
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
-
     if response is None:
         response = Response(data={"error": {"detail": "some error occurred"}},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -200,9 +193,9 @@ class UserViewSet(ResponseGenericViewSet,
 
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def available_list(self, request):
-        cmembers = get_user_model().objects.filter(
+        members = get_user_model().objects.filter(
             team_role='NO', is_active=True, is_staff=False)
-        serialized = UserTeamSerializer(cmembers, many=True)
+        serialized = UserTeamSerializer(members, many=True)
         return self.set_response(
             data=serialized.data
         )
@@ -312,7 +305,7 @@ class UserViewSet(ResponseGenericViewSet,
             return [permission() for permission in self.permission_classes]
 
 
-class VerfiyUserView(generics.GenericAPIView):
+class VerifyUserView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = CustomUserSerializer
 
@@ -338,7 +331,7 @@ class VerfiyUserView(generics.GenericAPIView):
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
 
-class VerfiyResetPasswordUserView(generics.GenericAPIView):
+class VerifyResetPasswordUserView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = CustomUserSerializer
 
@@ -473,13 +466,6 @@ class TeamViewSet(ResponseGenericViewSet,
                 message=INACTIVE,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
             )
-        if competition.get_remain_capacity() <= 0:
-            return self.set_response(
-                error=f"this {model_name} is full",
-                status=406,
-                message=CAPACITY_IS_FULL,
-                status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            )
 
         user = request.user
         team = request.user.team
@@ -488,6 +474,13 @@ class TeamViewSet(ResponseGenericViewSet,
                 error=f"this team is not accepted",
                 status=406,
                 message=TEAM_NOT_ACCEPTED,
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if competition.get_remain_capacity() < team.members.count:
+            return self.set_response(
+                error=f"this {model_name} is full",
+                status=406,
+                message=CAPACITY_IS_FULL,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
             )
 
@@ -504,17 +497,18 @@ class TeamViewSet(ResponseGenericViewSet,
 
         args = {'user': user, model_name: competition, 'service_type': service_type, 'payment_state': 'PN'}
         ev_service = EventService.objects.create(**args)
-
         if competition.cost < 1:
             ev_service.payment_state = 'CM'
             ev_service.save()
 
             return self.set_response(
+                status_code=status.HTTP_202_ACCEPTED,
+                status=202,
                 message=SUCCESSFULLY_ADDED,
                 data=EventServiceSerializer(ev_service).data,
             )
         else:
-            total_price = competition.cost
+            total_price = competition.cost * team.members.count()
             PayWallRequest = IdPayRequest if PAYWALL == "idpay" else PayPingRequest
             payment = Payment.objects.create(total_price=total_price, user=user)
 
@@ -522,8 +516,8 @@ class TeamViewSet(ResponseGenericViewSet,
                 order_id=payment.pk,
                 amount=int(total_price * 10 if PAYWALL == "idpay" else total_price),
                 desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL == 'idpay' else PayPing_PAYMENT_DESCRIPTION,
-                mail=user.email,
                 phone=user.phone_number,
+                mail=user.email,
                 callback=IDPAY_CALL_BACK if PAYWALL == 'idpay' else PayPing_CALL_BACK,
                 name=user.first_name
             )
@@ -539,13 +533,12 @@ class TeamViewSet(ResponseGenericViewSet,
                 payment.save()
 
                 if PAYWALL != 'idpay':
-                    _status = result['status']
                     _code = result['code']
-                    result = {
-                        "link": PayPingPeymentLinkGenerator(_code),
-                        "status": _status
-                    }
-                    return self.set_response(message=None, data=result, status_code=status.HTTP_200_OK)
+                    _link = PayPingPeymentLinkGenerator(_code)
+                    return redirect(_link)
+                else:
+                    return self.set_response(message="پیاده سازی نشده", error="Not implemented",
+                                             status_code=status.HTTP_501_NOT_IMPLEMENTED)
             else:
                 payment.delete()
                 return self.set_response(

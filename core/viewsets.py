@@ -1,12 +1,8 @@
-from django.shortcuts import render
-from django.http import Http404
 from rest_framework.response import Response
 from rest_framework import status
 
-import user
 from GD.messages import CAPACITY_IS_FULL, USER_HAS_ALREADY_ENROLLED, SUCCESSFULLY_ADDED, EMPTY, INACTIVE, \
     NO_ANY_SERVICES
-from .models import *
 from .serializers import *
 from rest_framework.permissions import (
     IsAuthenticated,
@@ -15,9 +11,6 @@ from rest_framework.permissions import (
 )
 from rest_framework.decorators import action
 from rest_framework import viewsets
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
-from collections import defaultdict
 
 
 class ResponseInfo(object):

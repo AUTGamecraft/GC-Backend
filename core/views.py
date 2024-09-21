@@ -1,22 +1,19 @@
-import json
+from collections import defaultdict
 from datetime import datetime
 
-from rest_framework import generics, mixins, views
+from rest_framework import mixins
+from rest_framework.exceptions import ValidationError
 
 from GD.messages import WORKSHOP_CAPACITY_IS_FULL, SHOPPING_CART_EMPTY, COUPON_FINISHED, COUPON_DOSE_NOT_EXIST, \
-    CREATING_PAYMENT_UNSUCCESS, EMPTY, ADDED_TO_COMPETITION, ALREADY_REGISTERED_IN_THE_COMPETITION, \
-    REQUESTED_USER_IS_NOT_REGISTERED_OR_ALREADY_HAS_A_TEAM, YOU_ALREADY_HAVE_A_TEAM, \
-    COUNT_OF_USER_MEMBERS_MUST_BE_BETWEEN, USER_X_HAS_TEAM, USER_ALREADY_HAS_A_TEAM, TEAM_ACTIVED, USER_NOT_FOUND, \
-    TEAM_NOT_FOUND, SOMETHING_IS_WRONG, TEAM_IS_FULL, INACTIVE_WORKSHOP_EXISTS
+    CREATING_PAYMENT_UNSUCCESS, INACTIVE_WORKSHOP_EXISTS
 from .idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, \
     IDPAY_CALL_BACK, IDPAY_STATUS_201, IDPAY_STATUS_100, IDPAY_STATUS_101, \
     IDPAY_STATUS_200, IDPAY_STATUS_10
+from .models import Payment
 from .payping import *
 from GD.settings.base import PAYWALL
 from django.shortcuts import get_object_or_404, redirect
 from .viewsets import *
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from itertools import chain
 
 
@@ -154,9 +151,10 @@ class UserServicesViewSet(ResponseModelViewSet):
                     "link": PayPingPeymentLinkGenerator(_code),
                     "status": _status
                 }
-                return self.set_response(
-                    message=None, data=result, status_code=status.HTTP_200_OK
-                )
+                return self.set_response(message=None, data=result, status_code=status.HTTP_200_OK)
+            else:
+                return self.set_response(message="پیاده سازی نشده", error="Not implemented",
+                                         status_code=status.HTTP_501_NOT_IMPLEMENTED)
         else:
             payment.delete()
             if coupon:

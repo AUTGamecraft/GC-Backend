@@ -1,3 +1,4 @@
+from core.models import *
 from django.db import models
 
 from django.core.validators import RegexValidator
@@ -7,13 +8,9 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
     BaseUserManager,
-    User
 )
 from random import choice
-
 import logging
-
-from core.models import SingletonCompetition, EventService
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +117,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(choices=TEAM_MEMBER_ROLE, default='NO', max_length=2)
     favorite_game_title = models.CharField(max_length=50, blank=True)
-    # event informations
+    # event information
     phone_number = models.CharField(_("phone number"), validators=[PhoneValidator()], max_length=32, blank=False,
                                     null=False)
 
