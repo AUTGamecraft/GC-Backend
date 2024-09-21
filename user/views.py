@@ -469,11 +469,11 @@ class TeamViewSet(ResponseGenericViewSet,
 
         user = request.user
         team = request.user.team
-        if not team or team.state != 'AC':
+        if not team or team.state != 'AC' or team.members.count() < 2 or team.members.count() > 5:
             return self.set_response(
                 error=f"this team is not accepted",
                 status=406,
-                message=TEAM_NOT_ACCEPTED,
+                message="تیم مورد قبول نیست!",
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
             )
         if competition.get_remain_capacity() < team.members.count():

@@ -57,8 +57,8 @@ class Team(models.Model):
             query = core_models.EventService.objects.filter(**args)
             if query.exists():
                 return "COMPLETED"
-            else:
-                return "PENDING"
+
+        return "PENDING"
 
     def member_count(self):
         return self.members.count()
