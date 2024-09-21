@@ -1,3 +1,6 @@
+from datetime import datetime
+from logging import exception
+
 from django.db import IntegrityError
 from rest_framework.permissions import (
     IsAuthenticated,
@@ -9,6 +12,13 @@ from rest_framework.exceptions import ValidationError
 
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+
+from GD.settings.base import PAYWALL
+from core.idpay import IdPayRequest, IDPAY_PAYMENT_DESCRIPTION, IDPAY_CALL_BACK, IDPAY_STATUS_201
+from core.models import SingletonCompetition, EventService, Payment
+from core.payping import PayPingRequest, PayPing_PAYMENT_DESCRIPTION, PayPing_CALL_BACK, PAYPING_STATUS_OK, \
+    PayPingPeymentLinkGenerator
+from core.serializers import EventServiceSerializer
 from tasks.tasks import (
     send_team_requests_task,
     send_email_task,
@@ -35,8 +45,8 @@ from .models import (
     Team,
 )
 from .serializers import (
-    TeamSerialzer,
-    UserTeamSerialzier
+    TeamSerializer,
+    UserTeamSerializer
 )
 from django.db import transaction
 from rest_framework.views import exception_handler
@@ -61,7 +71,7 @@ class UserViewSet(ResponseGenericViewSet,
     serializer_class = CustomUserSerializer
     permission_classes_by_action = {
         'list': [IsAdminUser],
-        'retrive': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
         'destroy': [IsAuthenticated],
         'update': [IsAdminUser],
     }
@@ -156,7 +166,7 @@ class UserViewSet(ResponseGenericViewSet,
     @action(methods=['GET'], detail=False, permission_classes=[IsAuthenticated])
     def team(self, request):
         try:
-            serializer = TeamSerialzer(
+            serializer = TeamSerializer(
                 get_user_model().objects.get(pk=request.user.pk).team)
             return self.set_response(
                 data=serializer.data
@@ -192,7 +202,7 @@ class UserViewSet(ResponseGenericViewSet,
     def available_list(self, request):
         cmembers = get_user_model().objects.filter(
             team_role='NO', is_active=True, is_staff=False)
-        serialized = UserTeamSerialzier(cmembers, many=True)
+        serialized = UserTeamSerializer(cmembers, many=True)
         return self.set_response(
             data=serialized.data
         )
@@ -361,17 +371,16 @@ class TeamViewSet(ResponseGenericViewSet,
                   mixins.ListModelMixin,
                   mixins.RetrieveModelMixin):
     queryset = Team.objects.all()
-    serializer_class = TeamSerialzer
+    serializer_class = TeamSerializer
     permission_classes_by_action = {
         'list': [IsAuthenticated],
-        'retrive': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
         'destroy': [IsAdminUser],
         'update': [IsAdminUser],
     }
 
     def retrieve(self, request, *args, **kwargs):
-        response_data = super(TeamViewSet, self).retrieve(
-            request, *args, **kwargs)
+        response_data = super(TeamViewSet, self).retrieve(request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
@@ -379,8 +388,7 @@ class TeamViewSet(ResponseGenericViewSet,
         return Response(self.response_format)
 
     def list(self, request, *args, **kwargs):
-        response_data = super(TeamViewSet, self).list(
-            request, *args, **kwargs)
+        response_data = super(TeamViewSet, self).list(request, *args, **kwargs)
         self.response_format["data"] = response_data.data
         self.response_format["status"] = 200
         if not response_data.data:
@@ -445,23 +453,113 @@ class TeamViewSet(ResponseGenericViewSet,
                     }
                     send_team_requests_task.delay(team_data)
                 return self.set_response(data=self.serializer_class(team).data)
+
         except get_user_model().DoesNotExist as e:
             return self.set_response(error=str(e), status=400, status_code=400)
-            # print(e2)
-            # return custom_exception_handler(e, None)
+
         except Exception as e2:
             return self.set_response(error=str(e2), status=500, status_code=500)
-            # return self.set_response(error=str(e2))
-            # print(e2)
-            # return custom_exception_handler(e2, None)
 
-    def get_permissions(self):
-        try:
-            # return permission_classes depending on `action`
-            return [permission() for permission in self.permission_classes_by_action[self.action]]
-        except KeyError:
-            # action is not set return default permission_classes
-            return [permission() for permission in self.permission_classes]
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated])
+    def enroll(self, request):
+        competition = SingletonCompetition.get_solo()
+        model_name = 'competition'
+        service_type = 'CP'
+
+        if not competition.is_registration_active:
+            return self.set_response(
+                error=f"{model_name} is inactive",
+                status=406,
+                message=INACTIVE,
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        if competition.get_remain_capacity() <= 0:
+            return self.set_response(
+                error=f"this {model_name} is full",
+                status=406,
+                message=CAPACITY_IS_FULL,
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+
+        user = request.user
+        team = request.user.team
+        if not team or team.state != 'AC':
+            return self.set_response(
+                error=f"this team is not accepted",
+                status=406,
+                message=TEAM_NOT_ACCEPTED,
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+
+        for member in team.members.all():
+            args = {'user': member, model_name: competition, 'service_type': service_type, 'payment_state': 'CM'}
+            query = EventService.objects.filter(**args)
+            if query.exists():
+                return self.set_response(
+                    error=f"user has already enrolled in the {model_name}",
+                    status=409,
+                    message=USER_HAS_ALREADY_ENROLLED,
+                    status_code=status.HTTP_409_CONFLICT,
+                )
+
+        args = {'user': user, model_name: competition, 'service_type': service_type, 'payment_state': 'PN'}
+        ev_service = EventService.objects.create(**args)
+
+        if competition.cost < 1:
+            ev_service.payment_state = 'CM'
+            ev_service.save()
+
+            return self.set_response(
+                message=SUCCESSFULLY_ADDED,
+                data=EventServiceSerializer(ev_service).data,
+            )
+        else:
+            total_price = competition.cost
+            PayWallRequest = IdPayRequest if PAYWALL == "idpay" else PayPingRequest
+            payment = Payment.objects.create(total_price=total_price, user=user)
+
+            result = PayWallRequest().create_payment(
+                order_id=payment.pk,
+                amount=int(total_price * 10 if PAYWALL == "idpay" else total_price),
+                desc=IDPAY_PAYMENT_DESCRIPTION if PAYWALL == 'idpay' else PayPing_PAYMENT_DESCRIPTION,
+                mail=user.email,
+                phone=user.phone_number,
+                callback=IDPAY_CALL_BACK if PAYWALL == 'idpay' else PayPing_CALL_BACK,
+                name=user.first_name
+            )
+
+            success_status = IDPAY_STATUS_201 if PAYWALL == "idpay" else PAYPING_STATUS_OK
+            if result['status'] == success_status:
+                ev_service.payment = payment
+                ev_service.save()
+
+                payment.created_date = datetime.now()
+                payment.payment_link = (
+                    result)['link'] if PAYWALL == "idpay" else PayPingPeymentLinkGenerator(result['code'])
+                payment.save()
+
+                if PAYWALL != 'idpay':
+                    _status = result['status']
+                    _code = result['code']
+                    result = {
+                        "link": PayPingPeymentLinkGenerator(_code),
+                        "status": _status
+                    }
+                    return self.set_response(message=None, data=result, status_code=status.HTTP_200_OK)
+            else:
+                payment.delete()
+                return self.set_response(
+                    message=CREATING_PAYMENT_UNSUCCESS, data=result, status_code=status.HTTP_400_BAD_REQUEST,
+                    error=[{"error_code": result['status']}])
+
+
+def get_permissions(self):
+    try:
+        # return permission_classes depending on `action`
+        return [permission() for permission in self.permission_classes_by_action[self.action]]
+    except KeyError:
+        # action is not set return default permission_classes
+        return [permission() for permission in self.permission_classes]
 
 
 class VerifyTeamRequestView(generics.GenericAPIView):
@@ -514,7 +612,7 @@ class VerifyTeamRequestView(generics.GenericAPIView):
                 'message': TEAM_ACTIVED,
                 'error': None,
                 'status': 202,
-                'data': UserTeamSerialzier(member).data
+                'data': UserTeamSerializer(member).data
             }
             return Response(data=data, status=status.HTTP_202_ACCEPTED)
         except get_user_model().DoesNotExist as e:

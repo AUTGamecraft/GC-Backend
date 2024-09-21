@@ -13,6 +13,8 @@ from random import choice
 
 import logging
 
+from core.models import SingletonCompetition, EventService
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_AVATARS = [
@@ -50,6 +52,16 @@ class Team(models.Model):
     profile = models.ImageField(
         verbose_name='team_profile', null=True, blank=True)
     team_activation = models.CharField(max_length=40, null=True, blank=True, unique=True)
+
+    def get_payment_state(self):
+        for member in self.members.all():
+            args = {'user': member, 'competition': SingletonCompetition.get_solo(),
+                    'service_type': 'CP', 'payment_state': 'CM'}
+            query = EventService.objects.filter(**args)
+            if query.exists():
+                return "COMPLETED"
+            else:
+                return "PENDING"
 
     def member_count(self):
         return self.members.count()

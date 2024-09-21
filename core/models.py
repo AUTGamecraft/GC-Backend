@@ -1,8 +1,10 @@
 from django.db import models
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
+
+from solo.models import SingletonModel
+
 from GD.settings.base import AUTH_USER_MODEL, PAYWALL
-from .validators import validate_file_extension
 from tinymce.models import HTMLField
 
 IDPAY_STATUS = [
@@ -43,6 +45,7 @@ PAYMENT_STATES = [
 SERVICE_TYPE = [
     ('WS', 'WORKSHOP'),
     ('TK', 'TALK'),
+    ('CP', 'COMPETITION')
 ]
 
 LEVEL = [
@@ -160,6 +163,44 @@ class Workshop(models.Model):
         return self.title
 
 
+class SingletonCompetition(SingletonModel):
+    title = models.CharField(max_length=100, blank=False, default="Game Craft Competition")
+    start = models.DateTimeField(blank=False, default=datetime(year=2024, month=1, day=1))
+    end = models.DateTimeField(blank=False, default=datetime(year=2024, month=1, day=1))
+    content = HTMLField(blank=True)
+    capacity = models.IntegerField(blank=False, default=60)
+    is_online = models.BooleanField(blank=False, default=False)
+    presentation_link = models.URLField(blank=True)
+    cost = models.FloatField(blank=False, default=0)
+    files = models.URLField(default=None, blank=True, null=True)
+    is_registration_active = models.BooleanField(blank=False, default=False)
+
+    def clean(self):
+        if self.cost < 0:
+            raise ValidationError("cost cann't be a negative number.")
+        if self.start > self.end:
+            raise ValidationError("end of the service can not be before beginning")
+
+    def get_total_services(self):
+        return self.services.count()
+
+    def get_is_registration_active(self):
+        return self.is_registration_active
+
+    def get_services(self):
+        return self.services.all()
+
+    def get_remain_capacity(self):
+        registered_user = self.services.filter(payment_state='CM').count()
+        return self.capacity - int(registered_user)
+
+    def registered(self):
+        return int(self.services.filter(payment_state='CM').count())
+
+    def __str__(self):
+        return self.title
+
+
 class Coupon(models.Model):
     name = models.CharField(max_length=50, primary_key=True, help_text="don't use / in the name!!!")
     count = models.PositiveIntegerField(null=False, blank=False)
@@ -218,16 +259,23 @@ class EventService(models.Model):
         Talk, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
     workshop = models.ForeignKey(
         Workshop, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
+    competition = models.ForeignKey(
+        SingletonCompetition, blank=True, on_delete=models.CASCADE, related_name='services', null=True)
+
     user = models.ForeignKey(
         AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name='services', null=True)
 
     def clean(self):
         if self.service_type == 'WS':
-            if self.workshop == None or self.talk != None:
+            if self.workshop == None or self.talk != None or self.competition != None:
                 raise ValidationError(
                     'service type must match with selected service!!!')
         if self.service_type == 'TK':
-            if self.talk == None or self.workshop != None:
+            if self.talk == None or self.workshop != None or self.competition != None:
+                raise ValidationError(
+                    'service type must match with selected service!!!')
+        if self.service_type == 'CP':
+            if self.competition == None or self.workshop != None or self.talk != None:
                 raise ValidationError(
                     'service type must match with selected service!!!')
 

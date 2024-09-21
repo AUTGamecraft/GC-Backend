@@ -18,7 +18,7 @@ class UserAdminConfig(UserAdmin):
 
     def export_selected_services(self, request, queryset):
         data = []
-        headers = ['Username / Email', 'Phone Number', 'Name', 'Talk / workshop']
+        headers = ['Email', 'Phone Number', 'Name', 'Talk / workshop']
 
         for user in queryset:
             for service in user.services.all():
@@ -107,6 +107,22 @@ class UserTeamInline(admin.TabularInline):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
+    def export_enrolled_teams(self, request, queryset):
+        data = []
+        headers = ['Email', 'Phone Number', 'Name', 'Team']
+
+        for team in queryset.all():
+            if team.get_payment_state() == "COMPLETED":
+                for user in team.members.all():
+                    data.append([user.email, user.phone_number, user.first_name, team])
+
+        data.sort(key=lambda x: x[3])
+        data.insert(0, headers)
+        return ExcelResponse(data=data, worksheet_name="Services", output_filename="services")
+
+    def payment_state(self, obj):
+        return obj.get_payment_state()
+
     fieldsets = (
         (None, {
             "fields": (
@@ -116,17 +132,20 @@ class TeamAdmin(admin.ModelAdmin):
         (
             'register state', {
                 'fields': (
-                    'state', 'team_activation'
+                    'state', 'team_activation', 'payment_state'
                 )
             }
         )
     )
-    list_display = ['id', 'name', 'state', 'member_count']
+
+    actions = ['export_enrolled_teams']
+    export_enrolled_teams.short_description = 'Export enrolled teams'
     actions_on_top = True
+
+    readonly_fields = ['payment_state', ]
+    list_display = ['id', 'name', 'state', 'member_count']
     list_filter = ['state']
-    inlines = [
-        UserTeamInline,
-    ]
+    inlines = [UserTeamInline, ]
 
 
 admin.site.register(SiteUser, UserAdminConfig)

@@ -3,8 +3,8 @@ from copy import deepcopy
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from core.models import SingletonCompetition, EventService
 from .models import (
     PhoneValidator,
     SiteUser,
@@ -37,7 +37,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return instance
 
 
-class UserTeamSerialzier(serializers.ModelSerializer):
+class UserTeamSerializer(serializers.ModelSerializer):
 
     def get_profile(self, member):
         try:
@@ -54,20 +54,21 @@ class UserTeamSerialzier(serializers.ModelSerializer):
         extra_kwargs = {'pk': {'read_only': True}}
 
 
-class TeamSerialzer(serializers.ModelSerializer):
+class TeamSerializer(serializers.ModelSerializer):
     def get_state(self, obj):
         return obj.get_state_display()
 
+    def get_payment_state(self, obj):
+        obj.get_payment_state()
+
     state = serializers.SerializerMethodField()
-    emails = serializers.ListField(
-        write_only=True, child=serializers.EmailField())
-    members = UserTeamSerialzier(many=True)
+    payment_state = serializers.SerializerMethodField()
+    emails = serializers.ListField(write_only=True, child=serializers.EmailField())
+    members = UserTeamSerializer(many=True)
 
     class Meta:
         model = Team
-        fields = [
-            'members', 'state', 'emails', 'name', 'pk'
-        ]
+        fields = ['members', 'state', 'emails', 'name', 'pk', 'payment_state']
         extra_kwargs = {'pk': {'read_only': True}}
 
     def create(self, validated_data):
