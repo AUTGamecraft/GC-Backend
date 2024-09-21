@@ -114,11 +114,11 @@ class TeamAdmin(admin.ModelAdmin):
         for team in queryset.all():
             if team.get_payment_state() == "COMPLETED":
                 for user in team.members.all():
-                    data.append([user.email, user.phone_number, user.first_name, team])
+                    data.append([user.email, user.phone_number, user.first_name, team.name])
 
         data.sort(key=lambda x: x[3])
         data.insert(0, headers)
-        return ExcelResponse(data=data, worksheet_name="Services", output_filename="services")
+        return ExcelResponse(data=data, worksheet_name="Teams", output_filename="teams")
 
     def payment_state(self, obj):
         return obj.get_payment_state()
