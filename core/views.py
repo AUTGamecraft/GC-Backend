@@ -146,17 +146,17 @@ class UserServicesViewSet(ResponseModelViewSet):
                 result['code'])
             payment.coupon = coupon
             payment.save()
-        if PAYWALL != 'idpay':
-            _code = result['code']
-            _status = result['status']
-            result = {
-                "link": PayPingPeymentLinkGenerator(_code),
-                "status": _status
-            }
-            return self.set_response(
-                message=None, data=result, status_code=status.HTTP_200_OK
-            )
-            # return redirect('http://gamecraft.ce.aut.ac.ir')
+
+            if PAYWALL != 'idpay':
+                _code = result['code']
+                _status = result['status']
+                result = {
+                    "link": PayPingPeymentLinkGenerator(_code),
+                    "status": _status
+                }
+                return self.set_response(
+                    message=None, data=result, status_code=status.HTTP_200_OK
+                )
         else:
             payment.delete()
             if coupon:
@@ -187,12 +187,15 @@ class UserServicesViewSet(ResponseModelViewSet):
 
                 if any(result_status == status_code for status_code in
                        (IDPAY_STATUS_100, IDPAY_STATUS_101, IDPAY_STATUS_200)):
-                    services = EventService.objects.select_related(
-                        'workshop').filter(payment=payment)
+                    services = EventService.objects.filter(payment=payment)
                     for service in services:
                         service.payment_state = 'CM'
-                        service.workshop.save()
+                        if service.workshop:
+                            service.workshop.save()
+                        elif service.competition:
+                            service.competition.save()
                         service.save()
+
                     payment.status = result_status
                     payment.original_data = json.dumps(result)
                     payment.verify_trackID = result['track_id']
@@ -242,11 +245,15 @@ class UserServicesViewSet(ResponseModelViewSet):
                     _payment.card_number = result['cardNumber']
                     _payment.hashed_card_number = result["cardHashPan"]
                     _payment.payment_trackID = _payment.payment_id
-                    services = EventService.objects.select_related('workshop').filter(payment=_payment)
+                    services = EventService.objects.filter(payment=_payment)
                     for service in services:
                         service.payment_state = 'CM'
-                        service.workshop.save()
+                        if service.workshop:
+                            service.workshop.save()
+                        elif service.competition:
+                            service.competition.save()
                         service.save()
+
                     _payment.status = result['status']
                     _payment.original_data = json.dumps(result)
                     _payment.verify_trackID = _payment.payment_id

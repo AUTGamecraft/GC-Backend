@@ -4,7 +4,7 @@ from game.models import Game, Comment, Like
 from user.models import SiteUser, Team
 from user.serializers import UserSerializerMinimal
 from django.core.validators import MaxValueValidator, MinValueValidator
-from user.serializers import TeamSerialzer
+from user.serializers import TeamSerializer
 from rest_framework.exceptions import ValidationError
 from decouple import config
 
@@ -119,7 +119,7 @@ class GameSerializer(serializers.ModelSerializer):
         
 
     def to_representation(self, obj):
-        self.fields["team"] = TeamSerialzer()
+        self.fields["team"] = TeamSerializer()
 
         return super(GameSerializer, self).to_representation(obj)
 

@@ -1,8 +1,7 @@
-from datetime import timezone
-
 import jdatetime
-from dill import objects
 from django.contrib import admin
+from solo.admin import SingletonModelAdmin
+
 from core.models import (
     Assistant,
     Workshop,
@@ -10,16 +9,10 @@ from core.models import (
     EventService,
     Talk,
     Payment,
-    Coupon,
-    PAYMENT_STATES
+    Coupon, SingletonCompetition,
 )
-from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from tasks.tasks import reminder_email_task
-
-import tempfile
-import zipfile
-from django.http import HttpResponse, JsonResponse
-import csv
+from django.http import JsonResponse
 
 
 class PresenterTalkInline(admin.TabularInline):
@@ -232,7 +225,8 @@ class EventServiceAdmin(admin.ModelAdmin):
                 'fields': (
                     'workshop',
                     'talk',
-                    'payment'
+                    'competition',
+                    'payment',
                 )
             }
         )
@@ -250,3 +244,6 @@ class CouponAdmin(admin.ModelAdmin):
         'name', 'count', 'percentage'
     )
     list_display = ['name', 'count', 'percentage']
+
+
+admin.site.register(SingletonCompetition, SingletonModelAdmin)
