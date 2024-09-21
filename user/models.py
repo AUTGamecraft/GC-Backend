@@ -1,3 +1,4 @@
+from core import models as core_models
 from django.db import models
 
 from django.core.validators import RegexValidator
@@ -7,13 +8,9 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
     BaseUserManager,
-    User
 )
 from random import choice
-
 import logging
-
-from core.models import SingletonCompetition, EventService
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +52,9 @@ class Team(models.Model):
 
     def get_payment_state(self):
         for member in self.members.all():
-            args = {'user': member, 'competition': SingletonCompetition.get_solo(),
+            args = {'user': member, 'competition': core_models.SingletonCompetition.get_solo(),
                     'service_type': 'CP', 'payment_state': 'CM'}
-            query = EventService.objects.filter(**args)
+            query = core_models.EventService.objects.filter(**args)
             if query.exists():
                 return "COMPLETED"
             else:
@@ -120,7 +117,7 @@ class SiteUser(AbstractBaseUser, PermissionsMixin):
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     team_role = models.CharField(choices=TEAM_MEMBER_ROLE, default='NO', max_length=2)
     favorite_game_title = models.CharField(max_length=50, blank=True)
-    # event informations
+    # event information
     phone_number = models.CharField(_("phone number"), validators=[PhoneValidator()], max_length=32, blank=False,
                                     null=False)
 

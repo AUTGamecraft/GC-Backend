@@ -246,4 +246,24 @@ class CouponAdmin(admin.ModelAdmin):
     list_display = ['name', 'count', 'percentage']
 
 
-admin.site.register(SingletonCompetition, SingletonModelAdmin)
+@admin.register(SingletonCompetition)
+class SingletonCompetitionAdmin(SingletonModelAdmin):
+    def remained_capacity(self, obj):
+        return obj.get_remain_capacity()
+
+    fields = None
+    fieldsets = (
+        ('Dates', {
+            "fields": (
+                ('start', 'end'),
+            ),
+        }),
+        ('Details', {
+            'fields': (
+                'title', 'capacity', 'remained_capacity', 'cost', 'is_online', 'presentation_link', 'content', 'files',
+                'is_registration_active'
+            ),
+            'classes': ('wide', 'extrapretty'),
+        })
+    )
+    readonly_fields = ('remained_capacity',)

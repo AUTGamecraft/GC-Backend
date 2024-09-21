@@ -1,3 +1,4 @@
+from user import models as user_models
 from django.db import models
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
@@ -5,6 +6,7 @@ from datetime import datetime
 from solo.models import SingletonModel
 
 from GD.settings.base import AUTH_USER_MODEL, PAYWALL
+
 from tinymce.models import HTMLField
 
 IDPAY_STATUS = [
@@ -191,11 +193,15 @@ class SingletonCompetition(SingletonModel):
         return self.services.all()
 
     def get_remain_capacity(self):
-        registered_user = self.services.filter(payment_state='CM').count()
-        return self.capacity - int(registered_user)
+        return self.capacity - self.registered()
 
     def registered(self):
-        return int(self.services.filter(payment_state='CM').count())
+        count = 0
+        for team in user_models.Team.objects.all():
+            if team.get_payment_state() == "COMPLETED":
+                count += team.members.count()
+
+        return count
 
     def __str__(self):
         return self.title
