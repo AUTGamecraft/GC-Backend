@@ -533,9 +533,13 @@ class TeamViewSet(ResponseGenericViewSet,
                 payment.save()
 
                 if PAYWALL != 'idpay':
+                    _status = result['status']
                     _code = result['code']
-                    _link = PayPingPeymentLinkGenerator(_code)
-                    return redirect(_link)
+                    result = {
+                        "link": PayPingPeymentLinkGenerator(_code),
+                        "status": _status
+                    }
+                    return self.set_response(message=None, data=result, status_code=status.HTTP_200_OK)
                 else:
                     return self.set_response(message="پیاده سازی نشده", error="Not implemented",
                                              status_code=status.HTTP_501_NOT_IMPLEMENTED)
