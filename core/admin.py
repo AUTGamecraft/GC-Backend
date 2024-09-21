@@ -225,7 +225,8 @@ class EventServiceAdmin(admin.ModelAdmin):
                 'fields': (
                     'workshop',
                     'talk',
-                    'payment'
+                    'competition',
+                    'payment',
                 )
             }
         )
