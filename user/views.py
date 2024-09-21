@@ -476,7 +476,7 @@ class TeamViewSet(ResponseGenericViewSet,
                 message=TEAM_NOT_ACCEPTED,
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
             )
-        if competition.get_remain_capacity() < team.members.count:
+        if competition.get_remain_capacity() < team.members.count():
             return self.set_response(
                 error=f"this {model_name} is full",
                 status=406,

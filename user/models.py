@@ -1,4 +1,4 @@
-from core.models import *
+from core import models as core_models
 from django.db import models
 
 from django.core.validators import RegexValidator
@@ -52,9 +52,9 @@ class Team(models.Model):
 
     def get_payment_state(self):
         for member in self.members.all():
-            args = {'user': member, 'competition': SingletonCompetition.get_solo(),
+            args = {'user': member, 'competition': core_models.SingletonCompetition.get_solo(),
                     'service_type': 'CP', 'payment_state': 'CM'}
-            query = EventService.objects.filter(**args)
+            query = core_models.EventService.objects.filter(**args)
             if query.exists():
                 return "COMPLETED"
             else:

@@ -1,4 +1,4 @@
-from user.models import *
+from user import models as user_models
 from django.db import models
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
@@ -6,8 +6,8 @@ from datetime import datetime
 from solo.models import SingletonModel
 
 from GD.settings.base import AUTH_USER_MODEL, PAYWALL
-from tinymce.models import HTMLField
 
+from tinymce.models import HTMLField
 
 IDPAY_STATUS = [
     (1, 'payment_not_made'),
@@ -197,7 +197,7 @@ class SingletonCompetition(SingletonModel):
 
     def registered(self):
         count = 0
-        for team in Team.objects.all():
+        for team in user_models.Team.objects.all():
             if team.get_payment_state() == "COMPLETED":
                 count += team.members.count()
 
