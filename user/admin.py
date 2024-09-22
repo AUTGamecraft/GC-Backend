@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from excel_response import ExcelResponse
 from django.contrib import admin
 from .models import SiteUser, Team
@@ -14,21 +15,10 @@ class UserAdminConfig(UserAdmin):
         for user in queryset:
             data.append([user.first_name, user.email, user.phone_number, user.start_date])
 
-        return ExcelResponse(data=data, worksheet_name="Users", output_filename="users")
-
-    def export_selected_services(self, request, queryset):
-        data = []
-        headers = ['Email', 'Phone Number', 'Name', 'Talk / workshop']
-
-        for user in queryset:
-            for service in user.services.all():
-                if service.payment_state == "CM":
-                    event = service.talk or service.workshop
-                    data.append([service.user.email, service.user.phone_number, service.user.first_name, event.title])
-
-        data.sort(key=lambda x: x[3])
-        data.insert(0, headers)
-        return ExcelResponse(data=data, worksheet_name="Services", output_filename="services")
+        if not data:
+            return JsonResponse({"message": "Nothing Found"})
+        else:
+            return ExcelResponse(data=data, worksheet_name="Users", output_filename="users")
 
     def export_selected_online_participants(self, request, queryset):
         data = []
@@ -46,11 +36,13 @@ class UserAdminConfig(UserAdmin):
             if classes:
                 data.append([user.phone_number, 'gamecraft2024', user.first_name, classes[1:], "normal"])
 
-        return ExcelResponse(data=data, worksheet_name="Participants", output_filename="participants")
+        if not data:
+            return JsonResponse({"message": "Nothing Found"})
+        else:
+            return ExcelResponse(data=data, worksheet_name="Participants", output_filename="participants")
 
-    actions = ['export_selected_users', 'export_selected_services', 'export_selected_online_participants']
+    actions = ['export_selected_users', 'export_selected_online_participants']
     export_selected_users.short_description = 'Export selected site users'
-    export_selected_services.short_description = "Export selected site users' services"
     export_selected_online_participants.short_description = "Export selected site users' online classes"
 
     # search by fields

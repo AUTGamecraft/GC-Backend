@@ -1,6 +1,7 @@
 import jdatetime
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
+from excel_response import ExcelResponse
 
 from core.models import (
     Assistant,
@@ -84,6 +85,23 @@ def send_reminder(services):
     reminder_email_task.delay(context)
 
 
+def export_participants(queryset):
+    data = []
+    headers = ['Email', 'Phone Number', 'Name', 'Presentation']
+
+    for event in queryset:
+        for service in event.services.all():
+            if service and service.user and service.payment_state == "CM":
+                data.append([service.user.email, service.user.phone_number, service.user.first_name, event.title])
+
+    if not data:
+        return JsonResponse({"message": "Nothing Found"})
+    else:
+        data.sort(key=lambda x: x[3])
+        data.insert(0, headers)
+        return ExcelResponse(data=data, worksheet_name="Events", output_filename="events")
+
+
 @admin.register(Talk)
 class TalkAdmin(admin.ModelAdmin):
     def send_reminder_emails(self, request, queryset):
@@ -96,6 +114,9 @@ class TalkAdmin(admin.ModelAdmin):
             send_reminder(services)
 
         return JsonResponse({"message": "Emails sent."})
+
+    def export_selected_participants(self, request, queryset):
+        return export_participants(queryset)
 
     fieldsets = (
         ('Dates', {
@@ -116,7 +137,8 @@ class TalkAdmin(admin.ModelAdmin):
         PresenterTalkInline
     ]
 
-    actions = ['send_reminder_emails']
+    actions = ['send_reminder_emails', 'export_selected_participants']
+    export_selected_participants.short_description = 'Export selected participants'
     send_reminder_emails.short_description = 'Send reminder emails'
     exclude = ['presenters']
     date_hierarchy = 'start'
@@ -139,6 +161,9 @@ class WorkshopAdmin(admin.ModelAdmin):
 
         return JsonResponse({"message": "Emails sent."})
 
+    def export_selected_participants(self, request, queryset):
+        return export_participants(queryset)
+
     fieldsets = (
         ('Dates', {
             "fields": (
@@ -158,7 +183,8 @@ class WorkshopAdmin(admin.ModelAdmin):
         PresenterWorkshopInline, WorkshopAssistantInline,
     ]
 
-    actions = ['send_reminder_emails']
+    actions = ['send_reminder_emails', 'export_selected_participants']
+    export_selected_participants.short_description = 'Export selected participants'
     send_reminder_emails.short_description = 'Send reminder emails'
     date_hierarchy = 'start'
     actions_on_top = True
