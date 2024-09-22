@@ -59,7 +59,7 @@ class TeamSerializer(serializers.ModelSerializer):
         return obj.get_state_display()
 
     def get_payment_state(self, obj):
-        obj.get_payment_state()
+        return obj.get_payment_state()
 
     state = serializers.SerializerMethodField()
     payment_state = serializers.SerializerMethodField()
@@ -69,7 +69,7 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ['members', 'state', 'emails', 'name', 'pk', 'payment_state']
-        extra_kwargs = {'pk': {'read_only': True}}
+        extra_kwargs = {'pk': {'read_only': True}, 'payment_state': {'read_only': True}}
 
     def create(self, validated_data):
         val = deepcopy(validated_data)
