@@ -134,6 +134,9 @@ class TeamAdmin(admin.ModelAdmin):
     export_enrolled_teams.short_description = 'Export enrolled teams'
     actions_on_top = True
 
+    # search by fields
+    search_fields = ("name",)
+
     readonly_fields = ['payment_state', ]
     list_display = ['id', 'name', 'state', 'member_count']
     list_filter = ['state']
