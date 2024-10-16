@@ -29,7 +29,7 @@ class GameAdmin(admin.ModelAdmin):
 
     def export_likes(self, request, queryset):
         data = []
-        headers = ['game', 'liker name', 'liker email', 'liker phone No', 'timestamp']
+        headers = ['game', 'liker name', 'liker phone No', 'liker email', 'timestamp']
         data.append(headers)
 
         for game in queryset.all():
