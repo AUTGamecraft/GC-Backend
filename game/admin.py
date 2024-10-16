@@ -27,8 +27,23 @@ class GameAdmin(admin.ModelAdmin):
         else:
             return ExcelResponse(data=data, worksheet_name="games", output_filename="games")
 
-    actions = ['export_games']
+    def export_likes(self, request, queryset):
+        data = []
+        headers = ['game', 'liker name', 'liker phone No', 'liker email', 'timestamp']
+        data.append(headers)
+
+        for game in queryset.all():
+            for like in game.likes.all():
+                data.append([game.title, like.user.first_name, like.user.phone_number, like.user.email, like.timestamp])
+
+        if not data:
+            return JsonResponse({"message": "Nothing Found"})
+        else:
+            return ExcelResponse(data=data, worksheet_name="likes", output_filename="games")
+
+    actions = ['export_likes', 'export_games']
     export_games.short_description = 'Export Games'
+    export_likes.short_description = 'Export Likes'
     actions_on_top = True
 
     search_fields = ("title", "team")
