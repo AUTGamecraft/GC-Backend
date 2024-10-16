@@ -112,6 +112,18 @@ class TeamAdmin(admin.ModelAdmin):
         data.insert(0, headers)
         return ExcelResponse(data=data, worksheet_name="Teams", output_filename="teams")
 
+    def export_selected_teams(self, request, queryset):
+        data = []
+        headers = ['Email', 'Phone Number', 'Name', 'Team']
+
+        for team in queryset.all():
+            for user in team.members.all():
+                data.append([user.email, user.phone_number, user.first_name, team.name])
+
+        data.sort(key=lambda x: x[3])
+        data.insert(0, headers)
+        return ExcelResponse(data=data, worksheet_name="Teams", output_filename="teams")
+
     def payment_state(self, obj):
         return obj.get_payment_state()
 
@@ -130,7 +142,8 @@ class TeamAdmin(admin.ModelAdmin):
         )
     )
 
-    actions = ['export_enrolled_teams']
+    actions = ['export_enrolled_teams', 'export_selected_teams']
+    export_selected_teams.short_description = 'Export selected teams'
     export_enrolled_teams.short_description = 'Export enrolled teams'
     actions_on_top = True
 
